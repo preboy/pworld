@@ -1,0 +1,7 @@
+/public/libcore/lib/*
+/server/bin/*
+world.VC.db
+world.VC.VC.opendb
+.vs/*
+*.ipch
+__pycache__

@@ -1,0 +1,20 @@
+©À©¤client
+©À©¤design
+©À©¤public
+©¦  ©À©¤common
+©¦  ©À©¤depends
+©¦  ©¦  ©¸©¤lua
+©¦  ©¦      ©À©¤include
+©¦  ©¦      ©¸©¤lib
+©¦  ©À©¤libcore
+©¦  ©¦  ©À©¤include
+©¦  ©¦  ©À©¤lib
+©¦  ©¦  ©¸©¤src
+©¦  ©¸©¤protocols
+©¸©¤server
+    ©À©¤bin
+    ©À©¤build
+    ©À©¤build_linux
+    ©¸©¤src
+        ©À©¤gameserver
+        ©¸©¤logonserver

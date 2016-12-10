@@ -12,7 +12,7 @@ static void MysqlErrorReport(MYSQL* mysql)
 }
 
 
-static void MysqlStmtErrorReport(MYSQL_STMT* stmt)
+static void MysqlErrorReportStmt(MYSQL_STMT* stmt)
 {
     INSTANCE(CLogger)->Error("mysql stmt state:%s", mysql_stmt_sqlstate(stmt));
     INSTANCE(CLogger)->Error("mysql stmt error:[%d]%s", mysql_stmt_errno(stmt), mysql_stmt_error(stmt));
@@ -20,7 +20,7 @@ static void MysqlStmtErrorReport(MYSQL_STMT* stmt)
 
 
 //////////////////////////////////////////////////////////////////////////
-CMysqlStmtQueryResult::CMysqlStmtQueryResult(MYSQL_STMT* mysql_stmt, MYSQL_RES*result, MYSQL_BIND* data) :
+CMysqlQueryResultStmt::CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES*result, MYSQL_BIND* data) :
     _mysql_stmt(mysql_stmt),
     _result(result),
     _data(data)
@@ -30,16 +30,16 @@ CMysqlStmtQueryResult::CMysqlStmtQueryResult(MYSQL_STMT* mysql_stmt, MYSQL_RES*r
 }
 
 
-CMysqlStmtQueryResult::~CMysqlStmtQueryResult()
+CMysqlQueryResultStmt::~CMysqlQueryResultStmt()
 {
 }
 
 
-bool CMysqlStmtQueryResult::NextRow()
+bool CMysqlQueryResultStmt::NextRow()
 {
     if (mysql_stmt_fetch(_mysql_stmt))
     {
-        MysqlStmtErrorReport(_mysql_stmt);
+        MysqlErrorReportStmt(_mysql_stmt);
         return false;
     }
 
@@ -47,25 +47,25 @@ bool CMysqlStmtQueryResult::NextRow()
 }
 
 
-const char* CMysqlStmtQueryResult::GetValue(uint32 idx)
+const char* CMysqlQueryResultStmt::GetValue(uint32 idx)
 {
     return nullptr;
 }
 
 
-unsigned long CMysqlStmtQueryResult::GetLength(uint32 idx)
+unsigned long CMysqlQueryResultStmt::GetLength(uint32 idx)
 {
     return 0;
 }
 
 
-int32 CMysqlStmtQueryResult::GetInt(uint8 idx, int32* def)
+int32 CMysqlQueryResultStmt::GetInt(uint8 idx, int32* def)
 {
     return 0;
 }
 
 
-char* CMysqlStmtQueryResult::GetBinary(uint8 idx, char* data, unsigned long size)
+char* CMysqlQueryResultStmt::GetBinary(uint8 idx, char* data, unsigned long size)
 {
     return nullptr;
 }
@@ -157,7 +157,7 @@ char* CMysqlQueryResult::GetBinary(uint8 idx, char* data, unsigned long size)
 
 
 //////////////////////////////////////////////////////////////////////////
-CMysqlStmtHander::CMysqlStmtHander(MYSQL* mysql) :
+CMysqlHanderStmt::CMysqlHanderStmt(MYSQL* mysql) :
     _mysql(mysql),
     _mysql_stmt(nullptr),
     _meta_result(nullptr),
@@ -168,13 +168,13 @@ CMysqlStmtHander::CMysqlStmtHander(MYSQL* mysql) :
 }
 
 
-CMysqlStmtHander::~CMysqlStmtHander()
+CMysqlHanderStmt::~CMysqlHanderStmt()
 {
     Release();
 }
 
 
-bool CMysqlStmtHander::Init(const char* sql)
+bool CMysqlHanderStmt::Init(const char* sql)
 {
     bool ret = false;
     do
@@ -194,13 +194,13 @@ bool CMysqlStmtHander::Init(const char* sql)
     } while (0);
 
     if (!ret)
-        MysqlStmtErrorReport(_mysql_stmt);
+        MysqlErrorReportStmt(_mysql_stmt);
 
     return ret;
 }
 
 
-void CMysqlStmtHander::Release()
+void CMysqlHanderStmt::Release()
 {
     if (_bind_data)
     {
@@ -221,7 +221,7 @@ void CMysqlStmtHander::Release()
 }
 
 
-CMysqlStmtQueryResult* CMysqlStmtHander::ExecuteSql(MYSQL_BIND* bind, unsigned long count)
+CMysqlQueryResultStmt* CMysqlHanderStmt::ExecuteSql(MYSQL_BIND* bind, unsigned long count)
 {
     if (_param_count != count)
     {
@@ -230,12 +230,12 @@ CMysqlStmtQueryResult* CMysqlStmtHander::ExecuteSql(MYSQL_BIND* bind, unsigned l
     }
     if (mysql_stmt_bind_param(_mysql_stmt, bind))
     {
-        MysqlStmtErrorReport(_mysql_stmt);
+        MysqlErrorReportStmt(_mysql_stmt);
         return nullptr;
     }
     if (mysql_stmt_execute(_mysql_stmt))
     {
-        MysqlStmtErrorReport(_mysql_stmt);
+        MysqlErrorReportStmt(_mysql_stmt);
         return nullptr;
     }
 
@@ -264,10 +264,10 @@ CMysqlStmtQueryResult* CMysqlStmtHander::ExecuteSql(MYSQL_BIND* bind, unsigned l
 
         if (mysql_stmt_store_result(_mysql_stmt))
         {
-            MysqlStmtErrorReport(_mysql_stmt);
+            MysqlErrorReportStmt(_mysql_stmt);
             return nullptr;
         }
-        CMysqlStmtQueryResult* ret = new CMysqlStmtQueryResult(_mysql_stmt, _meta_result, _bind_data);
+        CMysqlQueryResultStmt* ret = new CMysqlQueryResultStmt(_mysql_stmt, _meta_result, _bind_data);
     }
     else
     {
@@ -386,10 +386,10 @@ void CMysqlHandler::Rollback()
 }
 
 
-CMysqlStmtHander* CMysqlHandler::CreateStmtHander()
+CMysqlHanderStmt* CMysqlHandler::CreateStmtHander()
 {
     if (!_mysql) return nullptr;
-    return new CMysqlStmtHander(_mysql);
+    return new CMysqlHanderStmt(_mysql);
 }
 
 

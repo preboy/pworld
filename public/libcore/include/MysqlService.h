@@ -2,11 +2,11 @@
 #include "mysql.h"
 
 
-class CMysqlStmtQueryResult
+class CMysqlQueryResultStmt
 {
 public:
-    CMysqlStmtQueryResult(MYSQL_STMT* mysql_stmt, MYSQL_RES*result, MYSQL_BIND* bind);
-   ~CMysqlStmtQueryResult();
+    CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES*result, MYSQL_BIND* bind);
+   ~CMysqlQueryResultStmt();
 
 public:
     bool            NextRow();
@@ -53,18 +53,18 @@ private:
 };
 
 
-class CMysqlStmtHander
+class CMysqlHanderStmt
 {
 public:
-    CMysqlStmtHander(MYSQL* mysql);
-   ~CMysqlStmtHander();
+    CMysqlHanderStmt(MYSQL* mysql);
+   ~CMysqlHanderStmt();
 
 public:
 
     bool Init(const char* sql);
     void Release();
 
-    CMysqlStmtQueryResult* ExecuteSql(MYSQL_BIND* bind, unsigned long count);
+    CMysqlQueryResultStmt* ExecuteSql(MYSQL_BIND* bind, unsigned long count);
 
 private:
     MYSQL*      _mysql;
@@ -96,7 +96,7 @@ public:
     void Commit();
     void Rollback();
 
-    CMysqlStmtHander* CreateStmtHander();
+    CMysqlHanderStmt* CreateStmtHander();
 
 private:
     MYSQL* _mysql;

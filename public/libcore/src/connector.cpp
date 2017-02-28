@@ -55,7 +55,7 @@ namespace Net
         local_addr.sin_family = AF_INET;
         local_addr.sin_addr.S_un.S_addr = INADDR_ANY;
         local_addr.sin_port = ::htons(0);
-        if (SOCKET_ERROR == bind(_socket, (const sockaddr*)&local_addr, sizeof(sockaddr_in)))
+        if (SOCKET_ERROR == ::bind(_socket, (const sockaddr*)&local_addr, sizeof(sockaddr_in)))
         {
             err = WSAGetLastError();
             g_net_close_socket(_socket);

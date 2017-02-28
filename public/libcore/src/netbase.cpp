@@ -6,18 +6,23 @@ namespace Net
 
     bool g_net_init()
     {
+#ifdef PLAT_WIN
         WSADATA wsaData;
         if (0 != WSAStartup(MAKEWORD(2, 2), &wsaData))
         {
             return false;
         }
+#endif
         return true;
     }
 
 
     bool g_net_release()
     {
+#ifdef PLAT_WIN
         return ::WSACleanup() == 0 ? true : false;
+#endif
+        return true;
     }
 
 

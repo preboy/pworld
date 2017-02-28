@@ -14,8 +14,8 @@ static LARGE_INTEGER frequency;
 void time_init()
 {
     TIMECAPS tc;
-    timeGetDevCaps(&tc, sizeof(tc));
-    timeBeginPeriod(tc.wPeriodMin);
+    ::timeGetDevCaps(&tc, sizeof(tc));
+    ::timeBeginPeriod(tc.wPeriodMin);
     ::QueryPerformanceFrequency(&frequency);
 }
 
@@ -23,8 +23,8 @@ void time_init()
 void time_release()
 {
     TIMECAPS tc;
-    timeGetDevCaps(&tc, sizeof(tc));
-    timeEndPeriod(tc.wPeriodMin);
+    ::timeGetDevCaps(&tc, sizeof(tc));
+    ::timeEndPeriod(tc.wPeriodMin);
 }
 
 

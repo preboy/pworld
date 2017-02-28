@@ -48,7 +48,7 @@ namespace Net
         sockaddr_in listen_addr;
         listen_addr.sin_family = AF_INET;
         listen_addr.sin_port = ::htons(port);
-        int ret = inet_pton(AF_INET, ip, &listen_addr.sin_addr);
+        int ret = ::inet_pton(AF_INET, ip, &listen_addr.sin_addr);
         if (ret != 1)
         {
             err = ::WSAGetLastError();
@@ -75,7 +75,7 @@ namespace Net
 
         GUID GuidAcceptEx = WSAID_ACCEPTEX;
         DWORD dwBytes;
-        ret = WSAIoctl(m_sockListener, SIO_GET_EXTENSION_FUNCTION_POINTER,
+        ret = ::WSAIoctl(m_sockListener, SIO_GET_EXTENSION_FUNCTION_POINTER,
             &GuidAcceptEx, sizeof(GuidAcceptEx),
             &lpfnAcceptEx, sizeof(lpfnAcceptEx),
             &dwBytes, NULL, NULL);

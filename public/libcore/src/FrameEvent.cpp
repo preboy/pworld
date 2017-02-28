@@ -60,4 +60,3 @@ void CFrameEvent::UpdateMsgEnd()
         _lst_cb_msg_end.clear();
     }
 }
-

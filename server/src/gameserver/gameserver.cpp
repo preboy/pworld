@@ -38,6 +38,8 @@ int main()
 
     //// init
 
+    INSTANCE(CLogger)->Init("aaaa.txt");
+
     if (!Net::g_net_init())
     {
         INSTANCE(CLogger)->Fatal("fatal error: Net::g_net_init()");
@@ -74,6 +76,8 @@ int main()
 
     Net::g_net_release();
 
+    INSTANCE(CLogger)->Release();
+    
     DESTROY_INSTANCE(CMapMgr);
     DESTROY_INSTANCE(SystemConfig);
     DESTROY_INSTANCE(CFrameEvent);

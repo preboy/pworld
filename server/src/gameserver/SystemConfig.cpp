@@ -7,7 +7,12 @@ void LoadSystemConfig()
     SystemConfig* sc = INSTANCE(SystemConfig);
     CLuaReader r;
     r.Create();
-    r.DoFile("system_config.lua");
+    if (!r.DoFile("system_config.lua"))
+    {
+        INSTANCE(CLogger)->Error("error in config file");
+        return;
+    }
+    
     r.EnterGlobalTable();
     r.EnterTable("SystemConfig");
     

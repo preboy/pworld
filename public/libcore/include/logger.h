@@ -3,41 +3,44 @@
 class CLogger
 {
 public:
-    enum class ELOG_TYPE
+    enum LOG_TYPE
     {
-        ELT_DEBUG,
-        ELT_INFO,
-        ELT_WARNING,
-        ELT_ERROR,
-        ELT_FATAL,
+        LT_DEBUG        = 0x1,
+        LT_INFO         = 0x2,
+        LT_WARNING      = 0x4,
+        LT_ERROR        = 0x8,
+        LT_FATAL        = 0x10,
     };
 
 public:
     CLogger(void);
-    ~CLogger(void);
+   ~CLogger(void);
 
     void    Debug   (const char* format, ...);
     void    Info    (const char* format, ...);
     void    Warning (const char* format, ...);
     void    Error   (const char* format, ...);
     void    Fatal   (const char* format, ...);
-
-    void    Flush();
     
     bool    Init(const char* szfilename);
     void	Release();
 
-    void    SetColor(ELOG_TYPE type);
+    void    SetColor(uint32 idx);
     void    ResetColor();
 
-private:
-    void    _output(ELOG_TYPE type, const char* format, va_list args);
+    void    SetScreenMask(UINT32 mask)  { _screen_mask |= mask; }
+    void    SetFileMask(uint32 mask)    { _file_mask |= mask; }
 
 private:
-    FILE*   m_file;
+    void    _output(LOG_TYPE type, uint32 idx, const char* format, va_list argp);
 
-    // the flag of output log to screen or file
 private:
-    bool    m_bFile[5] = { true, true, true, true, true };
-    bool    m_bScreen[5] = { true, true, true, true, true };
+
+#ifdef PLAT_WIN
+    HANDLE  _file           = INVALID_HANDLE_VALUE;
+#else
+    FILE*   _file           = nullptr;
+#endif
+    uint32  _screen_mask    = 0;
+    uint32  _file_mask      = 0;
 };

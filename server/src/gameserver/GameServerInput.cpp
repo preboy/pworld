@@ -50,7 +50,7 @@ int CGameServerInput::OnZcg(int argc, char argv[PARAM_CNT][NAME_LEN])
     // test end
 
 
-    INSTANCE(CLogger)->SetColor(CLogger::ELOG_TYPE::ELT_DEBUG);
+    INSTANCE(CLogger)->SetColor(CLogger::LT_DEBUG);
 
     std::cout << "this is preboy speaking!" << std::endl;
 

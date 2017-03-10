@@ -3,9 +3,7 @@
 
 #include "stdafx.h"
 
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
+#include "DebugHelper.h"
 
 #include "GameServerFrame.h"
 #include "GameServerInput.h"
@@ -13,17 +11,16 @@
 #include "SystemEvent.h"
 #include "SystemConfig.h"
 #include "MapMgr.h"
+#include "ScriptResource.h"
 
 
 int main()
 {
-#if defined(WIN32) && defined(_DEBUG) 
-    int tmpDbgFlag;
-    tmpDbgFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
-    tmpDbgFlag |= _CRTDBG_DELAY_FREE_MEM_DF;
-    tmpDbgFlag |= _CRTDBG_LEAK_CHECK_DF;
-    _CrtSetDbgFlag(tmpDbgFlag);
-#endif
+    ENABLE_MEM_LEAK_DETECTION
+    // _CrtSetBreakAlloc(253);
+
+    ENABLE_ABORT_DETECTION
+
 
     CREATE_INSTANCE(CLogger);
     CREATE_INSTANCE(CGameServerInput);
@@ -32,13 +29,16 @@ int main()
     CREATE_INSTANCE(CNetMgr);
     CREATE_INSTANCE(CTimerMgr);
     CREATE_INSTANCE(CMessageQueue);
+    CREATE_INSTANCE_2(CMessageQueue);
     CREATE_INSTANCE(CFrameEvent);
     CREATE_INSTANCE(SystemConfig);
     CREATE_INSTANCE(CMapMgr);
+    CREATE_INSTANCE(CScriptResource);
+    CREATE_INSTANCE(CLuaEngine);
 
-    //// init
 
-    INSTANCE(CLogger)->Init("aaaa.txt");
+    INSTANCE(CLogger)->Init("aaa.txt");
+
 
     if (!Net::g_net_init())
     {
@@ -46,7 +46,7 @@ int main()
         return 1;
     }
   
-    if (!INSTANCE(Poll::CPoller)->Init(1))
+    if (!INSTANCE(Poll::CPoller)->Init(0))
     {
         INSTANCE(CLogger)->Fatal("fatal error: INSTANCE(Poll::Poller)->Init()");
         return 2;
@@ -63,7 +63,6 @@ int main()
     INSTANCE(CNetMgr)->Begin();
 
     //// start
-
     INSTANCE(CGameServerInput)->Run();
 
 
@@ -74,14 +73,18 @@ int main()
     INSTANCE(CGameServerFrame)->Stop();
 
 
+    INSTANCE(Poll::CPoller)->Release();
     Net::g_net_release();
-
     INSTANCE(CLogger)->Release();
-    
+
+
+    DESTROY_INSTANCE(CLuaEngine);
+    DESTROY_INSTANCE(CScriptResource);
     DESTROY_INSTANCE(CMapMgr);
     DESTROY_INSTANCE(SystemConfig);
     DESTROY_INSTANCE(CFrameEvent);
     DESTROY_INSTANCE(CMessageQueue);
+    DESTROY_INSTANCE_2(CMessageQueue);
     DESTROY_INSTANCE(CTimerMgr);
     DESTROY_INSTANCE(Poll::CPoller);
     DESTROY_INSTANCE(CNetMgr);

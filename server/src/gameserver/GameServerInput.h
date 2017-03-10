@@ -11,8 +11,7 @@ public:
 private:
     int OnZcg(int argc, char argv[PARAM_CNT][NAME_LEN]);
     int OnTest(int argc, char argv[PARAM_CNT][NAME_LEN]);
-
-
+    int OnReload(int argc, char argv[PARAM_CNT][NAME_LEN]);
 };
 
 

@@ -14,14 +14,24 @@ public:
 
     lua_State* GetLuaState() { return _L; }
 
-    // dofile
+    /// execute a file
+    bool ExecFile(const char *fn);
 
-    // call lua global function
-    void Call(const char* f, int narg, int nresult);
+    /// execute a string
+    bool ExecString(const char *str);
 
+    // execute lua global function
+    bool PushFuncName(const char* fn);
+    bool Exec(int narg, int nresult = 0);
+
+private:
+    void _emit_error();
+
+private:
+    static int _on_lua_error(lua_State* L);
 
 private:
     
-    lua_State* _L;
-
+    lua_State*  _L;
+    const char* _fn;
 };

@@ -1,69 +1,79 @@
 #pragma once
-#include "byteBuffer.h"
 #include "lock.h"
+
 
 namespace Net
 {
-    // 服务端的消息型别;
-    
+    // 用于收集数据
     class CMessage
     {
-        enum
-        {
-            MAX_MESSAGE_BODY_SIZE = 1024,
-        };
 
     private:
-        uint16  *_len;
-        uint16  *_opcode;
-        uint16  _read;
-        char    _data[MAX_MESSAGE_BODY_SIZE];
+        enum { MEMORY_UNIT_SIZE = 0x1000, };
+
+    protected:
+        uint32  _size;
+        char*   _data;
+        uint32  _curr_len;
+        uint32  _data_len;
 
     public:
-        CMessage()
-        {
-            _len = (uint16*)&(_data[0]);
-            _opcode = _len+1;
-            Reset();
-        }
+        uint32      _param;
+        void*       _ptr;
 
-        ~CMessage() {}
+    public:
+        CMessage(uint32 size = MEMORY_UNIT_SIZE);
+       ~CMessage();
 
-        inline uint16   Opcode() { return *_opcode; }
-        inline void     Opcode(uint16 v) { *_opcode = v; }
-
-        inline uint16   Len() { return *_len; }
-        inline void*    Ptr() { return (void*)(_data+4); }
-
-        inline void     Reset() { _read = 0; }
-
-
+    public:
+        void            Reset(uint32 size = 0);
         void            Fill(char*& pdata, uint32& size);
         bool            Full();
-
+        void*           Data() { return _data;  }
+        uint32          DataLength() { return _curr_len; }
+        uint32          Size() { return _size; }
     };
     
+
+    class CPacket : public CMessage
+    {
+    public:
+        CPacket() {}
+        ~CPacket() {}
+
+    public:
+        uint16  Opcode() { return *(uint16*)_data; }
+        void    Opcode(uint16 val) { *(uint16*)_data = val; }
+
+        void*   PacketData() {
+            return (uint16*)_data + 1;
+        }
+
+        uint32  PacketLength() {
+            return _curr_len - 2;
+        }
+
+    };
+
 
 
     class CMessageQueue
     {
     public:
         CMessageQueue() {}
-        ~CMessageQueue() { _clean_up(); }
+       ~CMessageQueue() { _clean_up(); }
 
     public:
-
-        // 申请一块消息用于填充
+        
         CMessage* ApplyMessage();
+        
+        void FreeMessage(CMessage* msg);
 
         // 把填充好之后的消息放到消息队列中
         void PushMessage(CMessage* msg);
 
         // 从消息队列中取出一块消息用于处理
-        CMessage* PullMessage();
-
-        // 处理完之后归还消息块
-        void FreeMessage(CMessage* msg);
+        CMessage* PopMessage();
 
     private:
         void _clean_up();
@@ -77,4 +87,5 @@ namespace Net
         CCriticalSection        _cs_waiting;
         CCriticalSection        _cs_recycle;
     };
+
 }

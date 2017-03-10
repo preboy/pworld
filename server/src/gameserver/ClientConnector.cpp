@@ -15,8 +15,14 @@ CClientConnector::~CClientConnector()
 }
 
 
-void CClientConnector::on_connect(SOCKET sock, Poll::CompletionKey* key)
+void CClientConnector::on_connect(Net::CConnector* sock)
 {
-    INSTANCE(CNetMgr)->OnConnected(sock, key);
+    Net::CConnector::on_connect(sock);
+    INSTANCE(CNetMgr)->OnConnected((CClientConnector*)sock);
 }
 
+
+void CClientConnector::on_connect_error(DWORD err)
+{
+    Net::CConnector::on_connect_error(err);
+}

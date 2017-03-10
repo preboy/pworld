@@ -16,15 +16,24 @@ namespace Net
 
     // public enum
 
-    enum class IO_TYPE
+    enum class IO_TYPE : uint32
     {
         IO_TYPE_Connect,
         IO_TYPE_Accept,
         IO_TYPE_Send,
         IO_TYPE_Recv,
         IO_TYPE_Post,
+        IO_TYPE_Disconnect,
     };
 
+    enum class IO_STATUS : uint32
+    {
+        IO_STATUS_IDLE,         // not post
+        IO_STATUS_PENDING,      // waitting
+        IO_STATUS_SUCCESSD,     // a succeed result
+        IO_STATUS_FAILED,       // a failed result
+        IO_STATUS_QUIT,         // not post
+    };
 
     // public data struct
 
@@ -32,39 +41,18 @@ namespace Net
     {
         OVERLAPPED  _over;
         IO_TYPE     _type;
-        uint32      _post;
+        IO_STATUS   _stag;
+        void*       _data;
         uint32      _size;
-        char*       _data;
         void*       _ptr;
+        uint32      _err;
+
         PerIoData(IO_TYPE type, uint32 size);
-        ~PerIoData();
+       ~PerIoData();
+
+        void Reset();
 
         void  SetPtr(void* ptr) { _ptr = ptr; }
         void* GetPtr() { return _ptr; }
-
-        enum class IO_STATUS : uint8
-        {
-            IO_PENDING  = 0x1,
-            IO_POST     = 0x2,
-            IO_FAILED   = 0x4,
-        };
-/*#define DEF_FUNC(NAME, FLAG) \
-    void Set##NAME(){\
-        (this->_post) |= (FLAG);\
-    }\
-    void Clr##NAME(){\
-        (this->_post) &= (~FLAG);\
-    }\
-    bool Get##NAME(){\
-        return (this->_post) & (FLAG);\
-    }
-    
-        DEF_FUNC(Pending,   IO_STATUS::IO_PENDING)
-        DEF_FUNC(Post,      IO_STATUS::IO_POST)
-        DEF_FUNC(Fail,      IO_STATUS::IO_FAILED)
-
-#undef DEF_FUNC
-*/
-
     };
 }

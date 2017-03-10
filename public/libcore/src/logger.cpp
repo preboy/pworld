@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "logger.h"
 
-#include <time.h>
-
 
 static const char* szType[] =
 {
@@ -24,7 +22,7 @@ static const WORD wColor[] =
 };
 
 
-CLogger::CLogger() 
+CLogger::CLogger()
 {
     _screen_mask = _file_mask = LT_DEBUG | LT_INFO | LT_WARNING | LT_ERROR | LT_FATAL;
 }
@@ -32,7 +30,7 @@ CLogger::CLogger()
 
 CLogger::~CLogger()
 {
-    Release(); 
+    Release();
 }
 
 

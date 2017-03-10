@@ -1,43 +1,73 @@
 #include "stdafx.h"
 #include "MessageQueue.h"
 
+
 namespace Net
 {
 
+    CMessage::CMessage(uint32 size) : 
+        _size(size),
+        _data(nullptr),
+        _curr_len(0),
+        _data_len(0),
+        _param(0),
+        _ptr(nullptr)
+    {
+        assert(_size);
+        if (_size)
+        {
+            _data = (char*)malloc(_size);
+        }
+    }
+
+
+    CMessage::~CMessage() 
+    {
+        SAFE_FREE(_data);
+    }
+
+
+    void CMessage::Reset(uint32 size)
+    {
+        if (size > _size)
+        {
+            SAFE_FREE(_data);
+            _size = _size + ((size / MEMORY_UNIT_SIZE) + 1) * MEMORY_UNIT_SIZE;
+            _data = (char*)malloc(_size);
+        }
+        _curr_len = 0;
+        _data_len = size;
+        _param    = 0;
+        _ptr      = nullptr;
+    }
+
+
     bool CMessage::Full()
     {
-        if (_read < 2)
-            return false;
-        if (*_len == _read-2)
-            return true;
-        return false;
+        return _data_len == _curr_len;
     }
 
 
-    void CMessage::Fill(char*& pdata, uint32& size)
+    void CMessage::Fill(char*& data, uint32& size)
     {
-        if (_read < 2)
-        {
-            uint32 len = std::min<uint16>(2 - _read, size);
-            memcpy(_data + _read, pdata, len);
-            size  -= len;
-            pdata += len;
-            _read += len;
-            
-            if (_read < 2)
-                return;
-        }
-
-        uint32 len = std::min<uint16>((*_len-(_read-2)), size);
-        if (!len)
+        if (!_data_len)
             return;
 
-        memcpy(_data + _read, pdata, len);
-        size  -= len;
-        pdata += len;
-        _read += len;
+        while (!Full() && size)
+        {
+            uint32 free = _data_len - _curr_len;
+            uint32 byte = std::min<uint32>(free, size);
+
+            memcpy(_data + _curr_len, data, byte);
+            _curr_len += byte;
+
+            data += byte;
+            size -= byte;
+        }
     }
     
+
+    //////////////////////////////////////////////////////////////////////////
 
     CMessage* CMessageQueue::ApplyMessage()
     {
@@ -53,8 +83,14 @@ namespace Net
         {
             msg = new CMessage();
         }
-        msg->Reset();
         return msg;
+    }
+
+
+    void CMessageQueue::FreeMessage(CMessage* msg)
+    {
+        CLock lock(_cs_recycle);
+        _msg_recycle.push(msg);
     }
 
 
@@ -65,7 +101,7 @@ namespace Net
     }
 
 
-    CMessage* CMessageQueue::PullMessage()
+    CMessage* CMessageQueue::PopMessage()
     {
         CLock lock(_cs_waiting);
 
@@ -77,13 +113,6 @@ namespace Net
         }
         
         return msg;
-    }
-
-
-    void CMessageQueue::FreeMessage(CMessage* msg)
-    {
-        CLock lock(_cs_recycle);
-        _msg_recycle.push(msg);
     }
 
 

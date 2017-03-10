@@ -2,6 +2,7 @@
 #include "LuaEngine.h"
 #include "singleton.h"
 #include "logger.h"
+#include "global_function.h"
 
 
 void CLuaEngine::Init()
@@ -17,23 +18,73 @@ void CLuaEngine::Release()
 }
 
 
-void CLuaEngine::Call(const char* f, int narg, int nresult)
+/// execute a file
+bool CLuaEngine::ExecFile(const char *fn)
 {
-    lua_getglobal(_L, f);
+    if (luaL_dofile(_L, fn) == 0)
+    {
+        return true;
+    }
+    else
+    {
+        _emit_error();
+        return false;
+    }
+}
+
+
+/// execute a string
+bool CLuaEngine::ExecString(const char *str)
+{
+    if (luaL_dostring(_L, str) == 0)
+    {
+        return true;
+    }
+    else
+    {
+        _emit_error();
+        return false;
+    }
+}
+
+
+int CLuaEngine::_on_lua_error(lua_State* L)
+{
+    luaL_traceback(L, L, nullptr, 0);
+    return 1;
+}
+
+
+bool CLuaEngine::PushFuncName(const char* fn)
+{
+    lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
+    _fn = fn;
+    lua_getglobal(_L, fn);
     if (lua_isnil(_L, -1))
     {
-        INSTANCE(CLogger)->Error("global function '%s' is NOT found!", f);
-        return;
+        lua_pop(_L, 2);
+        INSTANCE(CLogger)->Error("global function '%s' is NOT found!", fn);
+        return false;
     }
+    return true;
+}
 
-    if (lua_pcall(_L, narg, nresult, 0))
+
+bool CLuaEngine::Exec(int narg, int nresult)
+{
+    if (lua_pcall(_L, narg, nresult, -2 - narg))
     {
-        const char* err = lua_tostring(_L, -1);
-        INSTANCE(CLogger)->Error("[ERROR]global function:'%s', err:%s", f, err);
-        // print trace back
-        luaL_traceback(_L, _L, err, 0);
-        lua_pop(_L, -1);
-        return;
+        _emit_error();
+        return false;
     }
- //   lua_pop(_L, nresult);
+    _fn = nullptr;
+    return true;
+}
+
+
+void CLuaEngine::_emit_error()
+{
+    const char* err = lua_tostring(_L, -1);
+    INSTANCE(CLogger)->Error("[script error]:%s", err);
+    lua_pop(_L, 1);
 }

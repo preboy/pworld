@@ -6,10 +6,12 @@ public:
     CClientConnector();
 
     ~CClientConnector();
-  
-protected:
-    virtual void on_connect(SOCKET sock, Poll::CompletionKey* key) override;
 
 public:
+
+
+protected:
+    virtual void on_connect(Net::CConnector* sock) override;
+    virtual void on_connect_error(DWORD err) override;
 
 };

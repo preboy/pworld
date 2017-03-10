@@ -1,56 +1,83 @@
 #include "stdafx.h"
 #include "session.h"
-#include "logger.h"
+#include "poller.h"
 #include "singleton.h"
+#include "logger.h"
 
 
 namespace Net
 {
-    void CALLBACK CSession::session_cb(void* ptr, OVERLAPPED* ol, DWORD size, DWORD err)
+
+    void CSession::_set_session_deading()
     {
-        CSession * pThis = reinterpret_cast<CSession*>(ptr);
-        PerIoData* pData = reinterpret_cast<PerIoData*>(ol);
+        if (_status == SOCK_STATUS::SOCK_STATUS_ALIVE)
+        {
+            _status = SOCK_STATUS::SOCK_STATUS_DEADING;
+        }
+    }
+
+    void CALLBACK CSession::session_cb(void* key, OVERLAPPED* overlapped, DWORD bytes)
+    {
+        CSession*  pThis = reinterpret_cast<CSession*>(key);
+        PerIoData* pData = reinterpret_cast<PerIoData*>(overlapped);
+
+        if (pThis->_status == SOCK_STATUS::SOCK_STATUS_DEADING)
+        {
+            pThis->_status = SOCK_STATUS::SOCK_STATUS_DEADED;
+            return;
+        }
 
         if (pData->_type == IO_TYPE::IO_TYPE_Send)
         {
-            if (err == 0)
+            if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
             {
-                pThis->_on_send((char*)pThis->_b_send->DataPtr(), size);
-                delete pThis->_b_send;
+                pThis->_on_send((char*)pThis->_b_send->Data(), bytes);
+                // 数据是否发送完
+                if (pThis->_b_send->DataLength() != bytes)
+                {
+                    INSTANCE(CLogger)->Error("数据未完全发送");
+                }
+                INSTANCE_2(CMessageQueue)->FreeMessage(pThis->_b_send);
                 pThis->_b_send = nullptr;
             }
             else
             {
+                pThis->_set_session_deading();
+                INSTANCE(CLogger)->Error("数据发送失败，居然有这种情况，，");
+                DWORD err = pData->_err;
                 pThis->_on_send_error(err);
             }
-            pThis->_send_pending = false;
         }
         else if (pData->_type == IO_TYPE::IO_TYPE_Recv)
         {
-            if (err == 0)
+            if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
             {
-                if (size)
+                if (bytes)
                 {
-                    pThis->_on_recv(pThis->_io_recv._data, size);
+                    pThis->_on_recv((char*)pThis->_io_recv._data, bytes);
                     pThis->_post_recv();
                 }
                 else
                 {
-                    pThis->_on_peer_closed();
+                    pThis->_set_session_deading();
                 }
             }
             else
             {
+                pThis->_set_session_deading();
+                DWORD err = pData->_err;
                 pThis->_on_recv_error(err);
             }
         }
+        
     }
     
 
-    CSession::CSession(SOCKET sock) :
-        _socket(sock),
-        _io_send(IO_TYPE::IO_TYPE_Send, 0x1000),
-        _io_recv(IO_TYPE::IO_TYPE_Recv, 0x1000)
+    CSession::CSession() :
+        _io_send(IO_TYPE::IO_TYPE_Send, 0),
+        _io_recv(IO_TYPE::IO_TYPE_Recv, 0x1000),
+        _status(SOCK_STATUS::SOCK_STATUS_NONE),
+        _header(sizeof(uint32))
     {
     }
 
@@ -61,220 +88,249 @@ namespace Net
     }
 
 
-    bool CSession::Init(Poll::CompletionKey* key)
+    void CSession::Attach(SOCKET socket, void* key)
     {
+        _header.Reset(4);
+
+        _socket = socket;
+        u_long v = 1;
+        ::ioctlsocket(_socket, FIONBIO, &v);
+
+        linger ln = { 1, 0 };
+        setsockopt(_socket, SOL_SOCKET, SO_LINGER, (CHAR*)&ln, sizeof(linger));
+
         if (key)
         {
-            _key = key;
+            _key = (Poll::CompletionKey*)key;
             _key->ptr = this;
             _key->func = &CSession::session_cb;
         }
         else
         {
             _key = new Poll::CompletionKey{ this, &CSession::session_cb };
-            bool ret = INSTANCE(Poll::CPoller)->RegisterHandler((HANDLE)_socket, _key);
-            if (!ret)
+            if (INSTANCE(Poll::CPoller)->RegisterHandler((HANDLE)_socket, _key))
             {
-                return false;
+                return;
             }
         }
 
-        _linking = true;
+        _io_recv._stag = IO_STATUS::IO_STATUS_SUCCESSD;
+        _io_send._stag = IO_STATUS::IO_STATUS_SUCCESSD;
+        _status = SOCK_STATUS::SOCK_STATUS_ALIVE;
         _post_recv();
-
-        return true;
     }
 
 
-    void CSession::Send(const char* data, uint16 size, bool immediate)
+    void CSession::Send(const char* data, uint32 size)
     {
-        if (!_linking)
+        if (!Alive())
             return;
 
         while (size)
         {
-            CByteBuffer* bb = nullptr;
-            if (_q_send.empty())
+            CMessage* msg_writer = nullptr;
+            if (_q_send.empty() || _q_send.back()->Full())
             {
-                bb = new CByteBuffer(0x1000, 0);
-                _q_send.push(bb);
+                CMessage* msg = INSTANCE_2(CMessageQueue)->ApplyMessage();
+                msg->Reset(0x1000);
+                _q_send.push(msg);
             }
-            else
-            {
-                bb = _q_send.back();
-                if (bb->FreeSpaceForRead())
-                {
-                    bb = new CByteBuffer(0x1000, 0);
-                    _q_send.push(bb);
-                }
-            }
-
-            uint32 free = (uint16)bb->FreeSpaceForRead();
-            uint32 ready = 0;
-            if (free >= size)
-                ready = size;
-            else
-                ready = free;
-            
-            bb->ReadIn(data, ready);
-            data += ready;
-            size -= ready;
+            msg_writer = _q_send.back();
+            char* pdata = const_cast<char*>(data);
+            msg_writer->Fill(pdata, size);
         }
     }
 
 
-    void CSession::Update()
+    bool CSession::Update()
     {
-        if (_socket == INVALID_SOCKET)
+        if (Alive())
         {
-            on_closed();
-            return;
+            _post_send();
+            return false;
         }
-        _post_send();
+        else
+        {
+            _close();
+            return true;
+        }
     }
 
 
     void CSession::_post_send()
     {
-        if (!_linking || _send_pending)
+        if (!Alive())
             return;
 
-        if (!_b_send)
-        {
-            if (_q_send.empty())
-                return;
-            
-            _b_send = _q_send.front();
-            _q_send.pop();
-        }
+        if (_io_send._stag != IO_STATUS::IO_STATUS_SUCCESSD)
+            return;
+
+        if (_b_send)
+            return;
+
+        if (_q_send.empty())
+            return;
+
+        _b_send = _q_send.front();
+
+        if (!_b_send->DataLength())
+            return;
+
+        _q_send.pop();
         
         WSABUF buf;
-        buf.buf = (char*)_b_send->DataPtr();
-        buf.len = _b_send->ReadOffset();
-
-        DWORD ret = ::WSASend(_socket, &buf, 1, nullptr, 0, &_io_send._over, nullptr);
+        buf.buf = (char*)_b_send->Data();
+        buf.len = _b_send->DataLength();
+        _io_send.Reset();
+        int ret = ::WSASend(_socket, &buf, 1, nullptr, 0, &_io_send._over, nullptr);
         if (ret)
         {
             int err = WSAGetLastError();
-            if (err != WSA_IO_PENDING)
+            if (err == WSA_IO_PENDING)
             {
+                _io_send._stag = IO_STATUS::IO_STATUS_PENDING;
+            }
+            else
+            {
+                _io_send._stag = IO_STATUS::IO_STATUS_QUIT;
                 _on_send_error(err);
-                return;
             }
         }
         else
         {
+            _io_send._stag = IO_STATUS::IO_STATUS_SUCCESSD;
             INSTANCE(CLogger)->Debug("数据发送立即完成");
         }
-        _send_pending = true;
     }
 
 
     void CSession::_post_recv()
     {
-        if (!_linking)
+        if (!Alive())
+            return;
+
+        if (_io_recv._stag != IO_STATUS::IO_STATUS_SUCCESSD)
             return;
 
         WSABUF buf;
-        buf.buf = _io_recv._data;
+        buf.buf = (char*)_io_recv._data;
         buf.len = 0x1000;
 
         DWORD flags = 0;
+        _io_recv.Reset();
         int ret = ::WSARecv(_socket, &buf, 1, nullptr, &flags, &_io_recv._over, nullptr);
         if (ret)
         {
             int err = WSAGetLastError();
-            if (err != WSA_IO_PENDING)
+            if (err == WSA_IO_PENDING)
             {
+                _io_recv._stag = IO_STATUS::IO_STATUS_PENDING;
+            }
+            else
+            {
+                _io_recv._stag = IO_STATUS::IO_STATUS_QUIT;
                 _on_recv_error(err);
             }
         }
         else              
         {
-            INSTANCE(CLogger)->Debug("数据接收立即完成");
+            _io_recv._stag = IO_STATUS::IO_STATUS_SUCCESSD;
+            INSTANCE(CLogger)->Debug("数据接收立即完成，这该怎么办啊");
         }
     }
     
 
     void CSession::_on_recv_error(DWORD err)
     {
-        if (err == WSA_OPERATION_ABORTED)
-            _disconnect = false;
-        _linking = false;    
         _recv_error = err;
-        _close();
     }
 
 
     void CSession::_on_send_error(DWORD err)
     {
-        _linking = false;
         _send_error = err;
-        _close();
-    }
-
-
-    void CSession::_on_peer_closed()
-    {
-        _linking = false;
-        _close();
-    }
-    
-
-    void CSession::Disconnect()
-    {
-        if (!_linking)
-            return;
-
-        _close();
-        _disconnect = true;
-        while (_send_pending || _disconnect)
-        {
-            ::Sleep(10);
-        }
     }
 
 
     void CSession::_close()
     {
-        if (_socket != INVALID_SOCKET)
+        if (_status == SOCK_STATUS::SOCK_STATUS_DEADED)
         {
-            ::closesocket(_socket);
-            _socket = INVALID_SOCKET;
+            _status = SOCK_STATUS::SOCK_STATUS_DECAY;
+            g_net_close_socket(_socket);
+            on_closed();
+        }      
+    }
+
+
+    void CSession::Disconnect()
+    {
+        if (!Alive())
+            return;
+        
+        if (_io_recv._stag != IO_STATUS::IO_STATUS_PENDING && _io_send._stag != IO_STATUS::IO_STATUS_PENDING)
+        {
+            _status = SOCK_STATUS::SOCK_STATUS_DEADED;
+        }
+        else
+        {
+            _status = SOCK_STATUS::SOCK_STATUS_DEADING;
+            ::shutdown(_socket, SD_SEND);
         }
     }
 
-    
+
     void CSession::_on_recv(char* pdata, uint32 size)
     {
-        while (size)
+        do
         {
+            while (size && !_header.Full())
+            {
+                _header.Fill(pdata, size);
+            }
+
+            if (!size) return;
+
             if (!_msg)
             {
+                uint32 data_len = *(uint32*)_header.Data();
+                if (data_len >= max_packet_size() || data_len < 2)
+                {
+                    INSTANCE(CLogger)->Error("packet size exceed max_packet_size !!!");
+                    this->Disconnect();
+                    return;
+                }
+
                 _msg = INSTANCE(CMessageQueue)->ApplyMessage();
+                _msg->Reset(data_len);
             }
-            _msg->Fill(pdata, size);
+
+            while (size && !_msg->Full())
+            {
+                _msg->Fill(pdata, size);
+            }
+
             if (_msg->Full())
             {
+                _msg->_param = 0;
+                _msg->_ptr = nullptr;
                 INSTANCE(CMessageQueue)->PushMessage(_msg);
                 _msg = nullptr;
+                _header.Reset(4);
             }
-        }
+
+        } while (size);
     }
 
 
     void CSession::_on_send(char* pdata, uint32 size)
     {
-        // 是否发送完
-        if (_b_send->ReadOffset() != size)
-        {
-            INSTANCE(CLogger)->Error("数据未完全发送");
-        }
+        
     }
 
 
     void CSession::on_closed()
     {
-        INSTANCE(CLogger)->Error("CSession::on_error send_err=%u, recv_err=%u", _send_error, _recv_error);
+        INSTANCE(CLogger)->Info("CSession::on_closed send_err=%u, recv_err=%u", _send_error, _recv_error);
     }
 }

@@ -13,7 +13,7 @@ public:
     void Stop();
 
 public:
-    void execute_sql(char* ddd);
+    void execute_sql(char* ddd) {}
 
 
 private:

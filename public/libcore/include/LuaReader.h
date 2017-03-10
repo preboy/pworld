@@ -17,7 +17,7 @@ public:
 
     bool EnterTable(int idx);
     bool EnterTable(const char* key);
-    void EnterGlobalTable();
+    bool EnterGlobalTable();
     void LeaveTable();
 
     lua_Number GetNumber(int idx, int* isnum = nullptr);

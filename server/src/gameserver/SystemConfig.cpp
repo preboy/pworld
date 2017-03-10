@@ -6,23 +6,28 @@ void LoadSystemConfig()
 {
     SystemConfig* sc = INSTANCE(SystemConfig);
     CLuaReader r;
-    r.Create();
-    if (!r.DoFile("system_config.lua"))
+    // r.Create();
+    r.Attach(INSTANCE(CLuaEngine)->GetLuaState());
+    if (!r.DoFile("./world/system_config.lua"))
     {
-        INSTANCE(CLogger)->Error("error in config file");
+        INSTANCE(CLogger)->Fatal("error occured in load config file.");
         return;
     }
-    
-    r.EnterGlobalTable();
-    r.EnterTable("SystemConfig");
-    
-    int64 a = r.GetInteger("a");
-    int b = r.GetBoolean("b");
-    std::string c = r.GetString("c");
-    double d = r.GetNumber("d");
 
-    c = r.GetStringDeep("e.e3.fuck");
-
+    if (r.EnterGlobalTable())
+    {
+        if (r.EnterTable("SystemConfig"))
+        {
+            int64 a = r.GetInteger("a");
+            int b = r.GetBoolean("b");
+            std::string c = r.GetString("c");
+            double d = r.GetNumber("d");
+            c = r.GetStringDeep("e.e3.fuck");
+            r.LeaveTable();
+        }
+        r.LeaveTable();
+    }
+    
     std::cout << "read config done" << std::endl;
 }
 

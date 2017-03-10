@@ -1,10 +1,14 @@
 #pragma once
 
+#include "messagequeue.h"
+
+
 class CByteBuffer
 {
 public:
-    CByteBuffer(uint32 size, uint32 growth);
-    virtual ~CByteBuffer();
+    CByteBuffer();
+    CByteBuffer(uint32 size);
+   ~CByteBuffer();
 
     CByteBuffer(const CByteBuffer&) = delete;
     CByteBuffer& operator = (const CByteBuffer&) = delete;
@@ -14,16 +18,16 @@ public:
 
 
 #define BYTEBUFFER_READ_OPERATOR(type)          \
-    inline CByteBuffer& operator << (type& val) \
+    inline CByteBuffer& operator << (type val)  \
     {                                           \
-        this->ReadIn(&val, sizeof(type));       \
+        this->In(&val, sizeof(type));           \
         return *this;                           \
     }
 
 #define BYTEBUFFER_WRITE_OPERATOR(type)         \
-    inline CByteBuffer& operator >> (type val)  \
+    inline CByteBuffer& operator >> (type& val) \
     {                                           \
-        this->WriteOut(&val, sizeof(type));     \
+        this->Out(&val, sizeof(type));          \
         return *this;                           \
     }
 
@@ -65,33 +69,31 @@ public:
 
 public:
 
-    inline void     ReadPtr(uint32 ptr);
-    inline uint32   ReadPtr() { return _rd_ptr; }
     inline void     ReadOffset(int32 offset);
     inline uint32   ReadOffset() { return _rd_ptr; }
 
-    inline void     WritePtr(uint32 ptr);
-    inline uint32   WritePtr() { return _wr_ptr; }
-    inline void     WriteOffset(int32 offset);
+    inline void     WriteOffset(int32 ptr);
     inline uint32   WriteOffset() { return _wr_ptr; }
+
+    inline uint32   Avail() { return (_wr_ptr - _rd_ptr); }
+    inline uint32   Free()  { return (_size - _wr_ptr); }
+
 
     void*           DataPtr() { return (void*)_buffer; }
 
-    inline uint32   FreeSpaceForRead () { return (_size - _rd_ptr); }
-    inline uint32   FreeSpaceForWrite() { return (_rd_ptr - _wr_ptr); }
-
-private:    
-    void            _reset();
-    void            _resize();
+public:
+    bool            In(const void* data, uint32 size);
+    bool            Out(void* data, uint32 size);
 
 public:
-    void            ReadIn(const void* data, uint32 size);
-    void            WriteOut(void* data, uint32 size);
+    bool            Attach(Net::CPacket* packet);
+    void            Detach();
 
 protected:
     uint32          _rd_ptr;
-    uint32          _wr_ptr;            // _wr_ptr <= _rd_ptr
+    uint32          _wr_ptr;
+    char*           _buffer;
     uint32          _size;
     uint32          _growth;
-    char*           _buffer;
+    bool            _attach;
 };

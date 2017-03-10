@@ -9,25 +9,39 @@ namespace Net
     class CSession
     {
     public:
-        CSession(SOCKET sock);
+        CSession();
         virtual ~CSession();
 
+    private:
+        enum class SOCK_STATUS
+        {
+            SOCK_STATUS_NONE,
+            SOCK_STATUS_ALIVE,
+            SOCK_STATUS_DEADING,
+            SOCK_STATUS_DEADED,
+            SOCK_STATUS_DECAY,
+        };
     public:
-        bool Init(Poll::CompletionKey* key = nullptr);
 
-        void Send(const char* data, uint16 size, bool immediate = false);
+        void Attach(SOCKET socket, void* key = nullptr);
 
-        void Update();
+        void Send(const char* data, uint32 size);
+
+        bool Update();
 
         void Disconnect();
 
+        bool Alive()  { return _status == SOCK_STATUS::SOCK_STATUS_ALIVE; }
+        bool Disposable() { return _status == SOCK_STATUS::SOCK_STATUS_DECAY; }
+
     public:
-        static void CALLBACK session_cb(void* ptr, OVERLAPPED* ol, DWORD size, DWORD err);
+        static void CALLBACK session_cb(void* key, OVERLAPPED* overlapped, DWORD bytes);
 
     private:
         void _post_send();
         void _post_recv();
         void _close();
+        void _set_session_deading();
 
     private:
         void _on_recv(char* pdata, uint32 size);
@@ -36,30 +50,27 @@ namespace Net
         void _on_recv_error(DWORD err);
         void _on_send_error(DWORD err);
 
-        void _on_peer_closed();
-
     protected:
         virtual void on_closed();
 
-    private:
-        SOCKET _socket = INVALID_SOCKET;
+        virtual uint32 max_packet_size() { return 16 * 1024; }
 
-        Poll::CompletionKey* _key = nullptr;
+    private:
+        SOCKET                      _socket = INVALID_SOCKET;
+        volatile SOCK_STATUS        _status = SOCK_STATUS::SOCK_STATUS_NONE;
+
+        Poll::CompletionKey*        _key = nullptr;
 
         // 接收数据包
+        CMessage    _header;
         CMessage   *_msg = nullptr;
 
         // 等待发送的消息
-        std::queue<CByteBuffer*>    _q_send;
-        CByteBuffer*                _b_send = nullptr;
+        std::queue<CMessage*>       _q_send;
+        CMessage*                   _b_send = nullptr;
         
         PerIoData _io_send;
         PerIoData _io_recv;
-
-        // std::atomic_flag;
-        bool _linking = false;   // 是否网络连接正常
-        bool _send_pending  = false;
-        bool _disconnect    = false;
 
         DWORD _send_error   = 0;
         DWORD _recv_error   = 0;

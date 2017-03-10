@@ -38,6 +38,8 @@ void CTimerMgr::_release()
    {
        delete pTimer;
    }
+   lstTimers.clear();
+   lstNewTimer.clear();
 }
 
 
@@ -107,6 +109,7 @@ void CTimerMgr::Update()
         Timer* pTimer = *it;
         if (pTimer->canceled)
         {
+            delete pTimer;
             it = lstTimers.erase(it);
             continue;
         }
@@ -133,5 +136,3 @@ void CTimerMgr::Update()
     }
 
 }
-
-

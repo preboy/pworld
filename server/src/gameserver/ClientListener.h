@@ -8,5 +8,7 @@ public:
     ~CClientListener() {}
 
 protected:
-    virtual void on_accept(SOCKET sock) override;
+    virtual void    on_accept(SOCKET sock) override;
+    virtual void    on_accept_error(DWORD err) override;
+
 };

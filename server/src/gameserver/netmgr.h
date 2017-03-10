@@ -8,6 +8,8 @@ using namespace Net;
 class CClientListener;
 class Connector;
 class CClientSocket;
+class CServerSocket;
+class CClientConnector;
 
 class CNetMgr
 {
@@ -20,11 +22,12 @@ public:
     void End();
 
 public:
-    void OnAccepted(SOCKET sock);
+
     void ConnTest();
 
-
-    void OnConnected(SOCKET sock, Poll::CompletionKey* key);
+    
+    void OnAccepted(SOCKET sock);
+    void OnConnected(CClientConnector* sock);
 
 public:
     void Update();
@@ -32,6 +35,7 @@ public:
 private:
     CClientListener* m_listener;
 
-    std::list<CClientSocket*>       m_lstSessions;
-    std::list<Net::CConnector*>     m_clients;
+    std::list<CClientSocket*>       m_lstClients;
+    std::list<CServerSocket*>       m_lstServers;
+
 };

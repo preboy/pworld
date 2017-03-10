@@ -53,7 +53,13 @@ class CVariant
 {
 public:
     CVariant(){}
-    ~CVariant(){}
+    ~CVariant(){
+        if (_type == var_type::vt_string) {
+            if (_var_string) {
+                delete _var_string;
+            }
+        }
+    }
 
     CVariant(const CVariant&) = delete;
     CVariant& operator = (const CVariant&) = delete;
@@ -98,7 +104,7 @@ public:
             _var_int64 = (int64)(t);
             break;
         case var_type::vt_string:
-            _var_string = std::string(t);
+            _var_string = new std::string(t);
             break;
         default:
             static_assert(TypeInfo<T>::is_valid, "CVariant Error: unsupport type!");
@@ -138,7 +144,7 @@ public:
 			return _var_int64;
 			break;
         case var_type::vt_string:
-            return _var_string;
+            return *_var_string;
             break;
 		default:
 			static_assert(TypeInfo<T>::is_valid, "CVariant Error: unsupport type!");
@@ -158,7 +164,7 @@ private:
         int16           _var_int16;
         int32           _var_int32;
         int64           _var_int64;
-        std::string     _var_string;
+        std::string*    _var_string;
 	};
 
 };

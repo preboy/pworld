@@ -1,12 +1,17 @@
 #include "stdafx.h"
 #include "bytebuffer.h"
+#include "singleton.h"
+#include "logger.h"
 
 
-CByteBuffer::CByteBuffer(uint32 size, uint32 growth) : 
+CByteBuffer::CByteBuffer(uint32 size) : 
+    _rd_ptr(0),
+    _wr_ptr(0),
+    _buffer(nullptr),
     _size(size),
-    _growth(growth)
+    _growth(0),
+    _attach(false)
 {
-    _reset();
     if (_size)
     {
         _buffer = (char*)::malloc(_size);
@@ -14,9 +19,44 @@ CByteBuffer::CByteBuffer(uint32 size, uint32 growth) :
 }
 
 
+CByteBuffer::CByteBuffer() :
+    CByteBuffer(0)
+{
+}
+
+
 CByteBuffer::~CByteBuffer()
 {
-    SAFE_FREE(_buffer);
+    if (!_attach)
+    {
+        SAFE_FREE(_buffer);
+    }
+}
+
+
+bool CByteBuffer::Attach(Net::CPacket* packet)
+{
+    if (_size || _attach)
+    {
+        return false;
+    }
+    _attach = true;
+
+    _buffer = (char*)packet->PacketData();
+    _size = packet->Size();
+    _rd_ptr = 0;
+    _wr_ptr = packet->PacketLength();
+
+    return true;
+}
+
+
+void CByteBuffer::Detach()
+{
+    _attach = false;
+    _buffer = nullptr;
+    _rd_ptr = _wr_ptr = 0;
+    _size   = _growth = 0;
 }
 
 
@@ -38,119 +78,99 @@ CByteBuffer& CByteBuffer::operator = (CByteBuffer&& rval)
 }
 
 
-void CByteBuffer::_reset()
+bool CByteBuffer::Out(void* data, uint32 size)
 {
-    _rd_ptr = 0;
-    _wr_ptr = 0;
-}
-
-
-void CByteBuffer::_resize()
-{
-    uint32 g = _growth ? _growth : _size;
-
-    uint32 newSize = _size + g;
-    _buffer = (char*)::realloc(_buffer, newSize);
-    _size = newSize;
-}
-
-
-void CByteBuffer::WriteOut(void* data, uint32 size)
-{
-    if (FreeSpaceForWrite() >= size)
+    if (Avail() >= size)
     {
-        memcpy(data, _buffer + _wr_ptr, size);
+        memcpy(data, _buffer + _rd_ptr, size);
+        _rd_ptr += size;
+        return true;
+    }
+    INSTANCE(CLogger)->Warning("CByteBuffer::Out, Not Enough data !!!");
+    return false;
+}
+
+
+bool CByteBuffer::In(const void* data, uint32 size)
+{
+    if (Free() >= size)
+    {
+        memcpy(_buffer + _wr_ptr, data, size);
         _wr_ptr += size;
+        return true;
     }
-}
-
-
-void CByteBuffer::ReadIn(const void* data, uint32 size)
-{
-    if (FreeSpaceForRead() < size)
-    {
-        _resize();
-    }
-
-    memcpy(_buffer + _rd_ptr, data, size);
-    _rd_ptr += size;
+    INSTANCE(CLogger)->Warning("CByteBuffer::In, Not Enough space !!!");
+    return false;
 }
 
 
 CByteBuffer& CByteBuffer::operator << (const std::string& str)
 {
-    this->ReadIn(str.c_str(), static_cast<uint32>(str.length()+1));
+    this->operator << (str.c_str());
     return *this;
 }
 
 
 CByteBuffer& CByteBuffer::operator << (const char* str)
 {
-    this->ReadIn(str, static_cast<uint32>(strlen(str)+1));
+    this->In(str, static_cast<uint32>(strlen(str)+1));
     return *this;
 }
 
 
 CByteBuffer& CByteBuffer::operator >> (std::string& str)
 {
-    std::string src = (char*)(_buffer + _wr_ptr);
-    _wr_ptr += uint32(src.length() + 1);
-    str = src;
-    return *this;
-}
-
-
-void CByteBuffer::ReadPtr(uint32 ptr)
-{
-    _rd_ptr = (ptr > _size) ? _size : ptr;
-    if (_wr_ptr > _rd_ptr)
+    std::string src = (char*)(_buffer + _rd_ptr);
+    uint32 len = (uint32)src.length() + 1;
+    if (_rd_ptr + len > _wr_ptr)
     {
-        _wr_ptr = _rd_ptr;
+        INSTANCE(CLogger)->Warning("CByteBuffer::operator >> (std::string& str), invalid string !!!");
+        return *this;
     }
-}
-
-
-void CByteBuffer::WritePtr(uint32 ptr)
-{
-    _wr_ptr = (ptr > _rd_ptr) ? _rd_ptr : ptr;
+    else
+    {
+        str = src;
+        _rd_ptr += len;
+    }
+    return *this;
 }
 
 
 void CByteBuffer::ReadOffset(int32 offset)
 {
-    int32 ptr = (int32)_rd_ptr + offset;
-    if (ptr < 0)
+    if (offset > 0)
     {
-        ptr = 0;
+        if (_rd_ptr + offset <= _wr_ptr)
+        {
+            _rd_ptr = _rd_ptr + offset;
+        }
     }
-    if (ptr > (int32)_size)
-    {
-        ptr  = _size;
-    }
-    _rd_ptr = (uint32)ptr;
     
-    if (_wr_ptr > _rd_ptr)
+    if(offset < 0)
     {
-        _wr_ptr = _rd_ptr;
+        if ((int32)_rd_ptr + offset >= 0)
+        {
+            _rd_ptr = _rd_ptr + offset;
+        }
     }
 }
 
 
 void CByteBuffer::WriteOffset(int32 offset)
 {
-    int32 ptr = (int32)_wr_ptr + offset;
-    if (ptr < 0)
+    if (offset > 0)
     {
-        ptr = 0;
+        if (_wr_ptr + offset <= _size)
+        {
+            _wr_ptr = _wr_ptr + offset;
+        }
     }
-    if (ptr > (int32)_size)
-    {
-        ptr = _size;
-    }
-    _wr_ptr = (uint32)ptr;
 
-    if (_wr_ptr > _rd_ptr)
+    if (offset < 0)
     {
-        _wr_ptr = _rd_ptr;
+        if ((int32)_wr_ptr + offset >= (int32)_rd_ptr)
+        {
+            _wr_ptr = _wr_ptr + offset;
+        }
     }
 }

@@ -1,5 +1,18 @@
 #pragma once
 
+
+#ifdef _WIN32
+#define PLAT_WIN
+#else
+#define PLAT_LINUX
+#endif
+
+
+#ifdef _DEBUG
+#define BUILD_DEBUG
+#endif
+
+
 // °²È«É¾³ýÖ¸Õë;
 #define SAFE_FREE( p )              \
 if( (p) )                           \

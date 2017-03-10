@@ -3,8 +3,7 @@
 class CClientSocket : public Net::CSession
 {
 public:
-    CClientSocket(SOCKET sock) :
-    CSession(sock)
+    CClientSocket() : CSession()
     {}
 
     ~CClientSocket() 
@@ -12,4 +11,24 @@ public:
 
 public:
 
+protected:
+    virtual void on_closed() override;
 };
+
+
+class CServerSocket : public Net::CSession
+{
+public:
+    CServerSocket() : CSession()
+    {}
+
+    ~CServerSocket()
+    {}
+
+public:
+
+protected:
+    virtual void on_closed() override;
+};
+
+

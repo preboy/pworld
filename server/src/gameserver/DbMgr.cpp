@@ -31,8 +31,7 @@ void CDbMgr::__work_proc()
     _thread_running = true;
     while (_thread_running)
     {
-   
-        std::this_thread::sleep_for(std::chrono::milliseconds(15));
+        Utils::Sleep(15);
     }
 
 }

@@ -9,7 +9,7 @@ struct ApiExporter
 
 
 template<typename T>
-struct ApiItem
+struct ApiEntity
 {
     const char* api_name;
     int (*api_func)(lua_State*L, T* obj);
@@ -22,10 +22,10 @@ struct ApiExporter<CLASS>\
 {\
     typedef PARENT parent;\
     static const char* name;\
-    static const ApiItem<CLASS> table[];\
+    static const ApiEntity<CLASS> table[];\
 };\
 const char* ApiExporter<CLASS>::name = #CLASS;\
-const ApiItem<CLASS> ApiExporter<CLASS>::table[] =\
+const ApiEntity<CLASS> ApiExporter<CLASS>::table[] =\
 {
 #define API_EXPORTER_ENTITY(NAME, FUNC) { NAME, FUNC },
 #define API_EXPORTER_END()\
@@ -52,7 +52,7 @@ public:
         lua_rawset(_L, -3);
         
         // set all functions
-        for (ApiItem<T>* item = ApiExporter<T>::table; item->api_name; item++)
+        for (ApiEntity<T>* item = ApiExporter<T>::table; item->api_name; item++)
         {
             lua_pushstring(L, item->api_name);
             lua_pushlightuserdata(L, item);
@@ -127,8 +127,16 @@ public:
         if (!obj) 
             return;
 
-        ApiItem<T>* item = (ApiItem<T>*)lua_touserdata(L, lua_upvalueindex(1));
+#ifdef BUILD_DEBUG
+        luaL_traceback(L, L, "LUA STACK:", -1);
+        g_str_lua_stack = lua_tostring(L, -1);
+#endif
+        ApiEntity<T>* item = (ApiEntity<T>*)lua_touserdata(L, lua_upvalueindex(1));
         return item->api_func(L, obj);
+
+#ifdef BUILD_DEBUG        
+        g_str_lua_stack = nullptr;
+#endif
     }
 
 };

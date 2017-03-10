@@ -80,9 +80,10 @@ bool CLuaReader::EnterTable(const char* key)
 }
 
 
-void CLuaReader::EnterGlobalTable()
+bool CLuaReader::EnterGlobalTable()
 {
     lua_pushglobaltable(_L);
+    return true;
 }
 
 
@@ -205,14 +206,23 @@ lua_Number CLuaReader::GetNumberDeep(const char* expr)
         {
             ret = GetNumber(dirs[size-1].c_str());
         }
+        else
+        {
+            if (cnt)
+            {
+                while (cnt--)
+                {
+                    LeaveTable();
+                }
+            }
+        }
     } while (0);
 
-    free(str);
+    SAFE_FREE(str);
     while (cnt--)
     {
         LeaveTable();
     }
-
     return ret;
 }
 
@@ -232,7 +242,7 @@ std::string CLuaReader::GetStringDeep(const char* expr)
 
         do
         {
-            dirs.push_back(ptr);
+            dirs.push_back(std::string(ptr));
             ptr = strtok_s(nullptr, ".", &ctx);
         } while (ptr);
 
@@ -254,9 +264,19 @@ std::string CLuaReader::GetStringDeep(const char* expr)
         {
             ret = GetString(dirs[size - 1].c_str());
         }
+        else
+        {
+            if (cnt)
+            {
+                while (cnt--)
+                {
+                    LeaveTable();
+                }
+            }
+        }
     } while (0);
 
-    free(str);
+    SAFE_FREE(str);
     while (cnt--)
     {
         LeaveTable();

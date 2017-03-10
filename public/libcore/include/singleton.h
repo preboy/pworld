@@ -42,7 +42,11 @@ template<typename T, uint32 _type> T* CSingleton<T, _type>::_ptr = nullptr;
 
 
 
-#define CREATE_INSTANCE(CLASS)  CSingleton<CLASS>::CreateInstance();
-#define DESTROY_INSTANCE(CLASS) CSingleton<CLASS>::DestroyInstance();
+#define CREATE_INSTANCE(CLASS)      CSingleton<CLASS>::CreateInstance();
+#define DESTROY_INSTANCE(CLASS)     CSingleton<CLASS>::DestroyInstance();
+#define INSTANCE(CLASS)             CSingleton<CLASS>::GetInstance()
 
-#define INSTANCE(CLASS) CSingleton<CLASS>::GetInstance()
+
+#define CREATE_INSTANCE_2(CLASS)    CSingleton<CLASS, 2>::CreateInstance();
+#define DESTROY_INSTANCE_2(CLASS)   CSingleton<CLASS, 2>::DestroyInstance();
+#define INSTANCE_2(CLASS)           CSingleton<CLASS, 2>::GetInstance()

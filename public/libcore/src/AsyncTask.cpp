@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "AsyncTask.h"
+#include "utils.h"
 
 
 void __async_task_thread_proc(void* p)
@@ -29,7 +30,7 @@ void __async_task_thread_proc(void* p)
         }
         else
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            Utils::Sleep(20);
         }
     }
 }

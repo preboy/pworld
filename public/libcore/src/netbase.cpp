@@ -36,27 +36,34 @@ namespace Net
     }
 
 
-    PerIoData::PerIoData(IO_TYPE type, uint32 size)
+    PerIoData::PerIoData(IO_TYPE type, uint32 size) :
+        _stag(IO_STATUS::IO_STATUS_IDLE),
+        _data(nullptr),
+        _size(size),
+        _ptr(nullptr)
     {
-        _ptr = nullptr;
-        memset(&_over, 0, sizeof(OVERLAPPED));
-        _post = 0;
         _type = type;
-        _size = size;
         if (_size) 
         {
-            _data = (char*)malloc(size);
+            _data = malloc(size);
         }
     }
 
 
     PerIoData::~PerIoData()
     {
-        if (_data) 
-        {
-            free(_data);
-            _data = nullptr;
-        }
+        SAFE_FREE(_data);
+    }
+
+    void PerIoData::Reset()
+    {
+        this->_err          = 0;
+        _over.Internal      = 0;
+        _over.InternalHigh  = 0;
+        _over.Offset        = 0;
+        _over.OffsetHigh    = 0;
+        _over.hEvent        = nullptr;
+        _over.Pointer       = nullptr;
     }
 
 }

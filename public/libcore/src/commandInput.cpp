@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "commandInput.h"
+#include "utils.h"
 
 
 CCommandInput::CCommandInput(void)
@@ -25,7 +26,7 @@ void CCommandInput::Run()
         gets_s(szBuff, CMD_MAX_CHAR);
         if (_parse_command(szBuff))
         {
-            ::Sleep(500);
+            Utils::Sleep(500);
         }
     }
 }

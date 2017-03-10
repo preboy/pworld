@@ -3,6 +3,7 @@
 #include "ServerFrame.h"
 #include "servertime.h"
 #include "FrameEvent.h"
+#include "utils.h"
 
 
 void CServerFrame::_run()
@@ -31,7 +32,7 @@ void CServerFrame::_run()
         // 处理网络消息
         while (true)
         {
-            Net::CMessage* msg = INSTANCE(Net::CMessageQueue)->PullMessage();
+            Net::CMessage* msg = INSTANCE(Net::CMessageQueue)->PopMessage();
             if (msg)
             {
                 on_msg(msg);
@@ -55,7 +56,7 @@ void CServerFrame::_run()
 
         if ((uint32)td < m_interval)
         {
-            ::Sleep(m_interval - (uint32)td);
+            Utils::Sleep(m_interval - (uint32)td);
         }
         else
         {

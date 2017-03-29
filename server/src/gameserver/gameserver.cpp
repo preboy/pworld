@@ -12,6 +12,7 @@
 #include "SystemConfig.h"
 #include "MapMgr.h"
 #include "ScriptResource.h"
+#include "DbMgr.h"
 
 
 int main()
@@ -35,6 +36,7 @@ int main()
     CREATE_INSTANCE(CMapMgr);
     CREATE_INSTANCE(CScriptResource);
     CREATE_INSTANCE(CLuaEngine);
+    CREATE_INSTANCE(CDBMgr);
 
 
     INSTANCE(CLogger)->Init("aaa.txt");
@@ -78,6 +80,7 @@ int main()
     INSTANCE(CLogger)->Release();
 
 
+    DESTROY_INSTANCE(CDBMgr);
     DESTROY_INSTANCE(CLuaEngine);
     DESTROY_INSTANCE(CScriptResource);
     DESTROY_INSTANCE(CMapMgr);

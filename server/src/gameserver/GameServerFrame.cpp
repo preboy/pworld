@@ -6,6 +6,8 @@
 #include "MapMgr.h"
 #include "netmgr.h"
 #include "ScriptResource.h"
+#include "DbMgr.h"
+
 
 
 CGameServerFrame::CGameServerFrame()
@@ -34,11 +36,14 @@ void CGameServerFrame::on_start()
     INSTANCE(CLuaEngine)->PushFuncName("glof");
 
     INSTANCE(CLuaEngine)->Exec(0);
+
+    INSTANCE(CDBMgr)->Start();
 }
 
 
 void CGameServerFrame::on_stop()
 {
+    INSTANCE(CDBMgr)->Close();
 }
 
 

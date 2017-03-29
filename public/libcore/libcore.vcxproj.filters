@@ -132,6 +132,9 @@
     <ClInclude Include="include\MemoryPoll.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\Database.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\byteBuffer.cpp">
@@ -234,6 +237,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Database.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

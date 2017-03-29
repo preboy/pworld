@@ -2,11 +2,18 @@
 #include "mysql.h"
 
 
+class CMysqlHandler;
+
+
 class CMysqlQueryResultStmt
 {
 public:
-    CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES*result, MYSQL_BIND* bind);
+    CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result);
    ~CMysqlQueryResultStmt();
+
+private:
+    friend class CMysqlHanderStmt;
+    void            _stored();
 
 public:
     bool            NextRow();
@@ -23,33 +30,17 @@ private:
 
     MYSQL_STMT*     _mysql_stmt;
     MYSQL_RES*      _result;
-    MYSQL_BIND*     _data;
-
-};
-
-
-class CMysqlQueryResult
-{
-public:
-    CMysqlQueryResult(MYSQL_RES* _result);
-   ~CMysqlQueryResult();
-
-public:
-    bool            NextRow();
-
-    const char*     GetValue(uint32 idx);
-    unsigned long   GetLength(uint32 idx);
-
-    int32           GetInt(uint8 idx, int32* def = nullptr);
-    char*           GetBinary(uint8 idx, char* data, unsigned long size);
 
 private:
-    MYSQL_RES*      _result;
-    int64           _num_rows;
-    unsigned int    _num_fields;
-    MYSQL_ROW       _row;
-    unsigned long*  _lengths;
-    MYSQL_FIELD*    _fields;
+    struct result_bind_data
+    {
+        unsigned long   length;
+        my_bool         is_null;
+        my_bool         error;
+    };
+
+    MYSQL_BIND*         _result_bind;
+    result_bind_data*   _result_bind_data;
 };
 
 
@@ -59,21 +50,49 @@ public:
     CMysqlHanderStmt(MYSQL* mysql);
    ~CMysqlHanderStmt();
 
+private:
+	friend class CMysqlHandler;
+    bool _init(const char* sql);
+    void _release();
+
 public:
-
-    bool Init(const char* sql);
-    void Release();
-
-    CMysqlQueryResultStmt* ExecuteSql(MYSQL_BIND* bind, unsigned long count);
+    CMysqlQueryResultStmt* ExecuteSql(MYSQL_BIND* bind = nullptr);
 
 private:
-    MYSQL*      _mysql;
-    MYSQL_STMT* _mysql_stmt;
-
+    MYSQL*			_mysql;
+    MYSQL_STMT*		_mysql_stmt;
     MYSQL_RES*      _meta_result;
-    unsigned int    _field_count;
+    
+	unsigned int    _field_count;
     unsigned long   _param_count;
-    MYSQL_BIND*     _bind_data;
+
+
+    CMysqlQueryResultStmt* _query_result;
+};
+
+
+class CMysqlQueryResult
+{
+public:
+	CMysqlQueryResult(MYSQL_RES* _result);
+   ~CMysqlQueryResult();
+
+public:
+	bool            NextRow();
+
+	const char*     GetValue(uint32 idx);
+	unsigned long   GetLength(uint32 idx);
+
+	int32           GetInt(uint8 idx, int32* def = nullptr);
+	char*           GetBinary(uint8 idx, char* data, unsigned long size);
+
+private:
+	MYSQL_RES*      _result;
+	int64           _num_rows;
+	unsigned int    _num_fields;
+	MYSQL_ROW       _row;
+	unsigned long*  _lengths;
+	MYSQL_FIELD*    _fields;
 };
 
 
@@ -87,31 +106,23 @@ public:
     void Init();
     void Release();
 
-    bool Connect(const char* host, const char* user, const char* passwd, const char*db, unsigned int port);
+    bool IsAlive() { return _alive; }
 
-    // only statement
+    bool Connect(const char* host, const char* user, const char* passwd, const char*db, uint16 port, const char* char_set);
+
     CMysqlQueryResult* ExecuteSql(const char* sql);
 
-    void AutoCommit(bool c);
-    void Commit();
-    void Rollback();
-
-    CMysqlHanderStmt* CreateStmtHander();
+    CMysqlHanderStmt* CreateStmtHander(const char* sql);
 
 private:
-    MYSQL* _mysql;
+    MYSQL*  _mysql = nullptr;
+    bool    _alive = false;
 };
 
 
 class CMysqlService
 {
 public:
-    CMysqlService() {}
-   ~CMysqlService() {}
-
-public:
-    static CMysqlHandler*   CreateHandler();
-
     static void Init();
     static void Release();
 };

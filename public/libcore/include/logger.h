@@ -1,4 +1,5 @@
 #pragma once
+#include "lock.h"
 
 // 后期可继续优化：可以把写文件，屏幕弄到一个后台线程中去
 
@@ -45,4 +46,7 @@ private:
 #endif
     uint32  _screen_mask = 0;
     uint32  _file_mask = 0;
+
+private:
+    CCriticalSection _cs;
 };

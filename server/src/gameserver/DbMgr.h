@@ -1,27 +1,21 @@
 #pragma once
+#include "Database.h"
 
 
-class CDbMgr
+class CDBMgr
 {
 public:
-    CDbMgr();
-   ~CDbMgr();
+    CDBMgr() {}
+    ~CDBMgr() {}
 
-public:
-    // 开启、停止工作线程
     void Start();
-    void Stop();
 
-public:
-    void execute_sql(char* ddd) {}
+    void Close();
 
+    void Update() {}
 
-private:
-    void __work_proc();
 
 private:
-    std::thread _thread;
-    bool _thread_running;
+    std::list<CDatabase*>   _dbs;
 
 };
-

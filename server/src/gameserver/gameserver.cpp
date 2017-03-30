@@ -36,9 +36,11 @@ int main()
     CREATE_INSTANCE(CMapMgr);
     CREATE_INSTANCE(CScriptResource);
     CREATE_INSTANCE(CLuaEngine);
+    CREATE_INSTANCE(CAsyncTask);
     CREATE_INSTANCE(CDBMgr);
 
 
+    INSTANCE(CAsyncTask)->Init(4);
     INSTANCE(CLogger)->Init("aaa.txt");
 
 
@@ -78,9 +80,10 @@ int main()
     INSTANCE(Poll::CPoller)->Release();
     Net::g_net_release();
     INSTANCE(CLogger)->Release();
-
+    INSTANCE(CAsyncTask)->Release();
 
     DESTROY_INSTANCE(CDBMgr);
+    DESTROY_INSTANCE(CAsyncTask);
     DESTROY_INSTANCE(CLuaEngine);
     DESTROY_INSTANCE(CScriptResource);
     DESTROY_INSTANCE(CMapMgr);

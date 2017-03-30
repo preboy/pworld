@@ -31,8 +31,7 @@ private:
     
 public:
     void Init(uint16 thread_cnt);
-
-    void Close();
+    void Release();
 
     void Update();
 
@@ -47,5 +46,7 @@ private:
 
     std::list<Task*>        _lst_task;
     std::list<Task*>        _lst_over;
+
+    std::atomic_uint32_t    _task_cnt;
 };
 

@@ -66,7 +66,7 @@ bool CCommandInput::_parse_command(char* szCmdLine)
         {
             break;
         }
-        strncpy_s(ci.argv[ci.argc], NAME_LEN, token, NAME_LEN);
+        strncpy_s(ci.argv[ci.argc], PARAM_LEN, token, PARAM_LEN);
         ci.argc = ci.argc + 1;
         token = strtok_s(NULL, seps, &next_token);
     }
@@ -90,7 +90,7 @@ bool CCommandInput::_parse_command(char* szCmdLine)
         _stricmp("help", ci.argv[0]) == 0 ||
         _stricmp("list", ci.argv[0]) == 0)
     {
-        (this->*(ci.func))(ci.argc, (char[PARAM_CNT][NAME_LEN])ci.argv);
+        (this->*(ci.func))(ci.argc, (char[PARAM_CNT][PARAM_LEN])ci.argv);
         return false;
     }
 
@@ -118,14 +118,14 @@ void CCommandInput::add_command(const char* name, CMD_FUNC func, const char* hel
 }
 
 
-int CCommandInput::OnQuit(int argc, char argv[PARAM_CNT][NAME_LEN])
+int CCommandInput::OnQuit(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     m_bRunning = false;
     return 0;
 }
 
 
-int CCommandInput::OnHelp(int argc, char argv[PARAM_CNT][NAME_LEN])
+int CCommandInput::OnHelp(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     if (argc < 2)
     {
@@ -146,7 +146,7 @@ int CCommandInput::OnHelp(int argc, char argv[PARAM_CNT][NAME_LEN])
 }
 
 
-int CCommandInput::OnList(int argc, char argv[PARAM_CNT][NAME_LEN])
+int CCommandInput::OnList(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     for (auto & cc : m_vecCmdConfig)
     {

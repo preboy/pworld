@@ -2,46 +2,78 @@
 #include "Database.h"
 #include "singleton.h"
 #include "logger.h"
+#include "servertime.h"
 
 
-void CDatabase::__database_thread__(CDatabase* pThis)
+CDatabase::~CDatabase()
 {
-    pThis->_db_handler.Init();
-    while (pThis->_running)
+    while (!_free)
     {
-        if (!pThis->_db_handler.IsAlive())
-        {
-            bool ret = pThis->_db_handler.Connect(pThis->_host.c_str(),
-                pThis->_user.c_str(),
-                pThis->_pwd.c_str(),
-                pThis->_db_name.c_str(),
-                pThis->_port,
-                pThis->_char_set.c_str());
-            if (!ret)
-            {
-                INSTANCE(CLogger)->Error("connect to database error.");
-                Utils::Sleep(1000);
-                continue;
-            }
-        }
-
-        bool _break = false;
-        while (true)
-        {
-            CLock lock(pThis->_cs);
-            if (pThis->_task.empty())
-            {
-                _break = true;
-                break;
-            }
-            CCallback* cb = pThis->_task.front();
-            pThis->_task.pop();
-            cb->Run();
-        }
-        if (_break)
-        {
-            Utils::Sleep(10);
-        }
+        Utils::Sleep(20);
     }
-    pThis->_db_handler.Release();
+    _db_handler.Release();
+}
+
+
+bool CDatabase::Occupy()
+{
+    CLock lock(_cs);
+    if (_free)
+    {
+        _free = false;
+        return true;
+    }
+    return false;
+}
+
+
+void CDatabase::Release()
+{
+    CLock lock(_cs);
+    _free = true;
+    _last_travel_time = get_frame_time();
+}
+
+
+bool CDatabase::Connect()
+{
+    bool ret = _db_handler.Connect(
+        _host.c_str(),
+        _user.c_str(),
+        _pwd.c_str(),
+        _db_name.c_str(),
+        _port,
+        _char_set.c_str());
+    if (ret)
+    {
+        _last_travel_time = 0;
+        INSTANCE(CLogger)->Info("connect to database completed.");
+    }
+    else
+    {
+        INSTANCE(CLogger)->Error("connect to database failed.");
+    }
+    return ret;
+}
+
+
+void CDatabase::Update()
+{
+    if (!_free)
+    {
+        return;
+    }
+
+    if (!_db_handler.IsAlive())
+    {
+        INSTANCE(CLogger)->Info("Reconnect to database...");
+        this->Connect();
+    }
+
+    int64 now = get_frame_time();
+    if (now - _last_travel_time > 30)
+    {
+        _db_handler.ExecuteSql("select 1 from dual where 1 = 0");
+        _last_travel_time = now;
+    }
 }

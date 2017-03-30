@@ -5,24 +5,29 @@
 
 
 //////////////////////////////////////////////////////////////////////////
-static void MysqlErrorReport(MYSQL* mysql)
+static void MysqlErrorReport(MYSQL* mysql, CMysqlHandler* handler)
 {
-    INSTANCE(CLogger)->Error("mysql state:%s", mysql_sqlstate(mysql));
-    INSTANCE(CLogger)->Error("mysql error:[%d]%s", mysql_errno(mysql), mysql_error(mysql));
+    const char* err_stage = mysql_sqlstate(mysql);
+    unsigned int err_no = mysql_errno(mysql);
+    const char* err_msg = mysql_error(mysql);
+    handler->OnError(err_no, err_msg, err_stage);
 }
 
 
-static void MysqlErrorReportStmt(MYSQL_STMT* stmt)
+static void MysqlErrorReportStmt(MYSQL_STMT* stmt, CMysqlHanderStmt* handler)
 {
-    INSTANCE(CLogger)->Error("mysql stmt state:%s", mysql_stmt_sqlstate(stmt));
-    INSTANCE(CLogger)->Error("mysql stmt error:[%d]%s", mysql_stmt_errno(stmt), mysql_stmt_error(stmt));
+    const char* err_stage = mysql_stmt_sqlstate(stmt);
+    unsigned int err_no = mysql_stmt_errno(stmt);
+    const char* err_msg = mysql_stmt_error(stmt);
+    handler->OnError(err_no, err_msg, err_stage);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
-CMysqlQueryResultStmt::CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result) :
+CMysqlQueryResultStmt::CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, CMysqlHanderStmt* handler) :
     _mysql_stmt(mysql_stmt),
-    _result(meta_result)
+    _result(meta_result),
+    _handler(handler)
 {
     MYSQL_FIELD* _result_fields = mysql_fetch_fields(_result);
     _num_fields = mysql_num_fields(_result);
@@ -37,18 +42,26 @@ CMysqlQueryResultStmt::CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* 
 
         for (unsigned int i = 0; i < _num_fields; i++)
         {
-            _result_bind[i].is_null        = &_result_bind_data[i].is_null; 
-            _result_bind[i].length         = &_result_bind_data[i].length;
-            _result_bind[i].error          = &_result_bind_data[i].error;
+            _result_bind[i].is_null     = &_result_bind_data[i].is_null; 
+            _result_bind[i].length      = &_result_bind_data[i].length;
+            _result_bind[i].error       = &_result_bind_data[i].error;
+            _result_bind[i].buffer_type = _result_fields[i].type;
 
-            _result_bind[i].buffer         = malloc(_result_fields[i].max_length);
-            _result_bind[i].buffer_type    = _result_fields[i].type;
-            _result_bind[i].buffer_length  = _result_fields[i].max_length;
+            unsigned long max_length = _result_fields[i].max_length;
+            if (max_length == 0)
+            {
+                max_length = sizeof(MYSQL_TIME);
+            }
+            if (max_length)
+            {
+                _result_bind[i].buffer = malloc(max_length);
+                _result_bind[i].buffer_length = max_length;
+            }
         }
 
         if (mysql_stmt_bind_result(_mysql_stmt, _result_bind))
         {
-            MysqlErrorReportStmt(_mysql_stmt);
+            MysqlErrorReportStmt(_mysql_stmt, _handler);
         }
     }
 }
@@ -56,6 +69,11 @@ CMysqlQueryResultStmt::CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* 
 
 CMysqlQueryResultStmt::~CMysqlQueryResultStmt()
 {
+    for (unsigned int i = 0; i < _num_fields; i++)
+    {
+        free(_result_bind[i].buffer);
+    }
+
     SAFE_DELETE_ARR(_result_bind_data);
     SAFE_DELETE_ARR(_result_bind);
     mysql_stmt_free_result(_mysql_stmt);
@@ -70,42 +88,119 @@ void  CMysqlQueryResultStmt::_stored()
 
 bool CMysqlQueryResultStmt::NextRow()
 {
-    if (mysql_stmt_fetch(_mysql_stmt))
+    int ret = mysql_stmt_fetch(_mysql_stmt);
+    if (ret == 0)
     {
-        MysqlErrorReportStmt(_mysql_stmt);
+        return true;
+    }
+    else if (ret == 1)
+    {
+        MysqlErrorReportStmt(_mysql_stmt, _handler);
         return false;
     }
-    return true;
+    if (ret == MYSQL_NO_DATA)
+    {
+        return false;
+    }
+    if (ret == MYSQL_DATA_TRUNCATED)
+    {
+        INSTANCE(CLogger)->Warning("MYSQL_DATA_TRUNCATED !!!");
+        return false;
+    }
+    return false;
 }
 
 
 const char* CMysqlQueryResultStmt::GetValue(uint32 idx)
 {
-    return nullptr;
+    if ((unsigned int)idx >= _num_fields)
+    {
+        return nullptr;
+    }
+
+    return (const char*)_result_bind[idx].buffer;
 }
 
 
 unsigned long CMysqlQueryResultStmt::GetLength(uint32 idx)
 {
-    return 0;
+    if ((unsigned int)idx >= _num_fields)
+    {
+        return 0;
+    }
+    return *(_result_bind[idx].length);
 }
 
 
-int32 CMysqlQueryResultStmt::GetInt(uint8 idx, int32* def)
+int32 CMysqlQueryResultStmt::GetInt32(uint32 idx)
 {
-    return 0;
+    if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null) )
+    {
+        return 0;
+    }
+    return *(int32*)(_result_bind[idx].buffer);
+}
+
+int64 CMysqlQueryResultStmt::GetInt64(uint32 idx)
+{
+    if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
+    {
+        return 0;
+    }
+    return *(int64*)(_result_bind[idx].buffer);
 }
 
 
-char* CMysqlQueryResultStmt::GetBinary(uint8 idx, char* data, unsigned long size)
+float CMysqlQueryResultStmt::GetFloat(uint32 idx)
 {
-    return nullptr;
+    if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
+    {
+        return 0;
+    }
+    return *(float*)(_result_bind[idx].buffer);
+}
+
+
+double CMysqlQueryResultStmt::GetDouble(uint32 idx)
+{
+    if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
+    {
+        return 0;
+    }
+    return *(double*)(_result_bind[idx].buffer);
+}
+
+
+const char* CMysqlQueryResultStmt::GetString(uint32 idx)
+{
+    if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
+    {
+        return nullptr;
+    }
+    return (const char*)_result_bind[idx].buffer;
+}
+
+
+const char* CMysqlQueryResultStmt::GetBinary(uint32 idx, char* data, unsigned long size)
+{
+    if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
+    {
+        return nullptr;
+    }
+    unsigned long length = *(_result_bind[idx].length);
+    if (length> size)
+    {
+        return nullptr;
+    }
+    memcpy(data, _result_bind[idx].buffer, length);
+    return data;
 }
 
 
 //////////////////////////////////////////////////////////////////////////
-CMysqlHanderStmt::CMysqlHanderStmt(MYSQL* mysql) :
+CMysqlHanderStmt::CMysqlHanderStmt(MYSQL* mysql, CMysqlHandler* handler) :
     _mysql(mysql),
+    _handler(handler),
     _mysql_stmt(nullptr),
     _meta_result(nullptr),
     _field_count(0),
@@ -157,31 +252,62 @@ bool CMysqlHanderStmt::_init(const char* sql)
         _meta_result = mysql_stmt_result_metadata(_mysql_stmt);
         if (_meta_result)
         {
-            _query_result = new CMysqlQueryResultStmt(_mysql_stmt, _meta_result);
+            _query_result = new CMysqlQueryResultStmt(_mysql_stmt, _meta_result, this);
         }
+        ret = true;
     } while (0);
 
     if (!ret)
-        MysqlErrorReportStmt(_mysql_stmt);
+    {
+        MysqlErrorReportStmt(_mysql_stmt, this);
+    }
 
     return ret;
 }
 
 
-CMysqlQueryResultStmt* CMysqlHanderStmt::ExecuteSql(MYSQL_BIND* bind)
+CMysqlQueryResultStmt* CMysqlHanderStmt::Execute(MysqlBindParam* params)
 {
-    if (_field_count)
+    MYSQL_BIND* bind = nullptr;
+    if (_param_count)
     {
+        bind = new MYSQL_BIND[_param_count];
+        for (unsigned int i = 0; i < _param_count; i++)
+        {
+            params[i].is_null = params[i].buffer ? 0 : 1;
+            switch (params[i].type)
+            {
+            case MysqlBindParam::MBT_String:
+                bind[i].buffer_type     = MYSQL_TYPE_STRING;
+                bind[i].buffer          = params[i].buffer;
+                bind[i].buffer_length   = params[i].length;
+                bind[i].length          = &params[i].length;
+                bind[i].is_null         = &params[i].is_null;
+                break;
+
+            case MysqlBindParam::MBT_Binary:
+                bind[i].buffer_type     = MYSQL_TYPE_BLOB;
+                bind[i].buffer          = params[i].buffer;
+                bind[i].buffer_length   = params[i].length;
+                bind[i].length          = &params[i].length;
+                bind[i].is_null         = &params[i].is_null;
+                break;
+
+            default:
+                INSTANCE(CLogger)->Error("MysqlBindParam ONLY available for MBT_String or MBT_Binary !!!");
+                break;
+            }
+        }
         if (mysql_stmt_bind_param(_mysql_stmt, bind))
         {
-            MysqlErrorReportStmt(_mysql_stmt);
+            MysqlErrorReportStmt(_mysql_stmt, this);
             return nullptr;
         }
     }
     
     if (mysql_stmt_execute(_mysql_stmt))
     {
-        MysqlErrorReportStmt(_mysql_stmt);
+        MysqlErrorReportStmt(_mysql_stmt, this);
         return nullptr;
     }
 
@@ -189,7 +315,7 @@ CMysqlQueryResultStmt* CMysqlHanderStmt::ExecuteSql(MYSQL_BIND* bind)
     {
         if (mysql_stmt_store_result(_mysql_stmt))
         {
-            MysqlErrorReportStmt(_mysql_stmt);
+            MysqlErrorReportStmt(_mysql_stmt, this);
             mysql_stmt_free_result(_mysql_stmt);
             return nullptr;
         }
@@ -201,13 +327,21 @@ CMysqlQueryResultStmt* CMysqlHanderStmt::ExecuteSql(MYSQL_BIND* bind)
         my_ulonglong rows = mysql_stmt_affected_rows(_mysql_stmt);
     }
 
+    SAFE_DELETE_ARR(bind);
     return nullptr;
 }
 
 
+void CMysqlHanderStmt::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
+{
+    _handler->OnError(err_no, err_msg, err_stage);
+}
+
+
 //////////////////////////////////////////////////////////////////////////
-CMysqlQueryResult::CMysqlQueryResult(MYSQL_RES* result) :
+CMysqlQueryResult::CMysqlQueryResult(MYSQL_RES* result, CMysqlHandler* handler) :
     _result(result),
+    _handler(handler),
     _row(nullptr)
 {
     _num_rows = mysql_num_rows(_result);
@@ -240,50 +374,77 @@ bool CMysqlQueryResult::NextRow()
 
 const char* CMysqlQueryResult::GetValue(uint32 idx)
 {
-    if (!_row)
+    if (!_row || idx >= _num_fields)
+    {
         return nullptr;
-    if (idx >= _num_fields)
-        return nullptr;
+    }
     return _row[idx];
 }
 
 
 unsigned long CMysqlQueryResult::GetLength(uint32 idx)
 {
-    if (!_row)
+    if (!_row || idx >= _num_fields)
+    {
         return 0;
-    if (idx >= _num_fields)
-        return 0;
+    }
     return _lengths[idx];
 }
 
 
-int32 CMysqlQueryResult::GetInt(uint8 idx, int32* def)
+int32 CMysqlQueryResult::GetInt32(uint32 idx)
 {
-    if (!_row)
+    if ((unsigned int)idx >= _num_fields)
     {
-        if (def)
-            return *def;
-        else
-            return 0;
+        return 0;
     }
-
-    if (idx >= _num_fields)
-    {
-        if (def)
-            return *def;
-        else
-            return 0;
-    }
-
-    return strtoul(_row[idx], nullptr, 10);
+    return _row[idx] ? strtoul(_row[idx], 0, 10) : 0;
 }
 
 
-char* CMysqlQueryResult::GetBinary(uint8 idx, char* data, unsigned long size)
+int64 CMysqlQueryResult::GetInt64(uint32 idx)
+{
+    if ((unsigned int)idx >= _num_fields)
+    {
+        return 0;
+    }
+    return _row[idx] ? strtoui64((const char*)_row[idx], 0, 10) : 0;
+}
+
+
+float CMysqlQueryResult::GetFloat(uint32 idx)
+{
+    if ((unsigned int)idx >= _num_fields)
+    {
+        return 0;
+    }
+    return _row[idx] ? (float)atof(_row[idx]) : 0;
+}
+
+
+double CMysqlQueryResult::GetDouble(uint32 idx)
+{
+    if ((unsigned int)idx >= _num_fields)
+    {
+        return 0;
+    }
+    return _row[idx] ? atof(_row[idx]) : 0;
+}
+
+
+const char* CMysqlQueryResult::GetString(uint32 idx)
+{
+    if ((unsigned int)idx >= _num_fields)
+    {
+        return nullptr;
+    }
+    return _row[idx];
+}
+
+
+const char* CMysqlQueryResult::GetBinary(uint32 idx, char* data, unsigned long size)
 {
     //  assert (IS_BLOB(_fields[idx]->flags))   IS_NOT_NULL(flags)
-
     if (!_row) return nullptr;
     if (idx >= _num_fields) return nullptr;
     if (size < _lengths[idx]) return nullptr;
@@ -330,21 +491,25 @@ bool CMysqlHandler::Connect(
     uint16 port, 
     const char* char_set)
 {
+    // 注释掉下两行，导致stmt返回集NextRow到30行时返回MYSQL_DATA_TRUNCATED
+    my_bool b(0);
+    mysql_options(_mysql, MYSQL_REPORT_DATA_TRUNCATION, &b);
+
     if (char_set)
     {
         if (mysql_options(_mysql, MYSQL_SET_CHARSET_NAME, char_set))
         {
-            MysqlErrorReport(_mysql);
+            MysqlErrorReport(_mysql, this);
             return false;
         }
     }
 
     if (!mysql_real_connect(_mysql, host, user, passwd, db, port, nullptr, 0))
     {
-        MysqlErrorReport(_mysql);
+        MysqlErrorReport(_mysql, this);
         return false;
     }
-    
+
     _alive = true;
     return true;
 }
@@ -355,14 +520,14 @@ CMysqlQueryResult* CMysqlHandler::ExecuteSql(const char* sql)
     int ret = mysql_real_query(_mysql, sql, (unsigned long)strlen(sql));
     if (ret)
     {
-        MysqlErrorReport(_mysql);
+        MysqlErrorReport(_mysql, this);
         return nullptr;
     }
 
     MYSQL_RES *result = mysql_store_result(_mysql);
     if (result)  // there are rows
     {
-        return (new CMysqlQueryResult(result));
+        return (new CMysqlQueryResult(result, this));
     }
     else  // mysql_store_result() returned nothing; should it have?
     {
@@ -375,7 +540,7 @@ CMysqlQueryResult* CMysqlHandler::ExecuteSql(const char* sql)
         }
         else // mysql_store_result() should have returned data
         {
-            MysqlErrorReport(_mysql);
+            MysqlErrorReport(_mysql, this);
             return nullptr;
         }
     }
@@ -387,12 +552,25 @@ CMysqlQueryResult* CMysqlHandler::ExecuteSql(const char* sql)
 CMysqlHanderStmt* CMysqlHandler::CreateStmtHander(const char* sql)
 {
     if (!_mysql) return nullptr;
-	CMysqlHanderStmt* handle_stmt = new CMysqlHanderStmt(_mysql);
+	CMysqlHanderStmt* handle_stmt = new CMysqlHanderStmt(_mysql, this);
 	if (handle_stmt)
 	{
 		handle_stmt->_init(sql);
 	}
 	return handle_stmt;
+}
+
+
+void CMysqlHandler::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
+{
+    INSTANCE(CLogger)->Error("mysql state:%s", err_stage);
+    INSTANCE(CLogger)->Error("mysql error:[%d]%s", err_no, err_msg);
+    
+    if (err_no == 2006 || err_no == 2013 || err_no == 2055)
+    {
+        _alive = false;
+        INSTANCE(CLogger)->Error("Mysql connection losted !!!");
+    }
 }
 
 

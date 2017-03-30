@@ -1,6 +1,7 @@
+#pragma once
 
 // depends
-
+#include "global_function.h"
 #include "byteBuffer.h"
 #include "poller.h"
 #include "callback.h"
@@ -29,5 +30,6 @@
 #include "LuaHelper.h"
 #include "LuaReader.h"
 #include "AutoDeleter.h"
-#include "global_function.h"
 #include "utils.h"
+#include "MysqlService.h"
+#include "Database.h"

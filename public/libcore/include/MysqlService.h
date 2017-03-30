@@ -3,12 +3,28 @@
 
 
 class CMysqlHandler;
+class CMysqlHanderStmt;
+
+
+struct MysqlBindParam
+{
+    enum MysqlBindType
+    {
+        MBT_String,
+        MBT_Binary,
+    };
+
+    my_bool         is_null;
+    int             type;
+    void*           buffer;
+    unsigned long   length;
+};
 
 
 class CMysqlQueryResultStmt
 {
 public:
-    CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result);
+    CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, CMysqlHanderStmt* handler);
    ~CMysqlQueryResultStmt();
 
 private:
@@ -21,8 +37,12 @@ public:
     const char*     GetValue(uint32 idx);
     unsigned long   GetLength(uint32 idx);
 
-    int32           GetInt(uint8 idx, int32* def = nullptr);
-    char*           GetBinary(uint8 idx, char* data, unsigned long size);
+    int32           GetInt32(uint32 idx);
+    int64           GetInt64(uint32 idx);
+    float           GetFloat(uint32 idx);
+    double          GetDouble(uint32 idx);
+    const char*     GetString(uint32 idx);
+    const char*     GetBinary(uint32 idx, char* data, unsigned long size);
 
 private:
     int64           _num_rows;
@@ -30,6 +50,8 @@ private:
 
     MYSQL_STMT*     _mysql_stmt;
     MYSQL_RES*      _result;
+
+    CMysqlHanderStmt*   _handler;
 
 private:
     struct result_bind_data
@@ -47,7 +69,7 @@ private:
 class CMysqlHanderStmt
 {
 public:
-    CMysqlHanderStmt(MYSQL* mysql);
+    CMysqlHanderStmt(MYSQL* mysql, CMysqlHandler* handler);
    ~CMysqlHanderStmt();
 
 private:
@@ -56,7 +78,10 @@ private:
     void _release();
 
 public:
-    CMysqlQueryResultStmt* ExecuteSql(MYSQL_BIND* bind = nullptr);
+    CMysqlQueryResultStmt* Execute(MysqlBindParam* params = nullptr);
+
+public:
+    void OnError(unsigned int err_no, const char* err_msg, const char* err_stage);
 
 private:
     MYSQL*			_mysql;
@@ -66,15 +91,15 @@ private:
 	unsigned int    _field_count;
     unsigned long   _param_count;
 
-
-    CMysqlQueryResultStmt* _query_result;
+    CMysqlHandler*          _handler;
+    CMysqlQueryResultStmt*  _query_result;
 };
 
 
 class CMysqlQueryResult
 {
 public:
-	CMysqlQueryResult(MYSQL_RES* _result);
+	CMysqlQueryResult(MYSQL_RES* result, CMysqlHandler* handler);
    ~CMysqlQueryResult();
 
 public:
@@ -82,9 +107,13 @@ public:
 
 	const char*     GetValue(uint32 idx);
 	unsigned long   GetLength(uint32 idx);
-
-	int32           GetInt(uint8 idx, int32* def = nullptr);
-	char*           GetBinary(uint8 idx, char* data, unsigned long size);
+    
+    int32           GetInt32(uint32 idx);
+    int64           GetInt64(uint32 idx);
+    float           GetFloat(uint32 idx);
+    double          GetDouble(uint32 idx);
+    const char*     GetString(uint32 idx);
+	const char*     GetBinary(uint32 idx, char* data, unsigned long size);
 
 private:
 	MYSQL_RES*      _result;
@@ -93,6 +122,7 @@ private:
 	MYSQL_ROW       _row;
 	unsigned long*  _lengths;
 	MYSQL_FIELD*    _fields;
+    CMysqlHandler*  _handler;
 };
 
 
@@ -113,6 +143,8 @@ public:
     CMysqlQueryResult* ExecuteSql(const char* sql);
 
     CMysqlHanderStmt* CreateStmtHander(const char* sql);
+
+    void OnError(unsigned int err_no, const char* err_msg, const char* err_stage);
 
 private:
     MYSQL*  _mysql = nullptr;

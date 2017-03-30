@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{6d76857c-0022-4e74-b523-e6703ff9675f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\byteBuffer.h">
@@ -135,6 +138,21 @@
     <ClInclude Include="include\Database.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\common.hpp">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\cpp_header.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\macros.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\typedefs.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\LuaTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\byteBuffer.cpp">
@@ -242,5 +260,13 @@
     <ClCompile Include="src\Database.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\LuaTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\common\make.bat">
+      <Filter>Common</Filter>
+    </None>
   </ItemGroup>
 </Project>

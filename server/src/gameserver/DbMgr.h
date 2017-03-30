@@ -12,10 +12,10 @@ public:
 
     void Close();
 
-    void Update() {}
+    void Update();
 
+    CDatabase* GetFreeConnection();
 
 private:
-    std::list<CDatabase*>   _dbs;
-
+    std::list<CDatabase*> _dbs;
 };

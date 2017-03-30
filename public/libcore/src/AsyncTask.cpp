@@ -19,6 +19,7 @@ void __async_task_thread_proc(void* p)
         }
         if (ptask)
         {
+            tp->_task_cnt++;
             ptask->_cb_task->Run();
             if (ptask->_cb_over)
             {
@@ -27,6 +28,7 @@ void __async_task_thread_proc(void* p)
             }
             else
                 delete ptask;
+            tp->_task_cnt--;
         }
         else
         {
@@ -61,11 +63,13 @@ void CAsyncTask::Init(uint16 thread_cnt)
 }
 
 
-void CAsyncTask::Close()
+void CAsyncTask::Release()
 {
     _running = false;
     for (auto& t : _threads)
+    {
         t.join();
+    }
 }
 
 

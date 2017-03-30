@@ -150,6 +150,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\common\common.hpp" />
+    <ClInclude Include="..\common\cpp_header.h" />
+    <ClInclude Include="..\common\macros.h" />
+    <ClInclude Include="..\common\typedefs.h" />
     <ClInclude Include="include\AsyncTask.h" />
     <ClInclude Include="include\AutoDeleter.h" />
     <ClInclude Include="include\byteBuffer.h" />
@@ -169,6 +173,7 @@
     <ClInclude Include="include\LuaEngine.h" />
     <ClInclude Include="include\LuaHelper.h" />
     <ClInclude Include="include\LuaReader.h" />
+    <ClInclude Include="include\LuaTable.h" />
     <ClInclude Include="include\MemoryPoll.h" />
     <ClInclude Include="include\messagequeue.h" />
     <ClInclude Include="include\MysqlService.h" />
@@ -212,6 +217,7 @@
     <ClCompile Include="src\LuaReader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\LuaTable.cpp" />
     <ClCompile Include="src\messagequeue.cpp" />
     <ClCompile Include="src\MysqlService.cpp" />
     <ClCompile Include="src\netbase.cpp" />
@@ -234,6 +240,9 @@
     <ClCompile Include="src\xml_function.cpp" />
     <ClCompile Include="src\xml_head.cpp" />
     <ClCompile Include="src\xml_string.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\common\make.bat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

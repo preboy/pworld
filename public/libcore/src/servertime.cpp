@@ -28,9 +28,15 @@ void time_release()
 }
 
 
+int64 get_current_time()
+{
+    return _time64(nullptr);
+}
+
+
 void update_frame_time()
 {
-    __curr_time = _time64(nullptr);
+    __curr_time = get_current_time();
 }
 
 
@@ -40,29 +46,21 @@ int64 get_frame_time()
 }
 
 
-int64 get_current_time()
+uint64 get_current_tick()
 {
-    return _time64(nullptr);
+    LARGE_INTEGER count;
+    ::QueryPerformanceCounter(&count);
+    return static_cast<uint64>(count.QuadPart * 1000 / frequency.QuadPart);
 }
 
 
 void update_frame_tick()
 {
-    LARGE_INTEGER count;
-    ::QueryPerformanceCounter(&count);
-    __curr_tick = static_cast<uint64>(count.QuadPart * 1000 / frequency.QuadPart);
+    __curr_tick = get_current_tick();
 }
 
 
 uint64 get_frame_tick()
 {
     return __curr_tick;
-}
-
-
-uint64 get_current_tick()
-{
-    LARGE_INTEGER count;
-    ::QueryPerformanceCounter(&count);
-    return static_cast<uint64>(count.QuadPart * 1000 / frequency.QuadPart);
 }

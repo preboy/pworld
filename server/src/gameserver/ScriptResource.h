@@ -12,7 +12,7 @@ public:
     void    ReloadScripts();
 
 private:
-    bool    _is_load_file(const char *name);
+    bool    _is_load_file(const char *name);
     bool    _is_reload_script(const char *name);
 
 private:

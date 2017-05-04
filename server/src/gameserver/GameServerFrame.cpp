@@ -7,7 +7,7 @@
 #include "netmgr.h"
 #include "ScriptResource.h"
 #include "DbMgr.h"
-
+#include "ScheduleMgr.h"
 
 
 CGameServerFrame::CGameServerFrame()
@@ -61,6 +61,8 @@ void CGameServerFrame::on_update(uint64 dt)
     // objmgr update
 
     INSTANCE(CNetMgr)->Update();
+
+    INSTANCE(CScheduleMgr)->Update();
 }
 
 

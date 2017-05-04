@@ -13,6 +13,7 @@
 #include "MapMgr.h"
 #include "ScriptResource.h"
 #include "DbMgr.h"
+#include "ScheduleMgr.h"
 
 
 int main()
@@ -38,6 +39,7 @@ int main()
     CREATE_INSTANCE(CLuaEngine);
     CREATE_INSTANCE(CAsyncTask);
     CREATE_INSTANCE(CDBMgr);
+    CREATE_INSTANCE(CScheduleMgr);
 
 
     INSTANCE(CAsyncTask)->Init(4);
@@ -82,6 +84,8 @@ int main()
     INSTANCE(CLogger)->Release();
     INSTANCE(CAsyncTask)->Release();
 
+
+    DESTROY_INSTANCE(CScheduleMgr);
     DESTROY_INSTANCE(CDBMgr);
     DESTROY_INSTANCE(CAsyncTask);
     DESTROY_INSTANCE(CLuaEngine);

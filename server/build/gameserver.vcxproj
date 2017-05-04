@@ -22,7 +22,7 @@
     <ProjectGuid>{CE29EAFB-FEBC-4461-8EFF-8D10F54D248A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>gameserver</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.14393.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -177,6 +177,7 @@
     <ClCompile Include="..\src\gameserver\SceneObject.cpp" />
     <ClCompile Include="..\src\gameserver\SceneObjectAI.cpp" />
     <ClCompile Include="..\src\gameserver\SceneObjectApi.cpp" />
+    <ClCompile Include="..\src\gameserver\ScheduleMgr.cpp" />
     <ClCompile Include="..\src\gameserver\ScriptResource.cpp" />
     <ClCompile Include="..\src\gameserver\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -208,6 +209,7 @@
     <ClInclude Include="..\src\gameserver\SceneObject.h" />
     <ClInclude Include="..\src\gameserver\SceneObjectAI.h" />
     <ClInclude Include="..\src\gameserver\SceneObjectApi.h" />
+    <ClInclude Include="..\src\gameserver\ScheduleMgr.h" />
     <ClInclude Include="..\src\gameserver\ScriptResource.h" />
     <ClInclude Include="..\src\gameserver\stdafx.h" />
     <ClInclude Include="..\src\gameserver\SystemConfig.h" />

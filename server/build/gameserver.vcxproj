@@ -166,6 +166,8 @@
     <ClCompile Include="..\src\gameserver\gameserver.cpp" />
     <ClCompile Include="..\src\gameserver\GameServerFrame.cpp" />
     <ClCompile Include="..\src\gameserver\GameServerInput.cpp" />
+    <ClCompile Include="..\src\gameserver\GlobalAPI.cpp" />
+    <ClCompile Include="..\src\gameserver\GlobalScript.cpp" />
     <ClCompile Include="..\src\gameserver\Map.cpp" />
     <ClCompile Include="..\src\gameserver\MapMgr.cpp" />
     <ClCompile Include="..\src\gameserver\netmgr.cpp" />
@@ -178,6 +180,7 @@
     <ClCompile Include="..\src\gameserver\SceneObjectAI.cpp" />
     <ClCompile Include="..\src\gameserver\SceneObjectApi.cpp" />
     <ClCompile Include="..\src\gameserver\ScheduleMgr.cpp" />
+    <ClCompile Include="..\src\gameserver\ScriptMgr.cpp" />
     <ClCompile Include="..\src\gameserver\ScriptResource.cpp" />
     <ClCompile Include="..\src\gameserver\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -198,6 +201,8 @@
     <ClInclude Include="..\src\gameserver\DbMgr.h" />
     <ClInclude Include="..\src\gameserver\GameServerFrame.h" />
     <ClInclude Include="..\src\gameserver\GameServerInput.h" />
+    <ClInclude Include="..\src\gameserver\GlobalAPI.h" />
+    <ClInclude Include="..\src\gameserver\GlobalScript.h" />
     <ClInclude Include="..\src\gameserver\Map.h" />
     <ClInclude Include="..\src\gameserver\MapMgr.h" />
     <ClInclude Include="..\src\gameserver\netmgr.h" />
@@ -210,6 +215,7 @@
     <ClInclude Include="..\src\gameserver\SceneObjectAI.h" />
     <ClInclude Include="..\src\gameserver\SceneObjectApi.h" />
     <ClInclude Include="..\src\gameserver\ScheduleMgr.h" />
+    <ClInclude Include="..\src\gameserver\ScriptMgr.h" />
     <ClInclude Include="..\src\gameserver\ScriptResource.h" />
     <ClInclude Include="..\src\gameserver\stdafx.h" />
     <ClInclude Include="..\src\gameserver\SystemConfig.h" />

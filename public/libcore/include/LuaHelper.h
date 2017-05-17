@@ -74,6 +74,7 @@ public:
     template<typename T>
     static void PushObject(T* obj)
     {
+        lua_State* _L = INSTANCE(CLuaEngine)->GetLuaState();
         T** p = (T**)lua_newuserdata(_L, sizeof(obj));
         *p = obj;
         luaL_setmetatable(ApiExporter<T>::name);

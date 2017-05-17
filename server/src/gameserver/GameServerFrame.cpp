@@ -33,9 +33,9 @@ void CGameServerFrame::on_start()
     // exec all lua script.
     INSTANCE(CScriptResource)->LoadScripts();
 
-    INSTANCE(CLuaEngine)->PushFuncName("glof");
+    INSTANCE(CLuaEngine)->PushFunction("glof");
 
-    INSTANCE(CLuaEngine)->Exec(0);
+    INSTANCE(CLuaEngine)->ExecFunction(0);
 
     INSTANCE(CDBMgr)->Start();
 }

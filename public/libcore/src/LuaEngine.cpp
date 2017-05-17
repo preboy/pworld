@@ -55,7 +55,7 @@ int CLuaEngine::_on_lua_error(lua_State* L)
 }
 
 
-bool CLuaEngine::PushFuncName(const char* fn)
+bool CLuaEngine::PushFunction(const char* fn)
 {
     lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
     _fn = fn;
@@ -70,7 +70,7 @@ bool CLuaEngine::PushFuncName(const char* fn)
 }
 
 
-bool CLuaEngine::Exec(int narg, int nresult)
+bool CLuaEngine::ExecFunction(int narg, int nresult)
 {
     if (lua_pcall(_L, narg, nresult, -2 - narg))
     {
@@ -87,4 +87,26 @@ void CLuaEngine::_emit_error()
     const char* err = lua_tostring(_L, -1);
     INSTANCE(CLogger)->Error("[script error]:%s", err);
     lua_pop(_L, 1);
+}
+
+
+void CLuaEngine::RegisterGlobalApi(const char* name, lua_CFunction func)
+{
+    lua_register(_L, name, func);
+}
+
+
+void CLuaEngine::RegisterGlobalApi(const GlobalAPIMapping* mapping)
+{
+    for (; mapping->name; mapping++)
+    {
+        lua_register(_L, mapping->name, mapping->func);
+    }
+}
+
+
+void CLuaEngine::RegisterGlobalLibrary(const char* name, luaL_Reg lib[])
+{
+    luaL_newlib(_L, lib);
+    lua_setglobal(_L, name);
 }

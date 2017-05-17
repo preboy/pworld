@@ -2,6 +2,9 @@
 #include "lua.hpp"
 
 
+typedef luaL_Reg GlobalAPIMapping;
+
+
 class CLuaEngine
 {
 public:
@@ -20,10 +23,16 @@ public:
     /// execute a string
     bool ExecString(const char *str);
 
-
     // execute lua global function
-    bool PushFuncName(const char* fn);
-    bool Exec(int narg, int nresult = 0);
+    bool PushFunction(const char* fn);
+    bool ExecFunction(int narg, int nresult = 0);
+
+
+public:
+    void RegisterGlobalApi(const char* name, lua_CFunction func);
+    void RegisterGlobalApi(const GlobalAPIMapping* mapping);
+    void RegisterGlobalLibrary(const char* name, luaL_Reg lib[]);
+
 
 private:
     void _emit_error();

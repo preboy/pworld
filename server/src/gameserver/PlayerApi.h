@@ -1,6 +1,7 @@
 #pragma once
 #include "Player.h"
 
+
 class CPlayerApi
 {
 public:
@@ -8,3 +9,8 @@ public:
 
 };
 
+
+
+API_EXPORTER_BEGIN(CPlayer, CUnit)
+API_EXPORTER_ENTITY("Sex", CPlayerApi::sex)
+API_EXPORTER_END()

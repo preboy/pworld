@@ -1,7 +1,9 @@
 #pragma once
+#include "Object.h"
 
 
-class CObject;
+ObjectAPI_Parent(CObject, CObject)
+
 
 class CObjectApi
 {

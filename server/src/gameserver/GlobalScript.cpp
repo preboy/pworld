@@ -9,6 +9,6 @@ void CGlobalScript::OnPlayerLogin(CPlayer* plr)
     if (s.empty()) return;
     
     INSTANCE(CLuaEngine)->PushFunction(s.c_str());
-    INSTANCE(CLuaHelper)->PushObject(plr);
+    INSTANCE(CLuaHelper)->PushObject<CPlayer>(plr);
     INSTANCE(CLuaEngine)->ExecFunction(1);
 }

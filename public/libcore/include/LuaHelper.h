@@ -5,27 +5,31 @@
 template<typename T>
 struct ApiExporter
 {
+    struct ApiEntity
+    {
+        const char* api_name;
+        int(*api_func)(lua_State*L, T* obj);
+    };
+
+    static const char *name;
+    static ApiEntity table[];
 };
 
 
 template<typename T>
-struct ApiEntity
-{
-    const char* api_name;
-    int (*api_func)(lua_State*L, T* obj);
+struct ObjectParent {};
+
+#define ObjectAPI_Parent(type, parent_type) \
+template<> \
+struct ObjectParent<type> \
+{ \
+    typedef parent_type Parent; \
 };
 
 
-#define API_EXPORTER_BEGIN(CLASS, PARENT)\
-template<>\
-struct ApiExporter<CLASS>\
-{\
-    typedef PARENT parent;\
-    static const char* name;\
-    static const ApiEntity<CLASS> table[];\
-};\
-const char* ApiExporter<CLASS>::name = #CLASS;\
-const ApiEntity<CLASS> ApiExporter<CLASS>::table[] =\
+#define API_EXPORTER_BEGIN(CLASS)\
+template<> const char* ApiExporter<CLASS>::name = #CLASS;\
+template<> typename ApiExporter<CLASS>::ApiEntity ApiExporter<CLASS>::table[] =\
 {
 #define API_EXPORTER_ENTITY(NAME, FUNC) { NAME, FUNC },
 #define API_EXPORTER_END()\
@@ -36,8 +40,8 @@ const ApiEntity<CLASS> ApiExporter<CLASS>::table[] =\
 class CLuaHelper
 {
 public:
-    CLuaHelper();
-   ~CLuaHelper();
+    CLuaHelper() {}
+   ~CLuaHelper() {}
 
 public:
 
@@ -52,7 +56,7 @@ public:
         lua_rawset(_L, -3);
         
         // set all functions
-        for (ApiEntity<T>* item = ApiExporter<T>::table; item->api_name; item++)
+        for (ApiExporter<T>::ApiEntity* item = ApiExporter<T>::table; item->api_name; item++)
         {
             lua_pushstring(L, item->api_name);
             lua_pushlightuserdata(L, item);
@@ -77,7 +81,7 @@ public:
         lua_State* _L = INSTANCE(CLuaEngine)->GetLuaState();
         T** p = (T**)lua_newuserdata(_L, sizeof(obj));
         *p = obj;
-        luaL_setmetatable(ApiExporter<T>::name);
+        luaL_setmetatable(_L, ApiExporter<T>::name);
     }
     
 

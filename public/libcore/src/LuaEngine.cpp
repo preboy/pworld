@@ -105,8 +105,8 @@ void CLuaEngine::RegisterGlobalApi(const GlobalAPIMapping* mapping)
 }
 
 
-void CLuaEngine::RegisterGlobalLibrary(const char* name, luaL_Reg lib[])
+void CLuaEngine::RegisterGlobalLibrary(const char* name, luaL_Reg reg[])
 {
-    luaL_newlib(_L, lib);
+    luaL_newlib(_L, reg);
     lua_setglobal(_L, name);
 }

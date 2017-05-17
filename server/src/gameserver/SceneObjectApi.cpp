@@ -3,7 +3,7 @@
 #include "SceneObject.h"
 
 
-API_EXPORTER_BEGIN(CSceneObject, CObject)
+API_EXPORTER_BEGIN(CSceneObject)
 API_EXPORTER_ENTITY("Pos", CSceneObjectApi::pos)
 API_EXPORTER_END()
 

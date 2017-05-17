@@ -1,7 +1,9 @@
 #pragma once
+#include "SceneObject.h"
 
 
-class CSceneObject;
+ObjectAPI_Parent(CSceneObject, CSceneObject)
+
 
 class CSceneObjectApi
 {

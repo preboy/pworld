@@ -1,7 +1,9 @@
 #pragma once
+#include "Creature.h"
 
 
-class CCreature;
+ObjectAPI_Parent(CCreature, CUnit);
+
 
 class CCreatureApi
 {

@@ -31,7 +31,7 @@ public:
 public:
     void RegisterGlobalApi(const char* name, lua_CFunction func);
     void RegisterGlobalApi(const GlobalAPIMapping* mapping);
-    void RegisterGlobalLibrary(const char* name, luaL_Reg lib[]);
+    void RegisterGlobalLibrary(const char* name, luaL_Reg reg[]);
 
 
 private:

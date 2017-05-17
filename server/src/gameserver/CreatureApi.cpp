@@ -1,9 +1,8 @@
 #include "stdafx.h"
 #include "CreatureApi.h"
-#include "Creature.h"
 
 
-API_EXPORTER_BEGIN(CCreature, CUnit)
+API_EXPORTER_BEGIN(CCreature)
 API_EXPORTER_ENTITY("Attackable", CCreatureApi::attackable)
 API_EXPORTER_END()
 

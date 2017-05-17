@@ -4,16 +4,6 @@
 #include "singleton.h"
 
 
-CLuaHelper::CLuaHelper()
-{
-}
-
-
-CLuaHelper::~CLuaHelper()
-{
-}
-
-
 const char* g_print_stack()
 {
     lua_State* L = INSTANCE(CLuaEngine)->GetLuaState();

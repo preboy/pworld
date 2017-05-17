@@ -7,6 +7,12 @@ extern GlobalAPIMapping global_apis[];
 
 void CScriptMgr::Init()
 {
+    INSTANCE(CLuaHelper)->RegisterObjectApi<CObject>();
+    /* INSTANCE(CLuaHelper)->RegisterObjectApi(CSceneObject);
+     INSTANCE(CLuaHelper)->RegisterObjectApi(CUnit);
+     INSTANCE(CLuaHelper)->RegisterObjectApi(CPlayer);
+     INSTANCE(CLuaHelper)->RegisterObjectApi(CCreature);*/
+
     INSTANCE(CLuaEngine)->RegisterGlobalApi(global_apis);
 }
 

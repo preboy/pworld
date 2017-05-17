@@ -1,6 +1,9 @@
 #pragma once
+#include "unit.h"
 
-class CUnit;
+
+ObjectAPI_Parent(CUnit, CSceneObject);
+
 
 class CUnitApi
 {

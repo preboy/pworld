@@ -2,9 +2,11 @@
 #include "PlayerApi.h"
 
 
-API_EXPORTER_BEGIN(CPlayer)
-API_EXPORTER_ENTITY("Sex", CPlayerApi::sex)
-API_EXPORTER_END()
+ObjectAPI_Begin(CPlayer)
+
+ObjectAPI_Map("Sex", CPlayerApi::sex)
+
+ObjectAPI_End
 
 
 int CPlayerApi::sex(lua_State * L, CPlayer * obj)

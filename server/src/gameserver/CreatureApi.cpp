@@ -2,9 +2,11 @@
 #include "CreatureApi.h"
 
 
-API_EXPORTER_BEGIN(CCreature)
-API_EXPORTER_ENTITY("Attackable", CCreatureApi::attackable)
-API_EXPORTER_END()
+ObjectAPI_Begin(CCreature)
+
+ObjectAPI_Map("Attackable", CCreatureApi::attackable)
+
+ObjectAPI_End
 
 
 

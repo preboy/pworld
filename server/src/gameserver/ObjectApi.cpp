@@ -2,9 +2,11 @@
 #include "Objectapi.h"
 
 
-API_EXPORTER_BEGIN(CObject)
-API_EXPORTER_ENTITY("name", CObjectApi::get_name)
-API_EXPORTER_END()
+ObjectAPI_Begin(CObject)
+
+ObjectAPI_Map("name", CObjectApi::get_name)
+
+ObjectAPI_End
 
 
 int CObjectApi::get_name(lua_State* L, CObject* obj)

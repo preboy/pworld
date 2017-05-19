@@ -8,6 +8,7 @@
 #include "ScriptResource.h"
 #include "DbMgr.h"
 #include "ScheduleMgr.h"
+#include "ScriptMgr.h"
 
 
 CGameServerFrame::CGameServerFrame()
@@ -36,6 +37,8 @@ void CGameServerFrame::on_start()
     INSTANCE(CLuaEngine)->PushFunction("glof");
 
     INSTANCE(CLuaEngine)->ExecFunction(0);
+
+    INSTANCE(CScriptMgr)->Init();
 
     INSTANCE(CDBMgr)->Start();
 }

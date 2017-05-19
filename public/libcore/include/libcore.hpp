@@ -33,3 +33,4 @@
 #include "utils.h"
 #include "MysqlService.h"
 #include "Database.h"
+#include "ScriptTable.h"

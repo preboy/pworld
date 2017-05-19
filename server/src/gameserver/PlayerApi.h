@@ -2,7 +2,7 @@
 #include "Player.h"
 
 
-ObjectAPI_Parent(CPlayer, CUnit)
+ObjectAPI_Parent(CPlayer, CUnit);
 
 
 class CPlayerApi

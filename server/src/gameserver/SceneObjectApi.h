@@ -2,7 +2,7 @@
 #include "SceneObject.h"
 
 
-ObjectAPI_Parent(CSceneObject, CSceneObject)
+ObjectAPI_Parent(CSceneObject, CObject);
 
 
 class CSceneObjectApi

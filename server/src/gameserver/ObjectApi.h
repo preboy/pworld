@@ -2,7 +2,7 @@
 #include "Object.h"
 
 
-ObjectAPI_Parent(CObject, CObject)
+ObjectAPI_Parent(CObject, CObject);
 
 
 class CObjectApi

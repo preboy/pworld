@@ -5,6 +5,9 @@
 #include "global_function.h"
 
 
+extern const char* g_str_lua_stack;
+
+
 void CLuaEngine::Init()
 {
     _L = luaL_newstate();
@@ -50,7 +53,7 @@ bool CLuaEngine::ExecString(const char *str)
 
 int CLuaEngine::_on_lua_error(lua_State* L)
 {
-    luaL_traceback(L, L, nullptr, 0);
+    luaL_traceback(L, L, nullptr, 1);
     return 1;
 }
 
@@ -105,8 +108,19 @@ void CLuaEngine::RegisterGlobalApi(const GlobalAPIMapping* mapping)
 }
 
 
-void CLuaEngine::RegisterGlobalLibrary(const char* name, luaL_Reg reg[])
+const char* CLuaEngine::Traceback(const char* traceback)
 {
-    luaL_newlib(_L, reg);
-    lua_setglobal(_L, name);
+    if (traceback)
+    {
+        _traceback.assign(traceback);
+        g_str_lua_stack = _traceback.c_str();
+    }
+    return g_str_lua_stack;
 }
+
+
+//void CLuaEngine::RegisterGlobalLibrary(const char* name, luaL_Reg reg[])
+//{
+//    luaL_newlib(_L, reg);
+//    lua_setglobal(_L, name);
+//}

@@ -1,6 +1,8 @@
 #pragma once
 #include "commandInput.h"
 
+#include "Player.h"
+
 class CGameServerInput : public CCommandInput
 {
 public:
@@ -18,6 +20,9 @@ private:
 private:
     void on_thread_proc();
     void on_thread_proc_stmt();
+
+private:
+    CPlayer* plr;
 
 };
 

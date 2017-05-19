@@ -156,6 +156,9 @@
     <ClInclude Include="include\ScheduleBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\ScriptTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\byteBuffer.cpp">
@@ -267,6 +270,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ScheduleBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ScriptTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

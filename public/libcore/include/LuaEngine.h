@@ -31,8 +31,11 @@ public:
 public:
     void RegisterGlobalApi(const char* name, lua_CFunction func);
     void RegisterGlobalApi(const GlobalAPIMapping* mapping);
-    void RegisterGlobalLibrary(const char* name, luaL_Reg reg[]);
+    // void RegisterGlobalLibrary(const char* name, luaL_Reg reg[]);
 
+public:
+    const char* Traceback(const char* traceback);
+    std::string _traceback;
 
 private:
     void _emit_error();

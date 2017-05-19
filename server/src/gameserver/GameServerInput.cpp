@@ -5,6 +5,8 @@
 #include "DbMgr.h"
 #include "AutoDeleter.h"
 #include "LuaTable.h"
+#include "singleton.h"
+#include "LuaHelper.h"
 
 
 CGameServerInput::CGameServerInput()
@@ -16,6 +18,7 @@ CGameServerInput::CGameServerInput()
 
     add_command("lua",      (CMD_FUNC)&CGameServerInput::OnTestLua, "lua",                  "teset lua serialize/deserialize");
 
+    plr = nullptr;
 }
 
 CGameServerInput::~CGameServerInput()
@@ -65,6 +68,11 @@ int CGameServerInput::OnZcg(int argc, char argv[PARAM_CNT][PARAM_LEN])
     INSTANCE(CLogger)->SetColor(CLogger::LOG_TYPE::LT_DEBUG);
     std::cout << "this is preboy speaking!" << std::endl;
     INSTANCE(CLogger)->ResetColor();
+
+    if (!plr)
+    {
+        plr = new CPlayer();
+    }
     return 0;
 }
 
@@ -246,23 +254,39 @@ int CGameServerInput::OnTestLua(int argc, char argv[PARAM_CNT][PARAM_LEN])
     CLuaEngine* lua = INSTANCE(CLuaEngine);
     lua_State* L = lua->GetLuaState();
 
-    CByteBuffer bb(16*1024);
+    //CByteBuffer bb(16*1024);
+    //
+    //lua_getglobal(L, "e1");
+    //lua_getglobal(L, "ga");
+
+    //int size = lua_gettop(L);
+
+    //CLuaTable::Serialize(lua->GetLuaState(), bb);
+
+    //size = lua_gettop(L);
+
+    //
+    //CLuaTable::Deserialize(lua->GetLuaState(), bb);
+
+    //size = lua_gettop(L);
+
+    //lua_pcall(L, 2, 0, 0);
+
+
+    lua->PushFunction("on_s");
     
-    lua_getglobal(L, "e1");
-    lua_getglobal(L, "ga");
-
-    int size = lua_gettop(L);
-
-    CLuaTable::Serialize(lua->GetLuaState(), bb);
-
-    size = lua_gettop(L);
-
     
-    CLuaTable::Deserialize(lua->GetLuaState(), bb);
+    INSTANCE(CLuaHelper)->PushObject(plr);
+    
+    int x = lua_getmetatable(lua->GetLuaState(), -1);
+    if (x)
+    {
+        lua_pop(lua->GetLuaState(), 1);
+    }
 
-    size = lua_gettop(L);
+   
 
-    lua_pcall(L, 2, 0, 0);
+    lua->ExecFunction(1);
 
     return 1;
 }

@@ -1,4 +1,5 @@
 #pragma once
+#include "ScriptTimerGS.h"
 
 
 const uint16 OBJECT_FLAG_Object         = 0x0001;
@@ -67,6 +68,11 @@ public:
     void    entry(uint64 v) { _entry = v; }
 private:
     uint64  _entry;
+
+public:
+    CScriptTimerGS& GetScriptTimer() { return _timer; }
+private:
+    CScriptTimerGS  _timer;
 
 private:
     // 未列出的杂项属性集合

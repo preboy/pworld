@@ -52,3 +52,20 @@ public:                             \
 
 #define RETURN_IF_NULL(b)       if(!(b)) return nullptr;
 #define RETURN_IF_NOT_NULL(b)   if((b))  return (b);
+
+
+// ASSERT
+#if defined(PLAT_WIN)
+    #ifdef BUILD_DEBUG
+        #define CORE_ASSERT assert
+    #else
+        #define CORE_ASSERT(expr) ((void)0)
+    #endif
+#else
+    #ifdef BUILD_DEBUG
+        #define CORE_ASSERT(expr) \
+            (void)( (expr) || (printf("ASSERTION: %s:%u:%s: '%s'\n", __FILE__, __LINE__, __PRETTY_FUNCTION__, #expr) && ((int (*)())0)()) )
+    #else
+        #define CORE_ASSERT(expr) ((void)0)
+    #endif
+#endif

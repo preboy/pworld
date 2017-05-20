@@ -182,6 +182,7 @@
     <ClCompile Include="..\src\gameserver\ScheduleMgr.cpp" />
     <ClCompile Include="..\src\gameserver\ScriptMgr.cpp" />
     <ClCompile Include="..\src\gameserver\ScriptResource.cpp" />
+    <ClCompile Include="..\src\gameserver\ScriptTimerGS.cpp" />
     <ClCompile Include="..\src\gameserver\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -217,6 +218,7 @@
     <ClInclude Include="..\src\gameserver\ScheduleMgr.h" />
     <ClInclude Include="..\src\gameserver\ScriptMgr.h" />
     <ClInclude Include="..\src\gameserver\ScriptResource.h" />
+    <ClInclude Include="..\src\gameserver\ScriptTimerGS.h" />
     <ClInclude Include="..\src\gameserver\stdafx.h" />
     <ClInclude Include="..\src\gameserver\SystemConfig.h" />
     <ClInclude Include="..\src\gameserver\targetver.h" />

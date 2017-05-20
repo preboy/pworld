@@ -98,7 +98,7 @@ int CGameServerInput::OnReload(int argc, char argv[PARAM_CNT][PARAM_LEN])
 int CGameServerInput::OnTestDB(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     //      INSTANCE(CAsyncTask)->PushTask(CCallback::bind_member(this, &CGameServerInput::on_thread_proc));
-    INSTANCE(CAsyncTask)->PushTask(CCallback::bind_member(this, &CGameServerInput::on_thread_proc_stmt));
+    INSTANCE(CAsyncTask)->PushTask(CCallback::Bind(this, &CGameServerInput::on_thread_proc_stmt));
 
     return 0;
 }

@@ -43,6 +43,28 @@ void CTimerMgr::_release()
 }
 
 
+uint32 CTimerMgr::CreateTimer(uint32 itv, CCallback* cb, uint32 once)
+{
+    CTimerMgr* mgr = INSTANCE(CTimerMgr);
+    uint32 tid = mgr->maker.new_id();
+    Timer* pTimer = new Timer();
+    pTimer->count_time = get_current_tick();
+    pTimer->SetInteval(itv);
+    pTimer->SetOnce(once);
+    pTimer->tid = tid;
+    pTimer->cb = cb;
+    if (mgr->in_process)
+    {
+        mgr->lstNewTimer.push_back(pTimer);
+    }
+    else
+    {
+        mgr->lstTimers.push_back(pTimer);
+    }
+    return tid;
+}
+
+
 uint32 CTimerMgr::CreateTimer(uint32 itv, TIMER_FUNC func, const void* param, uint32 once)
 {
     CTimerMgr* mgr = INSTANCE(CTimerMgr);
@@ -115,7 +137,14 @@ void CTimerMgr::Update()
         }
         if (pTimer->count_time + pTimer->interval >= now)
         {
-            pTimer->func(pTimer->param, pTimer);
+            if (pTimer->func)
+            {
+                pTimer->func(pTimer->param, pTimer);
+            }
+            else if (pTimer->cb)
+            {
+                pTimer->cb->Run();
+            }
             pTimer->count_time = now;
             if (pTimer->once)
             {

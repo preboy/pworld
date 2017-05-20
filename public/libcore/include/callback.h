@@ -1,144 +1,455 @@
 #pragma once
 
-
+/// forward declarations
 template<typename T>
-class CCallbackP0;
+class CallbackP0;
 
-template<typename T, typename P1>
-class CCallbackP1;
+template<typename T,
+    typename P1,
+    typename S1>
+class CallbackP1;
 
-template<typename T, typename P1, typename P2, typename S1, typename S2>
-class CCallbackP2;
+template<typename T,
+    typename P1, typename P2,
+    typename S1, typename S2>
+class CallbackP2;
+
+template<typename T,
+    typename P1, typename P2, typename P3,
+    typename S1, typename S2, typename S3>
+class CallbackP3;
+
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4,
+    typename S1, typename S2, typename S3, typename S4>
+class CallbackP4;
+
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4, typename P5,
+    typename S1, typename S2, typename S3, typename S4, typename S5>
+class CallbackP5;
+
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4, typename P5, typename P6,
+    typename S1, typename S2, typename S3, typename S4, typename S5, typename S6>
+class CallbackP6;
 
 
+/**
+* @class Callback
+*
+* this is Callback base class
+*/
 class CCallback
 {
-public:
+protected:
     CCallback() {}
+
+public:
     virtual ~CCallback() {}
 
 public:
     virtual void Run() = 0;
 
+    /// static bind methods
+public:
     template<typename T>
-    static CCallback* bind_member(T* t, typename CCallbackP0<T>::Func f)
+    inline static CCallback *Bind(T *obj,
+        void (T::*m)())
     {
-        return new CCallbackP0<T>(t, f);
+        return new CallbackP0<T>(obj, m);
     }
 
-    template<typename T, typename P1>
-    static CCallback* bind_member(T* t, typename CCallbackP1<T, P1>::Func f, P1 p1)
+    template<typename T,
+        typename P1,
+        typename S1>
+        inline static CCallback *Bind(T *obj,
+            void (T::*m)(S1),
+            P1 p1)
     {
-        return new CCallbackP1<T, P1>(t, f, std::forward<P1>(p1));
+        return new CallbackP1<T, P1, S1>
+            (
+                obj, m,
+                std::forward<P1>(p1)
+                );
     }
 
-	// respect to Mr.Long
-    template<typename T, typename P1, typename P2, typename S1, typename S2>
-    static CCallback* bind_member(T* t, void(T::*f)(S1, S2), P1 p1, P2 p2)
+    template<typename T,
+        typename P1, typename P2,
+        typename S1, typename S2>
+        inline static CCallback *Bind(T *obj,
+            void (T::*m)(S1, S2),
+            P1 p1,
+            P2 p2)
     {
-        return new CCallbackP2<T, P1, P2, S1, S2>
-			(t, f, std::forward<P1>(p1), std::forward<P2>(p2));
+        return new CallbackP2<T, P1, P2, S1, S2>
+            (
+                obj, m,
+                std::forward<P1>(p1),
+                std::forward<P2>(p2)
+                );
     }
 
-    template<typename... Args>
-    static CCallback* bind_any(Args&&... args)
+    template<typename T,
+        typename P1, typename P2, typename P3,
+        typename S1, typename S2, typename S3>
+        inline static CCallback *Bind(T *obj,
+            void (T::*m)(S1, S2, S3),
+            P1 p1,
+            P2 p2,
+            P3 p3)
     {
-        return new CCallbackImpl<decltype(std::bind(args...))>(std::bind(args...));
+        return new CallbackP3<T, P1, P2, P3, S1, S2, S3>
+            (
+                obj, m,
+                std::forward<P1>(p1),
+                std::forward<P2>(p2),
+                std::forward<P3>(p3)
+                );
+    }
+
+    template<typename T,
+        typename P1, typename P2, typename P3, typename P4,
+        typename S1, typename S2, typename S3, typename S4>
+        inline static CCallback *Bind(T *obj,
+            void (T::*m)(S1, S2, S3, S4),
+            P1 p1,
+            P2 p2,
+            P3 p3,
+            P4 p4)
+    {
+        return new CallbackP4<T, P1, P2, P3, P4, S1, S2, S3, S4>
+            (
+                obj, m,
+                std::forward<P1>(p1),
+                std::forward<P2>(p2),
+                std::forward<P3>(p3),
+                std::forward<P4>(p4)
+                );
+    }
+
+    template<typename T,
+        typename P1, typename P2, typename P3, typename P4, typename P5,
+        typename S1, typename S2, typename S3, typename S4, typename S5>
+        inline static CCallback *Bind(T *obj,
+            void (T::*m)(S1, S2, S3, S4, S5),
+            P1 p1,
+            P2 p2,
+            P3 p3,
+            P4 p4,
+            P5 p5)
+    {
+        return new CallbackP5<T, P1, P2, P3, P4, P5, S1, S2, S3, S4, S5>
+            (
+                obj, m,
+                std::forward<P1>(p1),
+                std::forward<P2>(p2),
+                std::forward<P3>(p3),
+                std::forward<P4>(p4),
+                std::forward<P5>(p5)
+                );
+    }
+
+    template<typename T,
+        typename P1, typename P2, typename P3, typename P4, typename P5, typename P6,
+        typename S1, typename S2, typename S3, typename S4, typename S5, typename S6>
+        inline static CCallback *Bind(T *obj,
+            void (T::*m)(S1, S2, S3, S4, S5, S6),
+            P1 p1,
+            P2 p2,
+            P3 p3,
+            P4 p4,
+            P5 p5,
+            P6 p6)
+    {
+        return new CallbackP6<T, P1, P2, P3, P4, P5, P6, S1, S2, S3, S4, S5, S6>
+            (
+                obj, m,
+                std::forward<P1>(p1),
+                std::forward<P2>(p2),
+                std::forward<P3>(p3),
+                std::forward<P4>(p4),
+                std::forward<P5>(p5),
+                std::forward<P6>(p6)
+                );
     }
 };
 
-
+/**
+* @class CallbackP0
+*
+* Callback with 0 parameter
+*/
 template<typename T>
-class CCallbackP0 : public CCallback
+class CallbackP0 : public CCallback
 {
 public:
-    using Func = void(T::*)();
+    typedef void (T::*M)();
 
-    CCallbackP0(T* t, Func func) :
-        _ptr(t),
-        _func(func)
-    {
-    }
+    CallbackP0(T *obj,
+        M m)
+        :
+        _obj(obj),
+        _m(m)
+    {}
 
-    void Run() override
+public:
+    void Run()
     {
-        (_ptr->*_func)();
+        (_obj->*_m)();
     }
 
 private:
-    T* _ptr;
-    Func _func;
+    T *_obj;
+    M _m;
 };
 
-
-template<typename T, typename P1>
-class CCallbackP1 : public CCallback
+/**
+* @class CallbackP1
+*
+* Callback with 1 parameters
+*/
+template<typename T,
+    typename P1,
+    typename S1>
+class CallbackP1 : public CCallback
 {
 public:
-    using Func = void(T::*)(P1);
+    typedef void (T::*M)(S1);
 
-    CCallbackP1(T* t, Func func, P1&& p1) :
-        _ptr(t),
-        _func(func),
+    CallbackP1(T *obj,
+        M m,
+        P1 p1)
+        :
+        _obj(obj),
+        _m(m),
         _p1(std::forward<P1>(p1))
-    {
-    }
+    {}
 
-    void Run() override
+public:
+    void Run()
     {
-        (_ptr->*_func)(_p1);
+        (_obj->*_m)(_p1);
     }
 
 private:
-    T* _ptr;
-    Func _func;
+    T *_obj;
+    M _m;
     P1 _p1;
 };
 
-
-template<typename T, typename P1, typename P2, typename S1, typename S2>
-class CCallbackP2 : public CCallback
+/**
+* @class CallbackP2
+*
+* Callback with 2 parameters
+*/
+template<typename T,
+    typename P1, typename P2,
+    typename S1, typename S2>
+class CallbackP2 : public CCallback
 {
 public:
-    typedef void(T::*Func)(S1, S2);
+    typedef void (T::*M)(S1, S2);
 
-    CCallbackP2(T* t, Func func, P1 p1, P2 p2) :
-        _ptr(t),
-        _func(func),
+    CallbackP2(T *obj,
+        M m,
+        P1 p1,
+        P2 p2)
+        :
+        _obj(obj),
+        _m(m),
         _p1(std::forward<P1>(p1)),
         _p2(std::forward<P2>(p2))
     {}
 
-	~CCallbackP2() {}
-    
-
-	void Run() override
+public:
+    void Run()
     {
-        (_ptr->*_func)(_p1, _p2);
+        (_obj->*_m)(_p1, _p2);
     }
 
 private:
-    T* _ptr;
-    Func _func;
+    T *_obj;
+    M _m;
     P1 _p1;
     P2 _p2;
 };
 
-
-// ----------------another bind ---------------------
-
-template<typename Func>
-class CCallbackImpl : public CCallback
+/**
+* @class CallbackP3
+*
+* Callback with 3 parameters
+*/
+template<typename T,
+    typename P1, typename P2, typename P3,
+    typename S1, typename S2, typename S3>
+class CallbackP3 : public CCallback
 {
 public:
-	CCallbackImpl(Func&& f) : _func_obj(std::move(f)) {}
-    ~CCallbackImpl() {}
+    typedef void (T::*M)(S1, S2, S3);
 
-    void Run() override
-    {
-        _func_obj();
-    }
+    CallbackP3(T *obj,
+        M m,
+        P1 p1,
+        P2 p2,
+        P3 p3)
+        :
+        _obj(obj),
+        _m(m),
+        _p1(std::forward<P1>(p1)),
+        _p2(std::forward<P2>(p2)),
+        _p3(std::forward<P3>(p3))
+    {}
 
 public:
-    Func _func_obj;
+    void Run()
+    {
+        (_obj->*_m)(_p1, _p2, _p3);
+    }
+
+private:
+    T *_obj;
+    M _m;
+    P1 _p1;
+    P2 _p2;
+    P3 _p3;
+};
+
+/**
+* @class CallbackP4
+*
+* Callback with 4 parameters
+*/
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4,
+    typename S1, typename S2, typename S3, typename S4>
+class CallbackP4 : public CCallback
+{
+public:
+    typedef void (T::*M)(S1, S2, S3, S4);
+
+    CallbackP4(T *obj,
+        M m,
+        P1 p1,
+        P2 p2,
+        P3 p3,
+        P4 p4)
+        :
+        _obj(obj),
+        _m(m),
+        _p1(std::forward<P1>(p1)),
+        _p2(std::forward<P2>(p2)),
+        _p3(std::forward<P3>(p3)),
+        _p4(std::forward<P4>(p4))
+    {}
+
+public:
+    void Run()
+    {
+        (_obj->*_m)(_p1, _p2, _p3, _p4);
+    }
+
+private:
+    T *_obj;
+    M _m;
+    P1 _p1;
+    P2 _p2;
+    P3 _p3;
+    P4 _p4;
+};
+
+/**
+* @class CallbackP5
+*
+* Callback with 5 parameters
+*/
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4, typename P5,
+    typename S1, typename S2, typename S3, typename S4, typename S5>
+class CallbackP5 : public CCallback
+{
+public:
+    typedef void (T::*M)(S1, S2, S3, S4, S5);
+
+    CallbackP5(T *obj,
+        M m,
+        P1 p1,
+        P2 p2,
+        P3 p3,
+        P4 p4,
+        P5 p5)
+        :
+        _obj(obj),
+        _m(m),
+        _p1(std::forward<P1>(p1)),
+        _p2(std::forward<P2>(p2)),
+        _p3(std::forward<P3>(p3)),
+        _p4(std::forward<P4>(p4)),
+        _p5(std::forward<P5>(p5))
+    {}
+
+public:
+    void Run()
+    {
+        (_obj->*_m)(_p1, _p2, _p3, _p4, _p5);
+    }
+
+private:
+    T *_obj;
+    M _m;
+    P1 _p1;
+    P2 _p2;
+    P3 _p3;
+    P4 _p4;
+    P5 _p5;
+};
+
+
+/**
+* @class CallbackP6
+*
+* Callback with 6 parameters
+*/
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4, typename P5, typename P6,
+    typename S1, typename S2, typename S3, typename S4, typename S5, typename S6>
+class CallbackP6 : public CCallback
+{
+public:
+    typedef void (T::*M)(S1, S2, S3, S4, S5, S6);
+
+    CallbackP6(T *obj,
+        M m,
+        P1 p1,
+        P2 p2,
+        P3 p3,
+        P4 p4,
+        P5 p5,
+        P6 p6)
+        :
+        _obj(obj),
+        _m(m),
+        _p1(std::forward<P1>(p1)),
+        _p2(std::forward<P2>(p2)),
+        _p3(std::forward<P3>(p3)),
+        _p4(std::forward<P4>(p4)),
+        _p5(std::forward<P5>(p5)),
+        _p6(std::forward<P6>(p6))
+    {}
+
+public:
+    void Run()
+    {
+        (_obj->*_m)(_p1, _p2, _p3, _p4, _p5, _p6);
+    }
+
+private:
+    T *_obj;
+    M _m;
+    P1 _p1;
+    P2 _p2;
+    P3 _p3;
+    P4 _p4;
+    P5 _p5;
+    P6 _p6;
 };

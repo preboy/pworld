@@ -1,4 +1,7 @@
-rmdir /s /q x64  debug
+rmdir /s /q x64  Debug
+rmdir /s /q x64  server\build\Debug
+rmdir /s /q x64  public\libcore\Debug
+
 rmdir /s /q ipch
 del world.vc.db
 

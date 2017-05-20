@@ -69,17 +69,22 @@ public:
 
 public:
 
-    inline void     ReadOffset(int32 offset);
+    void            ReadOffset(int32 offset);
     inline uint32   ReadOffset() { return _rd_ptr; }
 
-    inline void     WriteOffset(int32 ptr);
+    void            WriteOffset(int32 ptr);
     inline uint32   WriteOffset() { return _wr_ptr; }
 
     inline uint32   Avail() { return (_wr_ptr - _rd_ptr); }
     inline uint32   Free()  { return (_size - _wr_ptr); }
-
+    inline uint32   Size()  { return _size; }
 
     void*           DataPtr() { return (void*)_buffer; }
+    void*           ReadPtr() { return (void*)(_buffer + _rd_ptr); }
+    void*           WritePtr(){ return (void*)(_buffer + _wr_ptr); }
+
+    void            Reset() { _rd_ptr = _wr_ptr = 0; }
+    void            Resize(uint32 size);
 
 public:
     bool            In(const void* data, uint32 size);

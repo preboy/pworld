@@ -174,3 +174,13 @@ void CByteBuffer::WriteOffset(int32 offset)
         }
     }
 }
+
+
+void CByteBuffer::Resize(uint32 size)
+{
+    if (_attach || size <= _size)
+        return;
+
+    _buffer = (char*)realloc(_buffer, size);
+    _size = size;
+}

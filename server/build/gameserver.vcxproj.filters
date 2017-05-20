@@ -108,6 +108,9 @@
     <ClCompile Include="..\src\gameserver\GlobalScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\gameserver\ScriptTimerGS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\gameserver\ClientListener.h">
@@ -201,6 +204,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\gameserver\GlobalScript.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\gameserver\ScriptTimerGS.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

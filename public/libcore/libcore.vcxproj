@@ -182,7 +182,9 @@
     <ClInclude Include="include\poller.h" />
     <ClInclude Include="include\random.h" />
     <ClInclude Include="include\ScheduleBase.h" />
+    <ClInclude Include="include\ScriptParam.h" />
     <ClInclude Include="include\ScriptTable.h" />
+    <ClInclude Include="include\ScriptTimer.h" />
     <ClInclude Include="include\serverframe.h" />
     <ClInclude Include="include\servertime.h" />
     <ClInclude Include="include\session.h" />
@@ -226,7 +228,9 @@
     <ClCompile Include="src\poller.cpp" />
     <ClCompile Include="src\random.cpp" />
     <ClCompile Include="src\ScheduleBase.cpp" />
+    <ClCompile Include="src\ScriptParam.cpp" />
     <ClCompile Include="src\ScriptTable.cpp" />
+    <ClCompile Include="src\ScriptTimer.cpp" />
     <ClCompile Include="src\serverframe.cpp" />
     <ClCompile Include="src\servertime.cpp" />
     <ClCompile Include="src\session.cpp" />

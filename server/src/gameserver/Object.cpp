@@ -5,7 +5,7 @@
 
 CObject::CObject()
 {
-
+    _timer.SetCtx(this);
 }
 
 

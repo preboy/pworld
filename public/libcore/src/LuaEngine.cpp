@@ -53,7 +53,10 @@ bool CLuaEngine::ExecString(const char *str)
 
 int CLuaEngine::_on_lua_error(lua_State* L)
 {
-    luaL_traceback(L, L, nullptr, 1);
+    static char err[1024] = {};
+    sprintf(err, "\nerror report:\n\t%s", lua_tostring(L, -1));
+    luaL_traceback(L, L, err, 1);
+    lua_replace(L, -2);
     return 1;
 }
 
@@ -75,9 +78,15 @@ bool CLuaEngine::PushFunction(const char* fn)
 
 bool CLuaEngine::ExecFunction(int narg, int nresult)
 {
-    if (lua_pcall(_L, narg, nresult, -2 - narg))
+    int r = lua_pcall(_L, narg, nresult, -2 - narg);
+    if (r == 0)
+    {
+        lua_remove(_L, -1 - nresult);
+    }
+    else
     {
         _emit_error();
+        _fn = nullptr;
         return false;
     }
     _fn = nullptr;
@@ -88,7 +97,14 @@ bool CLuaEngine::ExecFunction(int narg, int nresult)
 void CLuaEngine::_emit_error()
 {
     const char* err = lua_tostring(_L, -1);
-    INSTANCE(CLogger)->Error("[script error]:%s", err);
+    if (_fn)
+    {
+        INSTANCE(CLogger)->Error("[script error(in `%s`)]:%s", _fn, err);
+    }
+    else
+    {
+        INSTANCE(CLogger)->Error("[script error]:%s", err);
+    }
     lua_pop(_L, 1);
 }
 

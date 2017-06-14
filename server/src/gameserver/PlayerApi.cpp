@@ -11,5 +11,6 @@ ObjectAPI_End
 
 int CPlayerApi::sex(lua_State * L, CPlayer * obj)
 {
-    return 0;
+    lua_pushinteger(L, 32);
+    return 1;
 }

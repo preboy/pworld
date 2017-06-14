@@ -84,6 +84,29 @@ zcg.dump_local = function(n)
 end
 
 
+-- 模拟 CLuaEngine::_on_lua_error
+zcg.dump_locals = function(err)
+
+    local stack = debug.traceback(nil, nil, 5)
+    print("========================= START DUMP LOCAL VARIABLE =========================")
+    for i = 3, 20 do
+        local info = debug.getinfo(i, "n")
+        if not info then
+            break
+        end
+        local func = string.format("from `%s`", info.name)
+        info = debug.getinfo(i-1, "n")
+        if info then
+            func = string.format("name `%s`", info.name)
+        end
+        print(string.format("==== The [%d  (%s)] stack level ====", i, func))
+        zcg.dump_local(i)
+    end
+
+    return string.format("\nError report:\n\t%s\n%s", err, stack)
+end
+
+
 --------------------- utility tools ----------------------
 
 -- 将整数(20151120)转换成秒数

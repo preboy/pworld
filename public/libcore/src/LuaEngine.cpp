@@ -63,7 +63,14 @@ int CLuaEngine::_on_lua_error(lua_State* L)
 
 bool CLuaEngine::PushFunction(const char* fn)
 {
-    lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
+    // M1: origin err message
+    // lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
+
+    // M2: more debug info is good for debug
+    lua_getglobal(_L, "zcg");
+    lua_getfield(_L, -1, "dump_locals");
+    lua_replace(_L, -2);
+    
     _fn = fn;
     lua_getglobal(_L, fn);
     if (lua_isnil(_L, -1))

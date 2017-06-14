@@ -39,7 +39,7 @@ Class =
 
 
 
-RingQueue = Class.extends(nil, {
+RingQueue = Class.extend(nil, {
 
     -------------- ctor --------------
 

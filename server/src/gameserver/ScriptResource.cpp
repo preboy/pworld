@@ -21,6 +21,9 @@ void CScriptResource::LoadScripts()
 {
     _files.clear();
 
+    Utils::ScanDir("./world/0.sys_base", _files);
+    Utils::ScanDir("./world/1.pub_config", _files);
+
     Utils::ScanDir("./world/gs_scripts", _files);
 
     for (auto & file : _files)

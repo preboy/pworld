@@ -68,7 +68,8 @@ zcg.logTable = function(tab, filename)
 end
 
 
---------------------- dump table ----------------------
+--------------------- debug extends ----------------------
+
 -- dump local variables in lua stack
 zcg.dump_local = function(n)
     local idx = 1
@@ -83,40 +84,22 @@ zcg.dump_local = function(n)
 end
 
 
--------------------- another class --------------------
+--------------------- utility tools ----------------------
 
-zcg.Class =
-{
-    __call = function (p, ...)
-        local o = {}
-        setmetatable(o, p)
-        local c = {}
-        local ctors = nil
-        repeat
-            if p.ctor ~= ctors then
-                ctors = p.ctor
-                table.insert(c, p.ctor)
-            end
-            p = getmetatable(p)
-        until not p
-        for i = #c, 1, -1 do
-            c[i](o, ...)
-        end
-        return o
-    end,
-
-    extend = function(p, b)
-        b.__index = b
-        b.__call  = Class.__call
-        if p then
-            setmetatable(b, p)
-        else
-            setmetatable(b, Class)
-        end
-        return b
-    end,
-
-    parent = function(cls)
-        return getmetatable(getmetatable(cls))
-    end,
-}
+-- 将整数(20151120)转换成秒数
+zcg.date_to_os_time = function(val)
+    val = tostring(val)
+    local t1 = string.sub(val, 0, 4)
+    local t2 = string.sub(val, 5, 6)
+    local t3 = string.sub(val, 7, 8)
+    local tt =
+    {
+        year    = tonumber(t1),
+        month   = tonumber(t2),
+        day     = tonumber(t3),
+        hour    = 0,
+        min     = 0,
+        sec     = 0
+    }
+    return os.time(tt)
+end

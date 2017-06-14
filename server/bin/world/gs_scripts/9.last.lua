@@ -1,0 +1,7 @@
+
+
+--RegisterFileInit(function()
+--
+--end)
+
+RunFileInit()

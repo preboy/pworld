@@ -84,8 +84,8 @@ namespace Net
         std::queue<CMessage*>   _msg_recycle;
 
         // lock for sync
-        CCriticalSection        _cs_waiting;
-        CCriticalSection        _cs_recycle;
+        std::mutex              _mutex_waiting;
+        std::mutex              _mutex_recycle;
     };
 
 }

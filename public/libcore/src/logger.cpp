@@ -62,7 +62,7 @@ void CLogger::Release()
 
 void CLogger::_output(LOG_TYPE type, uint32 idx, const char* format, va_list args)
 {
-    CLock lock(_cs);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     const int MAX_LEN = 1024;
     char szBuffer[MAX_LEN] = { 0 };

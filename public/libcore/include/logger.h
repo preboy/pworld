@@ -48,5 +48,5 @@ private:
     uint32  _file_mask = 0;
 
 private:
-    CCriticalSection _cs;
+    std::mutex  _mutex;
 };

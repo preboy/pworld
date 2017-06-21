@@ -34,7 +34,7 @@ void CCommandInput::Run()
 
 void CCommandInput::Update()
 {
-    CTryLock lock(m_cs);
+    std::lock_guard<std::mutex> lock(m_mutex);
 
     if (!m_lstCmdInput.empty())
     {
@@ -94,7 +94,7 @@ bool CCommandInput::_parse_command(char* szCmdLine)
         return false;
     }
 
-    CLock lock(m_cs);
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_lstCmdInput.push_back(std::move(ci));
 
     return true;

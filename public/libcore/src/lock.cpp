@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "lock.h"
 
-
+#ifdef PLAT_WIN
 CCriticalSection::CCriticalSection()
 {
     ::InitializeCriticalSectionAndSpinCount(&m_cs, 4000);
@@ -61,3 +61,4 @@ bool CTryLock::TryEnter()
     _is_get = m_lock.TryEnter();
     return _is_get;
 }
+#endif

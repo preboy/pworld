@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef PLAT_WIN
 class CCriticalSection
 {
 public:
@@ -45,4 +46,5 @@ private:
     CCriticalSection& m_lock;
     bool _is_get = false;
 };
+#endif
 

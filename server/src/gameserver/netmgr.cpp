@@ -67,7 +67,7 @@ void CNetMgr::End()
 }
 
 
-void CNetMgr::OnAccepted(SOCKET sock)
+void CNetMgr::OnAccepted(SOCKET_HANDER sock)
 {
     CClientSocket* s = new CClientSocket();
     int err = 0;

@@ -2,7 +2,7 @@
 
 
 #ifdef _WIN32
-#define PLAT_WIN
+#define PLAT_WIN32
 #else
 #define PLAT_LINUX
 #endif
@@ -55,7 +55,7 @@ public:                             \
 
 
 // ASSERT
-#if defined(PLAT_WIN)
+#if defined(PLAT_WIN32)
     #ifdef BUILD_DEBUG
         #define CORE_ASSERT assert
     #else

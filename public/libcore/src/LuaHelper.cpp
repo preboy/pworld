@@ -19,7 +19,7 @@ const char* g_print_stack()
         lua_pop(L, 1);
     }
     stack = lua_tostring(L, -1);
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
     ::OutputDebugStringA(stack);
 #else
     printf("[LUA-print] %s", stack);

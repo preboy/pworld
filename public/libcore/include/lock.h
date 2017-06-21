@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
 class CCriticalSection
 {
 public:

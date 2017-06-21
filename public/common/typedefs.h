@@ -1,7 +1,7 @@
 #pragma once
 
 
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
 typedef          __int8     int8;
 typedef          __int16    int16;
 typedef          __int32    int32;
@@ -22,7 +22,7 @@ typedef uint64_t            uint64;
 #endif
 
 
-#if defined (PLAT_WIN)
+#if defined (PLAT_WIN32)
 #   define FMT_I64d  "%I64d"
 #   define FMT_I64u  "%I64u"
 #   define atoi64    _atoi64

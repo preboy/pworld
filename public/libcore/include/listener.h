@@ -4,6 +4,8 @@
 
 namespace Net
 {
+#ifdef PLAT_WIN32
+
     class CompletionKey;
 
     class CListener
@@ -35,11 +37,11 @@ namespace Net
         static void WINAPI      listener_cb(void* key, OVERLAPPED* overlapped, DWORD bytes);
 
     private:
-        virtual void            _on_accept_error(DWORD err);
+        virtual void            _on_accept_error(uint32 err);
 
     protected:
-        virtual void            on_accept(SOCKET sock);
-        virtual void            on_accept_error(DWORD err);
+        virtual void            on_accept(SOCKET_HANDER sock);
+        virtual void            on_accept_error(uint32 err);
 
     private:
         SOCKET                  m_sockAcceptor  = INVALID_SOCKET;
@@ -59,4 +61,41 @@ namespace Net
         volatile LISTENER_STATUS         _status = LS_UNINIT;
     };
 
+
+
+
+#else
+
+
+
+
+    class CompletionKey;
+
+    class CListener
+    {
+    public:
+        CListener();
+       ~CListener();
+
+    public:
+        bool Init(const char* ip, uint16 port, uint32& err);
+        void Wait();
+
+        void PostAccept();
+        void StopAccept();
+
+
+    protected:
+        virtual void            on_accept(SOCKET_HANDER sock);
+        virtual void            on_accept_error(uint32 err);
+
+
+    private:
+        SOCKET_HANDER _listener = -1;
+
+        Poll::CompletionKey*    m_pkey = nullptr;
+
+    };
+
+#endif
 }

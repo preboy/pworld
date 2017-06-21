@@ -293,6 +293,9 @@
     <ClCompile Include="src\SignalHander.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\global_function.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\common\make.bat">

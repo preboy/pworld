@@ -8,7 +8,7 @@
 namespace Poll
 {
 
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
 
     bool CPoller::Init(uint32 threadCount)
     {
@@ -91,7 +91,7 @@ namespace Poll
                 Poll::CompletionKey* key = (Poll::CompletionKey*)lpCompletionKey;
                 Net::PerIoData* data = (Net::PerIoData*)lpOverlapped;
                 data->_stag = Net::IO_STATUS::IO_STATUS_SUCCESSD;
-                key->func(key->ptr, lpOverlapped, bytes);
+                key->func(key->obj, lpOverlapped, bytes);
             }
             else
             {
@@ -102,7 +102,7 @@ namespace Poll
                     Net::PerIoData* data = (Net::PerIoData*)lpOverlapped;
                     data->_err = err;
                     data->_stag = Net::IO_STATUS::IO_STATUS_FAILED;
-                    key->func(key->ptr, lpOverlapped, bytes);
+                    key->func(key->obj, lpOverlapped, bytes);
                 }
                 else
                 {
@@ -123,7 +123,7 @@ namespace Poll
 
 void CPoller::_poller_thread_func()
 {
-    const int MAX_EVENT_COUNT = 20;
+    const int MAX_EVENT_COUNT = 128;
     struct epoll_event  evts[MAX_EVENT_COUNT];
     
     while (true)
@@ -131,18 +131,16 @@ void CPoller::_poller_thread_func()
         int counts = epoll_wait(_epoll_fd, evts, MAX_EVENT_COUNT, -1);
         if (counts == -1)
         {
-            return;
+            if(errno == EINTR) continue;
+            break;
         }
         for (int i = 0; i < counts; i++)
         {
-            struct epoll_event evt = events[i];
-
+            struct epoll_event& evt = events[i];
+            Poll::CompletionKey* key = (Poll::CompletionKey*)evt.data.ptr;
+            key->func(key->obj, evt.events);
         }
     }
-
-    
-
-
 }
 
 
@@ -175,15 +173,36 @@ void CPoller::Release()
 }
 
 
-uint32 CPoller::RegisterHandler(HANDLE handle, const CompletionKey* key)
+uint32 CPoller::RegisterHandler(int fd, const CompletionKey* key, uint32 events)
 {
-    epoll_ctl(_epoll_fd, )
+    struct epoll_event evt;
+    evt.events = events | EPOLLET;
+    evt.data.ptr = key;
+    int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &evt);
+    return ret == 0;
+}
+
+
+uint32 CPoller::ReregisterHandler(int fd, const CompletionKey* key, uint32 events)
+{
+    struct epoll_event evt;
+    evt.events = events | EPOLLET;
+    evt.data.ptr = key;
+    int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &evt);
+    return ret == 0;
+}
+
+
+uint32  CPoller::UnregisterHandler(int fd)
+{
+    int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
+    return ret == 0;
 }
 
 
 uint32 CPoller::PostCompletion()
 {
-
+    return 1;
 }
 
 #endif

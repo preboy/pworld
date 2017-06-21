@@ -2,7 +2,7 @@
 
 // === memory leak detector ===
 
-#if defined(PLAT_WIN) && defined(BUILD_DEBUG)
+#if defined(PLAT_WIN32) && defined(BUILD_DEBUG)
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #define ENABLE_MEM_LEAK_DETECTION \

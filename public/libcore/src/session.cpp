@@ -102,7 +102,7 @@ namespace Net
         if (key)
         {
             _key = (Poll::CompletionKey*)key;
-            _key->ptr = this;
+            _key->obj = this;
             _key->func = &CSession::session_cb;
         }
         else

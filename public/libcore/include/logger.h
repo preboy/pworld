@@ -39,7 +39,7 @@ private:
 
 private:
 
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
     HANDLE  _file = INVALID_HANDLE_VALUE;
 #else
     FILE*   _file = nullptr;

@@ -22,7 +22,7 @@ namespace Utils
 
     void ScanDir(const char* dir, std::list<std::string>& files)
     {
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
         std::string fn(dir);
         fn += "/*";
         WIN32_FIND_DATAA  FindFileData;
@@ -51,7 +51,33 @@ namespace Utils
             } while (::FindNextFileA(hFind, &FindFileData));
         }
         ::FindClose(hFind);
-#endif // PLAT_WIN
+#else
+        DIR* dirp = opendir(dir);
+        if (dirp)
+        {
+            dirent* ent = nullptr;
+            while (ent = readdir(dirp), ent)
+            {
+                if (ent->d_name[0] == '.')
+                {
+                    continue;
+                }
+                std::string fname(dir);
+                fname += "/";
+                fname += ent->d_name;
+
+                if (ent->d_type == DT_DIR)
+                {
+                    ScanDir(fname.c_str(), files);
+                }
+                else if (ent->d_type == DT_REG)
+                {
+                    files.push_back(fname);
+                }
+            }
+            closedir(dirp);
+        }
+#endif // PLAT_WIN32
     }
 
 

@@ -3,10 +3,10 @@
 #include "global_function.h"
 
 
-#if defined(PLAT_WIN)
+#if defined(PLAT_WIN32)
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.lib" )
-#endif //PLAT_WIN
+#endif //PLAT_WIN32
 #include "LuaHelper.h"
 
 
@@ -17,7 +17,7 @@ static void dump_lua_stack()
 {
    if (g_str_lua_stack)
    {
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
        HANDLE h = ::CreateFileA("lua.dump", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
        DWORD bytes = 0;
        ::WriteFile(h, g_str_lua_stack, (DWORD)strlen(g_str_lua_stack), &bytes, nullptr);
@@ -27,7 +27,7 @@ static void dump_lua_stack()
 }
 
 
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
 static LONG WINAPI UnhandledExceptionCoreDumpFilter(struct _EXCEPTION_POINTERS* ExceptionInfo)
 {
     std::time_t tNow;
@@ -67,12 +67,12 @@ static LONG WINAPI UnhandledExceptionCoreDumpFilter(struct _EXCEPTION_POINTERS* 
 
     return EXCEPTION_CONTINUE_SEARCH;
 }
-#endif // PLAT_WIN
+#endif // PLAT_WIN32
 
 
 void RegisterAbortEvent()
 {
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
     SetUnhandledExceptionFilter(UnhandledExceptionCoreDumpFilter);
-#endif // PLAT_WIN
+#endif // PLAT_WIN32
 }

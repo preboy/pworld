@@ -198,6 +198,7 @@
     <ClInclude Include="src\JsonException.h" />
     <ClCompile Include="src\Database.cpp" />
     <ClCompile Include="src\DebugHelper.cpp" />
+    <ClCompile Include="src\global_function.cpp" />
     <ClCompile Include="src\LuaEngine.cpp">
       <FileType>CppHeader</FileType>
     </ClCompile>

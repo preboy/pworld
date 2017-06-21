@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "lock.h"
 
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
 CCriticalSection::CCriticalSection()
 {
     ::InitializeCriticalSectionAndSpinCount(&m_cs, 4000);

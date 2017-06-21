@@ -8,6 +8,8 @@
 namespace Poll
 {
 
+#ifdef PLAT_WIN
+
     bool CPoller::Init(uint32 threadCount)
     {
         if (threadCount == 0)
@@ -47,7 +49,7 @@ namespace Poll
         {
             ::CloseHandle(m_pthreads[i]);
         }
-        
+
         delete[] m_pthreads;
     }
 
@@ -116,4 +118,73 @@ namespace Poll
         std::cout << "all is over " << std::endl;
         return 0;
     }
+
+#else
+
+void CPoller::_poller_thread_func()
+{
+    const int MAX_EVENT_COUNT = 20;
+    struct epoll_event  evts[MAX_EVENT_COUNT];
+    
+    while (true)
+    {
+        int counts = epoll_wait(_epoll_fd, evts, MAX_EVENT_COUNT, -1);
+        if (counts == -1)
+        {
+            return;
+        }
+        for (int i = 0; i < counts; i++)
+        {
+            struct epoll_event evt = events[i];
+
+        }
+    }
+
+    
+
+
+}
+
+
+bool CPoller::Init(uint32 thread_count)
+{
+    _epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+
+    if (_epoll_fd == -1)
+    {
+        return false;
+    }
+
+    _thread = std::thread(&CPoller::_poller_thread_func, this);
+
+    return true;
+}
+
+
+void CPoller::Release()
+{
+    if (_epoll_fd != -1)
+    {
+        close(_epoll_fd);
+    }
+
+    if (_thread.joinable())
+    {
+        _thread.join();
+    }
+}
+
+
+uint32 CPoller::RegisterHandler(HANDLE handle, const CompletionKey* key)
+{
+    epoll_ctl(_epoll_fd, )
+}
+
+
+uint32 CPoller::PostCompletion()
+{
+
+}
+
+#endif
 }

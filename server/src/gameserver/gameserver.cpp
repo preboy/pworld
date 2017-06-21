@@ -14,15 +14,20 @@
 #include "ScriptResource.h"
 #include "DbMgr.h"
 #include "ScheduleMgr.h"
+#include "SignalHander.h"
 
 
 int main()
 {
-    ENABLE_MEM_LEAK_DETECTION
-    // _CrtSetBreakAlloc(253);
+    ENABLE_MEM_LEAK_DETECTION;
+        // _CrtSetBreakAlloc(253);
 
-    ENABLE_ABORT_DETECTION
+    ENABLE_ABORT_DETECTION;
 
+#ifdef PLAT_LINUX
+    CSignalHander sig_handler;
+    sig_handler.Init();
+#endif
 
     CREATE_INSTANCE(CLogger);
     CREATE_INSTANCE(CGameServerInput);
@@ -101,6 +106,10 @@ int main()
     DESTROY_INSTANCE(CGameServerFrame);
     DESTROY_INSTANCE(CGameServerInput);
     DESTROY_INSTANCE(CLogger);
+
+#ifdef PLAT_LINUX
+    sig_handler.Release();
+#endif
 
     return 0;
 }

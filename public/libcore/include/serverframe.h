@@ -35,7 +35,7 @@ public:
 
 private:
     bool                    m_bRunning = false;
-    HANDLE                  m_hThread = nullptr;
+    std::thread             m_thread;
     uint32                  m_interval = 40;
     uint64                  _prev_tick = 0;
 

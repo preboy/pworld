@@ -2,7 +2,7 @@
 world.VC.db
 world.VC.VC.opendb
 .vs/*
-*.ipch
+ipch/
 __pycache__
 /*.sdf
 /world.opensdf

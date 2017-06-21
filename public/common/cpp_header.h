@@ -10,6 +10,10 @@
 #include <mswsock.h>
 #else
 #include <stdint.h>
+#include <sys/types.h>
+#include <error.h>
+#include <unistd.h>
+#include <sys/epoll.h>
 #include <sys/socket.h>
 #include <netinet/tcp.h>
 #include <netinet/in.h>

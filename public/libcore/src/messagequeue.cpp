@@ -71,7 +71,7 @@ namespace Net
 
     CMessage* CMessageQueue::ApplyMessage()
     {
-        CLock lock(_cs_recycle);
+        std::lock_guard<std::mutex> lock(_mutex_recycle);
 
         CMessage* msg = nullptr;
         if (!_msg_recycle.empty())
@@ -89,21 +89,23 @@ namespace Net
 
     void CMessageQueue::FreeMessage(CMessage* msg)
     {
-        CLock lock(_cs_recycle);
+        std::lock_guard<std::mutex> lock(_mutex_recycle);
+
         _msg_recycle.push(msg);
     }
 
 
     void CMessageQueue::PushMessage(CMessage* msg)
     {
-        CLock lock(_cs_waiting);
+        std::lock_guard<std::mutex> lock(_mutex_waiting);
+
         _msg_waiting.push(msg);
     }
 
 
     CMessage* CMessageQueue::PopMessage()
     {
-        CLock lock(_cs_waiting);
+        std::lock_guard<std::mutex> lock(_mutex_waiting);
 
         CMessage* msg = nullptr;
         if (!_msg_waiting.empty())

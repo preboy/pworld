@@ -12,6 +12,6 @@ public:
 
 protected:
     virtual void on_connect(Net::CConnector* sock) override;
-    virtual void on_connect_error(DWORD err) override;
+    virtual void on_connect_error(uint32 err) override;
 
 };

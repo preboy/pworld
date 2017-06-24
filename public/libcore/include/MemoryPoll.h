@@ -23,7 +23,7 @@ public:
 public:
     void* Alloc()
     {
-        CLock lock(_cs);
+        std::lock_guard<std::mutex> lock(_mutex);
 
         void* ptr = nullptr;
         if (_free.empty())
@@ -41,11 +41,13 @@ public:
 
     void  Free(void* ptr)
     {
-        CLock lock(_cs);
+        std::lock_guard<std::mutex> lock(_mutex);
+
         _free.push_back(ptr);
     }
 
 private:
     std::list<void*> _free;
-    CCriticalSection _cs;
+    std::mutex       _mutex;
+
 };

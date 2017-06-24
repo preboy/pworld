@@ -83,14 +83,16 @@ DWORD CServerFrame::_logic_thread_proc(LPVOID lparam)
 bool CServerFrame::Start()
 {
     m_bRunning = true;
-    m_hThread = ::CreateThread(nullptr, 0, &CServerFrame::_logic_thread_proc, this, 0, nullptr);
-    return m_hThread ? true : false;
+    m_thread = std::thread(&CServerFrame::_logic_thread_proc, this);
+    return true;
 }
 
 
 void CServerFrame::Stop()
 {
     m_bRunning = false;
-    ::WaitForSingleObject(m_hThread, INFINITE);
-    ::CloseHandle(m_hThread);
+    if (m_thread.joinable())
+    {
+        m_thread.join();
+    }
 }

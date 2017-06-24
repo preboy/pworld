@@ -188,6 +188,7 @@
     <ClInclude Include="include\serverframe.h" />
     <ClInclude Include="include\servertime.h" />
     <ClInclude Include="include\session.h" />
+    <ClInclude Include="include\SignalHander.h" />
     <ClInclude Include="include\singleton.h" />
     <ClInclude Include="include\timer.h" />
     <ClInclude Include="include\utils.h" />
@@ -197,6 +198,7 @@
     <ClInclude Include="src\JsonException.h" />
     <ClCompile Include="src\Database.cpp" />
     <ClCompile Include="src\DebugHelper.cpp" />
+    <ClCompile Include="src\global_function.cpp" />
     <ClCompile Include="src\LuaEngine.cpp">
       <FileType>CppHeader</FileType>
     </ClCompile>
@@ -234,6 +236,7 @@
     <ClCompile Include="src\serverframe.cpp" />
     <ClCompile Include="src\servertime.cpp" />
     <ClCompile Include="src\session.cpp" />
+    <ClCompile Include="src\SignalHander.cpp" />
     <ClCompile Include="src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

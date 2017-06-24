@@ -165,6 +165,9 @@
     <ClInclude Include="include\ScriptParam.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\SignalHander.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\byteBuffer.cpp">
@@ -285,6 +288,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\ScriptTimer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SignalHander.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\global_function.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -3,12 +3,19 @@
 namespace Net
 {
 
+#ifdef PLAT_WIN32
+#define SOCKET_HANDER SOCKET
+#else
+#define SOCKET_HANDER int
+#endif
+
+
     // global funciton 
 
     bool g_net_init();
     bool g_net_release();
     
-    void g_net_close_socket(SOCKET& socket);
+    void g_net_close_socket(SOCKET_HANDER& socket);
 
 
     // constanct
@@ -35,6 +42,9 @@ namespace Net
         IO_STATUS_QUIT,         // not post
     };
 
+
+#ifdef PLAT_WIN32
+
     // public data struct
 
     struct PerIoData
@@ -55,4 +65,7 @@ namespace Net
         void  SetPtr(void* ptr) { _ptr = ptr; }
         void* GetPtr() { return _ptr; }
     };
+
+#endif
+
 }

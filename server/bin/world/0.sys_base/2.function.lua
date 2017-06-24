@@ -43,7 +43,7 @@ local function _print_table(tab, depth)
 end
 
 -- print table to output or file
-zcg.logTable = function(tab, filename)
+zcg.log_table = function(tab, filename)
     local f
     if filename then
         f = io.open(filename, "w+")

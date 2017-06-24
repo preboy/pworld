@@ -26,7 +26,7 @@ public:
     void ConnTest();
 
     
-    void OnAccepted(SOCKET sock);
+    void OnAccepted(SOCKET_HANDER sock);
     void OnConnected(CClientConnector* sock);
 
 public:

@@ -61,5 +61,5 @@ private:
     std::string             m_strPrompt= "server# ";
     std::vector<cmd_config> m_vecCmdConfig;
     std::list<cmd_input>    m_lstCmdInput;
-    CCriticalSection        m_cs;
+    std::mutex              m_mutex;
 };

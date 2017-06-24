@@ -17,7 +17,8 @@ CDatabase::~CDatabase()
 
 bool CDatabase::Occupy()
 {
-    CLock lock(_cs);
+    std::lock_guard<std::mutex> lock(_mutex);
+
     if (_free)
     {
         _free = false;
@@ -29,7 +30,8 @@ bool CDatabase::Occupy()
 
 void CDatabase::Release()
 {
-    CLock lock(_cs);
+    std::lock_guard<std::mutex> lock(_mutex);
+
     _free = true;
     _last_travel_time = get_frame_time();
 }

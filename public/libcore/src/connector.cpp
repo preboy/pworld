@@ -5,6 +5,9 @@
 
 namespace Net
 {
+
+#ifdef PLAT_WIN32
+
     void CALLBACK CConnector::connector_cb(void* key, OVERLAPPED* overlapped, DWORD bytes)
     {
         CConnector* pThis = reinterpret_cast<CConnector*>(key);
@@ -122,8 +125,128 @@ namespace Net
     }
 
 
-    void CConnector::on_connect_error(DWORD err)
+    void CConnector::on_connect_error(uint32 err)
     {
         INSTANCE(CLogger)->Debug("ConnectEx  失败大多了");
     }
+
+
+
+
+#else
+
+
+
+CConnector::~CConnector()
+{
+    g_net_close_socket(_socket);
+    SAFE_DELETE(_key);
+}
+
+
+void CConnector::connector_cb(void* obj, uint32 events)
+{
+    Net::CConnector* pThis = (Net::CConnector*)obj;
+
+    INSTANCE(Poll::CPoller)->UnregisterHandler(pThis->_socket);
+
+    if (event & EPOLLOUT)
+    {
+        int err = 0;
+        socklen_t len = sizeof(err);
+        getsockopt(pThis->_socket, SOL_SOCKET, SO_ERROR, &err, &len);
+
+        if (err == 0)
+        {
+            on_connect(pThis);
+        }
+        else
+        {
+            on_connect_error(err);
+        }
+    }
+}
+
+
+bool CConnector::Connect(const char* ip, uint16 port)
+{
+    uint32 err = 0;
+    _socket = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
+    if (_socket == -1)
+        return false;
+
+    sockaddr_in local_addr;
+    local_addr.sin_family = AF_INET;
+    local_addr.sin_addr.S_un.S_addr = INADDR_ANY;
+    local_addr.sin_port = ::htons(0);
+    if (SOCKET_ERROR == bind(_socket, (const sockaddr*)&local_addr, sizeof(sockaddr_in)))
+    {
+        err = GetSystemError();
+        return false;
+    }
+
+    sockaddr_in remote_addr;
+    remote_addr.sin_family = AF_INET;
+    remote_addr.sin_port = ::htons(port);
+    int ret = inet_pton(AF_INET, ip, &remote_addr.sin_addr);
+    if (ret != 1)
+    {
+        err = GetSystemError();
+        return false;
+    }
+
+    _key = new Poll::CompletionKey{ this, &connector_cb };
+    
+    do 
+    {
+        int ret = connect(_socket, sockaddr*(&remote_addr), sizeof(remote_addr));
+        if (ret == -1)
+        {
+            if (errno == EINPROGRESS || errno == EWOULDBLOCK)
+            {
+                if (INSTANCE(Poll::CPoller)->RegisterHandler(_socket, _key, EPOLLOUT))
+                {
+                    err = GetSystemError();
+                    return false;
+                }
+                return true;
+            }
+            else if(errno == EINTR)
+            {
+                continue;
+            }
+            else
+            {
+                on_connect_error(errno);
+                return false;
+            }
+        }
+        else
+        {
+            on_connect(this);
+            return true;
+        }
+    } while (true);
+}
+
+
+void CConnector::Abort()
+{
+    g_net_close_socket(_socket);
+}
+
+
+void CConnector::on_connect(CConnector* sock)
+{
+    INSTANCE(CLogger)->Debug("ConnectEx 成功了");
+}
+
+
+void CConnector::on_connect_error(uint32 err)
+{
+    INSTANCE(CLogger)->Debug("ConnectEx  失败大多了");
+}
+
+#endif
+
 }

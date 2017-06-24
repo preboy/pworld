@@ -22,7 +22,7 @@ void CClientConnector::on_connect(Net::CConnector* sock)
 }
 
 
-void CClientConnector::on_connect_error(DWORD err)
+void CClientConnector::on_connect_error(uint32 err)
 {
     Net::CConnector::on_connect_error(err);
 }

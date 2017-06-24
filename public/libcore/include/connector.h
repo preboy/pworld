@@ -5,6 +5,9 @@
 
 namespace Net
 {
+
+#ifdef PLAT_WIN32
+
     class CConnector
     {
     public:
@@ -17,16 +20,16 @@ namespace Net
         bool Connect(const char* ip, uint16 port);
         void Abort();
 
-        void*   GetKey()    { return _key; }
-        SOCKET  GetSocket() { return _socket; }
-        void    Detach()    { _socket = INVALID_SOCKET; _key = nullptr; }
+        void*           GetKey()    { return _key; }
+        SOCKET_HANDER   GetSocket() { return _socket; }
+        void            Detach()    { _socket = INVALID_SOCKET; _key = nullptr; }
 
     private:
         static void CALLBACK connector_cb(void* key, OVERLAPPED* overlapped, DWORD bytes);
         
     protected:
         virtual void on_connect(CConnector* sock);
-        virtual void on_connect_error(DWORD err);
+        virtual void on_connect_error(uint32 err);
         
 
     private:
@@ -36,5 +39,45 @@ namespace Net
 
         PerIoData               _io_connect;
     };
+
+
+
+
+#else
+
+    class CConnector
+    {
+    public:
+        CConnector()
+        {};
+
+        virtual ~CConnector();
+
+    public:
+        bool Connect(const char* ip, uint16 port);
+        void Abort();
+
+        void*           GetKey() { return _key; }
+        SOCKET_HANDER   GetSocket() { return _socket; }
+        void            Detach() { _socket = INVALID_SOCKET; _key = nullptr; }
+
+
+    protected:
+        virtual void on_connect(CConnector* sock);
+        virtual void on_connect_error(uint32 err);
+
+    private:
+        static void connector_cb(void* obj, uint32 events);
+
+    private:
+
+        Poll::CompletionKey*    _key = nullptr;
+
+        SOCKET_HANDER           _socket = -1;
+
+    }
+
+
+#endif
 
 }

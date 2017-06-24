@@ -37,7 +37,7 @@ public:
 
 private:
     CMysqlHandler           _db_handler;
-    CCriticalSection        _cs;
+    std::mutex              _mutex;
     bool                    _free;
     int64                   _last_travel_time;
 

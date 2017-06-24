@@ -37,7 +37,7 @@ CLogger::~CLogger()
 bool CLogger::Init(const char* szfilename)
 {
     std::remove(szfilename);
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
     _file = ::CreateFileA(szfilename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     return (_file != INVALID_HANDLE_VALUE);
 #else
@@ -50,7 +50,7 @@ void CLogger::Release()
 {
     if (_file)
     {
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
         ::CloseHandle(_file);
 #else
         fclose(_file);
@@ -62,7 +62,7 @@ void CLogger::Release()
 
 void CLogger::_output(LOG_TYPE type, uint32 idx, const char* format, va_list args)
 {
-    CLock lock(_cs);
+    std::lock_guard<std::mutex> lock(_mutex);
 
     const int MAX_LEN = 1024;
     char szBuffer[MAX_LEN] = { 0 };
@@ -88,7 +88,7 @@ void CLogger::_output(LOG_TYPE type, uint32 idx, const char* format, va_list arg
 
     if ((_file_mask | type) && _file)
     {
-#ifdef PLAT_WIN
+#ifdef PLAT_WIN32
         DWORD bytes;
         DWORD len = (DWORD)strlen(szBuffer);
         ::WriteFile(_file, szBuffer, len, &bytes, nullptr);

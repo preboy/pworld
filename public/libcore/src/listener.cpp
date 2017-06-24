@@ -7,6 +7,9 @@
 
 namespace Net
 {
+
+#ifdef PLAT_WIN32
+
     void CListener::listener_cb(void* key, OVERLAPPED* overlapped, DWORD bytes)
     {
         CListener* pThis = reinterpret_cast<CListener*>(key);
@@ -182,8 +185,8 @@ namespace Net
         g_net_close_socket(m_sockListener);
     }
 
-    
-    void CListener::_on_accept_error(DWORD err)
+
+    void CListener::_on_accept_error(uint32 err)
     {
         accept_error = err;
         on_accept_error(err);
@@ -191,15 +194,148 @@ namespace Net
 
 
     //--------------------------------------------
-    
-    void CListener::on_accept(SOCKET sock)
+
+    void CListener::on_accept(SOCKET_HANDER sock)
     {
     }
 
-    
-    void CListener::on_accept_error(DWORD err) 
+
+    void CListener::on_accept_error(uint32 err)
     {
         INSTANCE(CLogger)->Error("CListener::on_accept_error err=%u", err);
     }
 
+
+
+
+
+#else
+
+
+CListener::CListener()
+{
+}
+
+
+CListener::~CListener()
+{
+    SAFE_DELETE(m_pkey);
+}
+
+
+static void listener_cb(void* obj, uint32 events)
+{
+    CListener* pThis = (CListener*)obj;
+   
+    if (events | EPOLLERR)
+    {
+        pThis->on_accept_error(errno);
+        return;
+    }
+
+    if (events | EPOLLIN)
+    {
+        pThis->PostAccept();
+    }
+}
+
+
+    bool CListener::Init(const char* ip, uint16 port, uint32& err)
+    {
+        _listener = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
+        if (_listener == -1)
+            return false;
+
+        sockaddr_in listen_addr;
+        listen_addr.sin_family = AF_INET;
+        listen_addr.sin_port = ::htons(port);
+        int ret = inet_pton(AF_INET, ip, &listen_addr.sin_addr);
+        if (ret != 1)
+        {
+            g_net_close_socket(_listener);
+            err = GetSystemError();
+            return false;
+        }
+
+        ret = ::bind(_listener, (const sockaddr*)&listen_addr, sizeof(sockaddr_in));
+        if (ret == -1)
+        {
+            err = GetSystemError();
+            g_net_close_socket(_listener);
+            return false;
+        }
+
+        ret = ::listen(m_sockListener, 128);
+        if (ret == -1)
+        {
+            err = ::GetSystemError();
+            g_net_close_socket(m_sockListener);
+            return false;
+        }
+
+        m_pkey = new Poll::CompletionKey(this, &listener_cb);
+
+        INSTANCE(CPoller)->RegisterHandler(_listener, m_pkey, EPOLLIN);
+
+        return true;
+    }
+
+
+    void CListener::Wait()
+    {
+    }
+
+
+    void CListener::PostAccept()
+    {
+        do
+        {
+            int socket = accept4(_listener, nullptr, nullptr, SOCK_NONBLOCK|SOCK_CLOEXEC);
+            if (socket == -1)
+            {
+                if (errno == EINTR || errno == ECONNABORTED)
+                {
+                    continue;
+                }
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                {
+                    // INSTANCE(CPoller)->ReregisterHandler(_listener, m_pkey, EPOLLIN);
+                    break;
+                }
+                else
+                {
+                    on_accept_error(errno);
+                    return;
+                }
+            }
+            else
+            {
+                on_accept(socket);
+            }
+        } while (true);
+    }
+
+
+    void CListener::StopAccept()
+    {
+        if (_listener != -1)
+        {
+            close(_listener);
+            _listener = -1;
+        }
+    }
+
+
+    void CListener::on_accept(SOCKET_HANDER sock)
+    {
+
+    }
+
+    void CListener::on_accept_error(uint32 err)
+    {
+
+    }
+
+
+#endif
 }

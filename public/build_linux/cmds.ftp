@@ -1,8 +1,8 @@
 
-mkdir -p pworld
+mkdir pworld
 cd pworld
 
 rm  public.zip
-rm  unpack.sh
+rm  unpack_public.sh
 put public.zip
-put unpack.sh
+put unpack_public.sh

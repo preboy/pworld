@@ -3,6 +3,6 @@ mkdir pworld
 cd pworld
 
 rm  server.zip
-rm  unpack_server.sh
+rm  server_builder.sh
 put server.zip
-put unpack_server.sh
+put server_builder.sh

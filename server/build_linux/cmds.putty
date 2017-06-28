@@ -1,4 +1,4 @@
 cd ~/pworld
 
-chmod u+x unpack_server.sh
-./unpack_server.sh
+chmod u+x server_builder.sh
+./server_builder.sh

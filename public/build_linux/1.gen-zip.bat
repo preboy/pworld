@@ -1,12 +1,7 @@
 @echo off
+call 0.env.bat
 
 cd .. 
-
-set PATH="C:\program files\7-zip";%PATH%
-
-
-set target=public
-
 
 if exist %target% (
     rd /q /s %target%

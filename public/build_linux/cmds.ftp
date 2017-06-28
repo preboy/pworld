@@ -3,6 +3,6 @@ mkdir pworld
 cd pworld
 
 rm  public.zip
-rm  unpack_public.sh
+rm  public_builder.sh
 put public.zip
-put unpack_public.sh
+put public_builder.sh

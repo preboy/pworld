@@ -1,4 +1,4 @@
 cd ~/pworld
 
-chmod u+x unpack_public.sh
-./unpack_public.sh
+chmod u+x public_builder.sh
+./public_builder.sh

@@ -1,0 +1,8 @@
+
+mkdir -p pworld
+cd pworld
+
+rm  server.zip
+rm  unpack_server.sh
+put server.zip
+put unpack_server.sh

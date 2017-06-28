@@ -7,7 +7,7 @@
 
 void CNetMgr::Begin()
 {
-    DWORD err = 0;
+    uint32 err = 0;
     m_listener = new CClientListener();
     if (!m_listener->Init("127.0.0.1", 19850, err))
     {

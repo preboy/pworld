@@ -1,4 +1,8 @@
 #include "stdafx.h"
+#include "SignalHander.h"
+#include "singleton.h"
+#include "logger.h"
+
 
 #ifdef PLAT_LINUX
 

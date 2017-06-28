@@ -43,6 +43,9 @@ struct ObjectParent {};
     };
 
 
+#include "singleton.h"
+#include "LuaEngine.h"
+
 
 class CLuaHelper
 {

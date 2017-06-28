@@ -10,6 +10,7 @@
 #include <ws2tcpip.h>
 #include <mswsock.h>
 #else
+#include <stdarg.h>
 #include <strings.h>
 #include <dirent.h>
 #include <stdint.h>

@@ -2,6 +2,8 @@
 #include "connector.h"
 #include "singleton.h"
 #include "logger.h"
+#include "global_function.h"
+
 
 namespace Net
 {

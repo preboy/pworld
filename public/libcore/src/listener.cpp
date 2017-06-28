@@ -3,6 +3,7 @@
 #include "singleton.h"
 #include "logger.h"
 #include "utils.h"
+#include "global_function.h"
 
 
 namespace Net

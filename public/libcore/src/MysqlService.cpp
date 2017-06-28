@@ -200,11 +200,11 @@ const char* CMysqlQueryResultStmt::GetBinary(uint32 idx, char* data, unsigned lo
 //////////////////////////////////////////////////////////////////////////
 CMysqlHanderStmt::CMysqlHanderStmt(MYSQL* mysql, CMysqlHandler* handler) :
     _mysql(mysql),
-    _handler(handler),
     _mysql_stmt(nullptr),
     _meta_result(nullptr),
     _field_count(0),
-    _param_count(0)
+    _param_count(0),
+    _handler(handler)
 {
 }
 
@@ -325,6 +325,7 @@ CMysqlQueryResultStmt* CMysqlHanderStmt::Execute(MysqlBindParam* params)
     else
     {
         my_ulonglong rows = mysql_stmt_affected_rows(_mysql_stmt);
+        CORE_UNUSED(rows);
     }
 
     SAFE_DELETE_ARR(bind);
@@ -341,8 +342,8 @@ void CMysqlHanderStmt::OnError(unsigned int err_no, const char* err_msg, const c
 //////////////////////////////////////////////////////////////////////////
 CMysqlQueryResult::CMysqlQueryResult(MYSQL_RES* result, CMysqlHandler* handler) :
     _result(result),
-    _handler(handler),
-    _row(nullptr)
+    _row(nullptr),
+    _handler(handler)
 {
     _num_rows = mysql_num_rows(_result);
     _num_fields = mysql_num_fields(_result);
@@ -536,6 +537,7 @@ CMysqlQueryResult* CMysqlHandler::ExecuteSql(const char* sql)
             // query does not return data
             // (it was not a SELECT)
             unsigned long long num_rows = mysql_affected_rows(_mysql);
+            CORE_UNUSED(num_rows);
             return nullptr;
         }
         else // mysql_store_result() should have returned data

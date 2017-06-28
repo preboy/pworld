@@ -1,6 +1,6 @@
 CC       = g++
 CFLAGS   = -g -O0 -Wall -std=c++14
-INCLUDES = include ../common ../depends/lua/include ../depends/mysql/include
+INCLUDES = -Iinclude -I../common -I/usr/include/lua5.3/ -I/usr/include/mariadb/
 
 BUILD_DIR = build
 SRC_DIR   = src

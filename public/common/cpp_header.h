@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if defined (PLAT_WIN32)
 #include <winsock2.h>
@@ -9,6 +10,8 @@
 #include <ws2tcpip.h>
 #include <mswsock.h>
 #else
+#include <strings.h>
+#include <dirent.h>
 #include <stdint.h>
 #include <error.h>
 #include <unistd.h>

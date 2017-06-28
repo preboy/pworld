@@ -23,7 +23,11 @@ void CCommandInput::Run()
     {
         _print_prompt();
         memset(szBuff, 0x0, CMD_MAX_CHAR);
+#ifdef PLAT_WIN32
         gets_s(szBuff, CMD_MAX_CHAR);
+#else
+        fgets(szBuff, CMD_MAX_CHAR, stdin);
+#endif
         if (_parse_command(szBuff))
         {
             Utils::Sleep(500);
@@ -66,7 +70,11 @@ bool CCommandInput::_parse_command(char* szCmdLine)
         {
             break;
         }
+#ifdef PLAT_WIN32
         strncpy_s(ci.argv[ci.argc], PARAM_LEN, token, PARAM_LEN);
+#else
+        strncpy(ci.argv[ci.argc], token, PARAM_LEN);
+#endif
         ci.argc = ci.argc + 1;
         token = strtok_s(NULL, seps, &next_token);
     }
@@ -90,7 +98,7 @@ bool CCommandInput::_parse_command(char* szCmdLine)
         _stricmp("help", ci.argv[0]) == 0 ||
         _stricmp("list", ci.argv[0]) == 0)
     {
-        (this->*(ci.func))(ci.argc, (char[PARAM_CNT][PARAM_LEN])ci.argv);
+        (this->*(ci.func))(ci.argc, ci.argv);
         return false;
     }
 

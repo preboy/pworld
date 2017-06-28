@@ -3,21 +3,29 @@
 
 namespace JSON
 {
-    CJsonException::CJsonException( const char* szReason ) : exception(szReason)
+    CJsonException::CJsonException(const char* szReason)
+#ifdef PLAT_WIN32
+        : exception(szReason)
+#endif        
     {
     }
 
 
-    CJsonException::CJsonException( const char* szReason, const char* szMsg ) : 
-        m_strMessage(szMsg),
-        exception(szReason)
+    CJsonException::CJsonException(const char* szReason, const char* szMsg) :
+        m_strMessage(szMsg)
+#ifdef PLAT_WIN32
+        , exception(szReason)
+#endif
     {
     }
 
     CJsonException::CJsonException(const BYTE* szReason, const char* szMsg) :
-        m_strMessage(szMsg),
-        exception((const char*)szReason)
+        m_strMessage(szMsg)
+#ifdef PLAT_WIN32
+        , exception((const char*)szReason)
+#endif
     {
+
     }
 
 

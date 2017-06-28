@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Json.h"
+#include "json.h"
 #include "JsonException.h"
 
 ////////////////////////////// static function //////////////////////////////////////////
@@ -670,7 +670,9 @@ namespace JSON
         }
         catch (CJsonException& e)
         {
-            ::MessageBoxA(NULL, e.GetMessage().c_str(), e.what(), MB_OK );
+#ifdef PLAT_WIN32
+            ::MessageBoxA(NULL, e.GetMessage().c_str(), e.what(), MB_OK);
+#endif
             return false;
         }
 
@@ -680,9 +682,16 @@ namespace JSON
     bool CJson::LoadFromFile(const char* filename)
     {
         FILE* file = NULL;
-        if(fopen_s(&file, filename, "rb"))
+#ifdef PLAT_WIN32
+        if (fopen_s(&file, filename, "rb"))
+#else
+        file = fopen(filename, "rb");
+        if (!file)
+#endif
         {
+#ifdef PLAT_WIN32
             MessageBoxA(NULL, filename, "打开文件失败;", MB_OK);
+#endif
             return false;
         }
 
@@ -695,9 +704,11 @@ namespace JSON
         pBuffer[fileSize] = '\0';
 
         size_t readLen = fread(pBuffer, 1, fileSize, file);
-        if(readLen != fileSize)
+        if((long)readLen != fileSize)
         {
+#ifdef PLAT_WIN32
             MessageBoxA(NULL, filename, "未能完全读取真个文件;", MB_OK);
+#endif
             return false;
         }
 
@@ -724,9 +735,17 @@ namespace JSON
 
         FILE* file = NULL;
 
-        if(fopen_s(&file, filename, "w+"))
+#ifdef PLAT_WIN32
+    if (fopen_s(&file, filename, "w+"))
+#else
+    file = fopen(filename, "w+");
+    if (!file)
+#endif
+
         {
+#ifdef PLAT_WIN32
             MessageBoxA(NULL, filename, "创建文件失败;", MB_OK);
+#endif
             return false;
         }
 

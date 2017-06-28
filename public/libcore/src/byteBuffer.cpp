@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "bytebuffer.h"
+#include "byteBuffer.h"
 #include "singleton.h"
 #include "logger.h"
 

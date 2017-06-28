@@ -92,7 +92,7 @@ namespace Net
             g_net_close_socket(m_sockListener);
             return false;
         }
-        
+
         m_pkey = new Poll::CompletionKey{ this, &CListener::listener_cb };
         err = INSTANCE(Poll::CPoller)->RegisterHandler((HANDLE)m_sockListener, m_pkey);
         if (err)
@@ -100,7 +100,7 @@ namespace Net
             g_net_close_socket(m_sockListener);
             return false;
         }
-        
+
         _status = LS_INITED;
         return true;
     }
@@ -153,7 +153,7 @@ namespace Net
                 }
             }
         }
-        if(err)
+        if (err)
         {
             _status = LS_CLOSED;
             _io_accept._stag = IO_STATUS::IO_STATUS_QUIT;
@@ -212,32 +212,32 @@ namespace Net
 #else
 
 
-CListener::CListener()
-{
-}
-
-
-CListener::~CListener()
-{
-    SAFE_DELETE(m_pkey);
-}
-
-
-static void listener_cb(void* obj, uint32 events)
-{
-    CListener* pThis = (CListener*)obj;
-   
-    if (events | EPOLLERR)
+    CListener::CListener()
     {
-        pThis->on_accept_error(errno);
-        return;
     }
 
-    if (events | EPOLLIN)
+
+    CListener::~CListener()
     {
-        pThis->PostAccept();
+        SAFE_DELETE(m_pkey);
     }
-}
+
+
+    void CListener::listener_cb(void* obj, uint32 events)
+    {
+        CListener* pThis = (CListener*)obj;
+
+        if (events | EPOLLERR)
+        {
+            pThis->on_accept_error(errno);
+            return;
+        }
+
+        if (events | EPOLLIN)
+        {
+            pThis->PostAccept();
+        }
+    }
 
 
     bool CListener::Init(const char* ip, uint16 port, uint32& err)
@@ -265,17 +265,17 @@ static void listener_cb(void* obj, uint32 events)
             return false;
         }
 
-        ret = ::listen(m_sockListener, 128);
+        ret = ::listen(_listener, 128);
         if (ret == -1)
         {
             err = ::GetSystemError();
-            g_net_close_socket(m_sockListener);
+            g_net_close_socket(_listener);
             return false;
         }
 
-        m_pkey = new Poll::CompletionKey(this, &listener_cb);
+        m_pkey = new Poll::CompletionKey{ this, &CListener::listener_cb };
 
-        INSTANCE(CPoller)->RegisterHandler(_listener, m_pkey, EPOLLIN);
+        INSTANCE(Poll::CPoller)->RegisterHandler(_listener, m_pkey, EPOLLIN);
 
         return true;
     }
@@ -290,7 +290,7 @@ static void listener_cb(void* obj, uint32 events)
     {
         do
         {
-            int socket = accept4(_listener, nullptr, nullptr, SOCK_NONBLOCK|SOCK_CLOEXEC);
+            int socket = accept4(_listener, nullptr, nullptr, SOCK_NONBLOCK | SOCK_CLOEXEC);
             if (socket == -1)
             {
                 if (errno == EINTR || errno == ECONNABORTED)

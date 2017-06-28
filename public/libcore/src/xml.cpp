@@ -84,7 +84,9 @@ namespace XML
         }
         catch(CXmlException& e)
         {
+#ifdef PLAT_WIN32
             ::MessageBoxA(NULL, e.GetMessage().c_str(), e.what(), MB_OK);
+#endif
             g_pXMLAlloc = nullptr;        
             return false;
         }

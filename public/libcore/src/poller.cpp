@@ -136,7 +136,7 @@ void CPoller::_poller_thread_func()
         }
         for (int i = 0; i < counts; i++)
         {
-            struct epoll_event& evt = events[i];
+            struct epoll_event& evt = evts[i];
             Poll::CompletionKey* key = (Poll::CompletionKey*)evt.data.ptr;
             key->func(key->obj, evt.events);
         }
@@ -173,21 +173,21 @@ void CPoller::Release()
 }
 
 
-uint32 CPoller::RegisterHandler(int fd, const CompletionKey* key, uint32 events)
+uint32 CPoller::RegisterHandler(int fd, CompletionKey* key, uint32 events)
 {
     struct epoll_event evt;
     evt.events = events | EPOLLET;
-    evt.data.ptr = key;
+    evt.data.ptr = (void*)(key);
     int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &evt);
     return ret == 0;
 }
 
 
-uint32 CPoller::ReregisterHandler(int fd, const CompletionKey* key, uint32 events)
+uint32 CPoller::ReregisterHandler(int fd, CompletionKey* key, uint32 events)
 {
     struct epoll_event evt;
     evt.events = events | EPOLLET;
-    evt.data.ptr = key;
+    evt.data.ptr = (void*)(key);
     int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &evt);
     return ret == 0;
 }

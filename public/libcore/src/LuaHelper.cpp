@@ -15,6 +15,7 @@ const char* g_print_stack()
     if (iError)
     {
         const char* sz = lua_tostring(L, -1);
+        CORE_UNUSED(sz);
         stack = "Can NOT get lua stack!";
         lua_pop(L, 1);
     }

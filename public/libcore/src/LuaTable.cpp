@@ -228,6 +228,10 @@ static void serialize_entity(lua_State* L, LuaValueType type, int idx, CByteBuff
     case LVT_Hash:
         serialize_table(L, idx, LVT_Hash, bb, depth + 1);
         break;
+
+    default:
+        CORE_ASSERT(false);
+        break;
     }
 }
 
@@ -393,6 +397,9 @@ static void deserialize_entity(lua_State* L, LuaValueType type, CByteBuffer& bb)
     case LVT_Hash:
         lua_newtable(L);
         deserialize_table(L, LVT_Hash, bb);
+        break;
+    default:
+        CORE_ASSERT(false);
         break;
     }
 }

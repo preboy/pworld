@@ -3,7 +3,7 @@
 namespace Poll
 {
 #ifdef PLAT_WIN32
-    using IO_CALLBACK = void (WINAPI*)(void* obj, OVERLAPPED* overlapped, DWORD bytes);
+    using IO_CALLBACK = void (CORE_STDCALL*)(void* obj, OVERLAPPED* overlapped, DWORD bytes);
 
     struct CompletionKey
     {
@@ -29,7 +29,7 @@ namespace Poll
         uint32 m_threadCount;
 
     private:
-        static DWORD WINAPI _poller_thread_func(LPVOID lpParam);
+        static DWORD CORE_STDCALL _poller_thread_func(LPVOID lpParam);
     };
 
 
@@ -54,11 +54,11 @@ namespace Poll
        bool    Init(uint32 thread_count = 0);
        void    Release();
 
-       uint32  RegisterHandler(int fd, const CompletionKey* key, uint32 events);
-       uint32  ReregisterHandler(int fd, const CompletionKey* key, uint32 events);
+       uint32  RegisterHandler(int fd, CompletionKey* key, uint32 events);
+       uint32  ReregisterHandler(int fd, CompletionKey* key, uint32 events);
        uint32  UnregisterHandler(int fd);
 
-       uint32  PostCompletion(const CompletionKey* key, LPOVERLAPPED overlapped, DWORD bytes);
+       uint32  PostCompletion();
 
     private:
 

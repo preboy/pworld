@@ -41,7 +41,11 @@ namespace XML
 
         if (si)
         {
+#ifdef PLAT_WIN32
             memcpy_s(m_pBuffer, m_size, pValue, si);
+#else
+            memcpy(m_pBuffer, pValue, si);
+#endif
         }
 
         m_pBuffer[si] = '\0';

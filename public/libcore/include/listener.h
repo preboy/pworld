@@ -20,7 +20,7 @@ namespace Net
         };
 
     public:
-        CListener() : 
+        CListener() :
             _io_accept(IO_TYPE::IO_TYPE_Accept, ADDRESS_BUFFER_SIZE * 2)
         {}
 
@@ -34,7 +34,7 @@ namespace Net
         void Wait();
 
     private:
-        static void WINAPI      listener_cb(void* key, OVERLAPPED* overlapped, DWORD bytes);
+        static void CORE_STDCALL    listener_cb(void* key, OVERLAPPED* overlapped, DWORD bytes);
 
     private:
         virtual void            _on_accept_error(uint32 err);
@@ -44,16 +44,16 @@ namespace Net
         virtual void            on_accept_error(uint32 err);
 
     private:
-        SOCKET                  m_sockAcceptor  = INVALID_SOCKET;
-        SOCKET                  m_sockListener  = INVALID_SOCKET;
-        Poll::CompletionKey*    m_pkey          = nullptr;
-        LPFN_ACCEPTEX           lpfnAcceptEx    = nullptr;
-        uint32                  accept_error    = 0;
+        SOCKET                  m_sockAcceptor = INVALID_SOCKET;
+        SOCKET                  m_sockListener = INVALID_SOCKET;
+        Poll::CompletionKey*    m_pkey = nullptr;
+        LPFN_ACCEPTEX           lpfnAcceptEx = nullptr;
+        uint32                  accept_error = 0;
 
     private:
         enum
         {
-            ADDRESS_BUFFER_SIZE = sizeof(sockaddr_in)+16,
+            ADDRESS_BUFFER_SIZE = sizeof(sockaddr_in) + 16,
         };
 
         PerIoData                       _io_accept;
@@ -75,7 +75,7 @@ namespace Net
     {
     public:
         CListener();
-       ~CListener();
+        ~CListener();
 
     public:
         bool Init(const char* ip, uint16 port, uint32& err);
@@ -88,6 +88,10 @@ namespace Net
     protected:
         virtual void            on_accept(SOCKET_HANDER sock);
         virtual void            on_accept_error(uint32 err);
+
+
+    private:
+        static void CORE_STDCALL listener_cb(void* obj, uint32 events);
 
 
     private:

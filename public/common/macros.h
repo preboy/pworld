@@ -69,3 +69,28 @@ public:                             \
         #define CORE_ASSERT(expr) ((void)0)
     #endif
 #endif
+
+
+#ifdef PLAT_WIN32
+    
+#define CORE_STDCALL // WINAPI  64位构架下(win32/linux)只有一种调用方式
+
+#else
+
+#define BYTE unsigned char
+#define CORE_STDCALL // __attribute__((__stdcall__))
+
+#define stricmp     strcasecmp
+#define strnicmp    strncasecmp
+
+#define _stricmp    strcasecmp
+#define _strdup     strdup
+
+#define sprintf_s   sprintf
+#define strcpy_s    strcpy
+#define strtok_s    strtok_r
+
+#endif
+
+
+#define CORE_UNUSED(expr)  do { (void)(expr);} while(0)

@@ -116,7 +116,7 @@ public:
 	template<typename T>
 	T GetValue()
 	{
-		std::assert(_type == TypeInfo<T>::type);
+		CORE_ASSERT(_type == TypeInfo<T>::type);
 		switch (_type)
 		{
 		case var_type::vt_uint8:

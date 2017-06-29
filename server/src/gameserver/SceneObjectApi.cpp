@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "SceneObjectapi.h"
+#include "SceneObjectApi.h"
 
 
 ObjectAPI_Begin(CSceneObject)

@@ -1,0 +1,4 @@
+cd ~/pworld
+
+chmod u+x public_builder.sh
+./public_builder.sh

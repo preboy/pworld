@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "singleton.h"
-#include "ServerFrame.h"
+#include "serverframe.h"
 #include "servertime.h"
 #include "FrameEvent.h"
 #include "utils.h"
@@ -72,7 +72,7 @@ void CServerFrame::_run()
 }
 
 
-DWORD CServerFrame::_logic_thread_proc(LPVOID lparam)
+uint32 CServerFrame::_logic_thread_proc(void* lparam)
 {
     CServerFrame* pThis = reinterpret_cast<CServerFrame*>(lparam);
     pThis->_run();

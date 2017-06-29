@@ -1,0 +1,8 @@
+
+mkdir pworld
+cd pworld
+
+rm  server.zip
+rm  server_builder.sh
+put server.zip
+put server_builder.sh

@@ -1,0 +1,8 @@
+
+mkdir pworld
+cd pworld
+
+rm  public.zip
+rm  public_builder.sh
+put public.zip
+put public_builder.sh

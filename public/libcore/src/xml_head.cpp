@@ -42,7 +42,6 @@ namespace XML
             return false;
         }
 
-        size_t  uLen   = 0;
         char*   pStart = g_get_node_name(pData, dwLen);
 
         if ( 0 != strncmp(pStart, "<?xml", pData - pStart) )

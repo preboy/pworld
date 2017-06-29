@@ -1,4 +1,8 @@
 #include "stdafx.h"
+#include "SignalHander.h"
+#include "singleton.h"
+#include "logger.h"
+
 
 #ifdef PLAT_LINUX
 
@@ -8,7 +12,7 @@ void CSignalHander::_signal_thread_func()
     while (true)
     {
         int sig = 0;
-        int ret = sigwait(_set, &sig);
+        int ret = sigwait(&_set, &sig);
         if (ret)
         {
             INSTANCE(CLogger)->Error("sigwait failed with %d", ret);
@@ -53,7 +57,7 @@ void CSignalHander::Release()
     if (_thread.joinable())
     {
         // ·¢ËÍÍË³öĞÅºÅ
-        pthread_kill(_thread.get_id(), SIGUSR1);
+        pthread_kill(pthread_self(), SIGUSR1);
         _thread.join();
     }
 }

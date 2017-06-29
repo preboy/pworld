@@ -31,7 +31,7 @@ public:
     void    SetColor(uint32 idx);
     void    ResetColor();
 
-    void    SetScreenMask(UINT32 mask) { _screen_mask |= mask; }
+    void    SetScreenMask(uint32 mask) { _screen_mask |= mask; }
     void    SetFileMask(uint32 mask) { _file_mask |= mask; }
 
 private:

@@ -47,6 +47,6 @@ private:
     std::list<Task*>        _lst_task;
     std::list<Task*>        _lst_over;
 
-    std::atomic_uint32_t    _task_cnt;
+    std::atomic<uint32>     _task_cnt;
 };
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ScriptTimerGS.h"
 #include "Object.h"
-#include "map.h"
+#include "Map.h"
 
 
 void CScriptTimerGS::SetCtx(CObject* obj)

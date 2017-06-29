@@ -25,7 +25,7 @@ private:
     void _run();
 
 private:
-    static DWORD WINAPI _logic_thread_proc(LPVOID lparam);
+    static uint32 CORE_STDCALL _logic_thread_proc(void* lparam);
 
 public:
     inline void SetInterval(uint32 val) { m_interval = val; }

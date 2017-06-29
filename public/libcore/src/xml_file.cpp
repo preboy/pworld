@@ -19,7 +19,7 @@ namespace XML
     bool CXmlFile::Open(const char* szName)
     {
         Close();
-
+#ifdef PLAT_WIN32
         if (!szName || !strlen(szName))
             return false;
 
@@ -53,6 +53,9 @@ namespace XML
         m_pBuffer[m_dwSize] = '\0';
         ::CloseHandle(hFile);
         return true;
+#else
+        return false;
+#endif
     }
 
 

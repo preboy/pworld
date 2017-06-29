@@ -3,13 +3,18 @@
 
 namespace XML
 {
-    CXmlException::CXmlException( const char* szReason ) : exception(szReason)
+    CXmlException::CXmlException( const char* szReason )
+#ifdef PLAT_WIN32
+        : exception(szReason)
+#endif
     {
     }
     
     CXmlException::CXmlException( const char* szReason, const char* szMsg ) : 
-        m_strMessage(szMsg),
-        exception(szReason)
+        m_strMessage(szMsg)
+#ifdef PLAT_WIN32
+        ,exception(szReason)
+#endif
     {
     }
 

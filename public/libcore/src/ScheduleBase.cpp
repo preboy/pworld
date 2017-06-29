@@ -14,7 +14,7 @@ ScheduleBase::ScheduleBase() :
     _sb_yday(0)
 {
     int64 now = get_current_time();
-    tm* lt = _localtime64(&now);
+    tm* lt = localtime(&now);
     _curr_hour = lt->tm_hour;
 }
 
@@ -34,7 +34,7 @@ void ScheduleBase::Update()
     }
 
     _last_update_t = now;
-    tm* lt = _localtime64(&now);
+    tm* lt = localtime(&now);
 
     _sb_hour = lt->tm_hour;
     _sb_mday = lt->tm_mday;

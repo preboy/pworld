@@ -1,0 +1,4 @@
+cd ~/pworld
+
+chmod u+x server_builder.sh
+./server_builder.sh

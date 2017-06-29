@@ -12,14 +12,25 @@ static const char* szType[] =
 };
 
 
+#ifdef PLAT_WIN32
 static const WORD wColor[] =
 {
-    FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY,
+    FOREGROUND_GREEN | FOREGROUND_BLUE  | FOREGROUND_INTENSITY,
     FOREGROUND_GREEN | FOREGROUND_INTENSITY,
-    FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
-    FOREGROUND_BLUE | FOREGROUND_RED | FOREGROUND_INTENSITY,
-    FOREGROUND_RED | FOREGROUND_INTENSITY,
+    FOREGROUND_RED   | FOREGROUND_GREEN | FOREGROUND_INTENSITY,
+    FOREGROUND_BLUE  | FOREGROUND_RED   | FOREGROUND_INTENSITY,
+    FOREGROUND_RED   | FOREGROUND_INTENSITY,
 };
+#else
+const char* sColor[] =
+{
+    "\033[36m",    // Cyan  debug
+"\033[32m",     // Green  info
+"\033[33m",     // Yellow  warn
+"\033[31m",     // Red     fatal
+"\033[35m",     // Magenta error
+};
+#endif
 
 
 CLogger::CLogger()
@@ -41,7 +52,8 @@ bool CLogger::Init(const char* szfilename)
     _file = ::CreateFileA(szfilename, GENERIC_WRITE, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     return (_file != INVALID_HANDLE_VALUE);
 #else
-    return !fopen_s(&_file, szfilename, "a+t");
+    _file = fopen(szfilename, "a+t");
+    return bool(_file);
 #endif
 }
 
@@ -69,16 +81,18 @@ void CLogger::_output(LOG_TYPE type, uint32 idx, const char* format, va_list arg
 
     time_t _time;
     time(&_time);
-    struct tm _tm;
-    localtime_s(&_tm, &_time);
+     struct tm *_tm = localtime(&_time);
     sprintf_s(szBuffer, "[%04d-%02d-%02d %02d:%02d:%02d %5s] ",
-        _tm.tm_year + 1900, _tm.tm_mon + 1, _tm.tm_mday,
-        _tm.tm_hour, _tm.tm_min, _tm.tm_sec,
+        _tm->tm_year + 1900, _tm->tm_mon + 1, _tm->tm_mday,
+        _tm->tm_hour, _tm->tm_min, _tm->tm_sec,
         szType[idx]);
 
     size_t len = strlen(szBuffer);
+#ifdef PLAT_WIN32
     vsprintf_s(szBuffer + len, MAX_LEN - len, format, args);
-
+#else
+    vsnprintf(szBuffer + len, MAX_LEN - len, format, args);
+#endif
     if (_screen_mask | type)
     {
         SetColor(idx);
@@ -164,12 +178,20 @@ void CLogger::Fatal(const char* format, ...)
 
 void CLogger::SetColor(uint32 idx)
 {
+#ifdef PLAT_WIN32
     ::SetConsoleTextAttribute(::GetStdHandle(STD_OUTPUT_HANDLE), wColor[idx]);
+#else
+    printf("%s", sColor[idx]);
+#endif
 }
 
 
 void CLogger::ResetColor()
 {
+#ifdef PLAT_WIN32
     ::SetConsoleTextAttribute(::GetStdHandle(STD_OUTPUT_HANDLE),
         FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+#else
+    printf("\033[0m");
+#endif
 }

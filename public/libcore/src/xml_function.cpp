@@ -4,6 +4,10 @@
 #include "xml.h"
 #include "xml_exception.h"
 
+#ifdef PLAT_LINUX
+#define _strnicmp strncasecmp
+#endif
+
 namespace XML
 {
 

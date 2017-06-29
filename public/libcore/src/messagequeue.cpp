@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "MessageQueue.h"
+#include "messagequeue.h"
 
 
 namespace Net

@@ -72,7 +72,7 @@ namespace XML
 
             if ( !_verify_attrib_value(pAttribValue, pData - pAttribValue) )
             {
-                throw ("属性值不合法;", pAttribValue);
+                throw CXmlException("属性值不合法;", pAttribValue);
                 return false;
             }
 

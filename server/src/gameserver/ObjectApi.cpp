@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Objectapi.h"
+#include "ObjectApi.h"
 
 
 ObjectAPI_Begin(CObject)

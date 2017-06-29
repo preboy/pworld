@@ -20,17 +20,17 @@ namespace Net
         bool Connect(const char* ip, uint16 port);
         void Abort();
 
-        void*           GetKey()    { return _key; }
+        void*           GetKey() { return _key; }
         SOCKET_HANDER   GetSocket() { return _socket; }
-        void            Detach()    { _socket = INVALID_SOCKET; _key = nullptr; }
+        void            Detach() { _socket = INVALID_SOCKET; _key = nullptr; }
 
     private:
-        static void CALLBACK connector_cb(void* key, OVERLAPPED* overlapped, DWORD bytes);
-        
+        static void CORE_STDCALL connector_cb(void* key, OVERLAPPED* overlapped, DWORD bytes);
+
     protected:
         virtual void on_connect(CConnector* sock);
         virtual void on_connect_error(uint32 err);
-        
+
 
     private:
         SOCKET                  _socket = INVALID_SOCKET;
@@ -59,7 +59,7 @@ namespace Net
 
         void*           GetKey() { return _key; }
         SOCKET_HANDER   GetSocket() { return _socket; }
-        void            Detach() { _socket = INVALID_SOCKET; _key = nullptr; }
+        void            Detach() { _socket = -1; _key = nullptr; }
 
 
     protected:
@@ -67,7 +67,7 @@ namespace Net
         virtual void on_connect_error(uint32 err);
 
     private:
-        static void connector_cb(void* obj, uint32 events);
+        static void CORE_STDCALL connector_cb(void* obj, uint32 events);
 
     private:
 
@@ -75,7 +75,7 @@ namespace Net
 
         SOCKET_HANDER           _socket = -1;
 
-    }
+    };
 
 
 #endif

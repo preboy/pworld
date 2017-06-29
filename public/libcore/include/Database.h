@@ -9,14 +9,14 @@ class CDatabase
 {
 public:
     CDatabase(std::string& host, std::string& user, std::string& pwd, std::string& db_name, std::string& char_set, uint16 port) :
+        _free(true),
+        _last_travel_time(0),
         _host(host),
         _user(user),
         _pwd(pwd),
         _db_name(db_name),
         _char_set(char_set),
-        _port(port),
-        _free(true),
-        _last_travel_time(0)
+        _port(port)
     {
         _db_handler.Init();
     }

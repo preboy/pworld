@@ -1,8 +1,8 @@
 /public/libcore/lib
 world.VC.db
 world.VC.VC.opendb
-.vs/*
-ipch/
+/.vs
+/ipch
 Debug/
 __pycache__
 /*.sdf

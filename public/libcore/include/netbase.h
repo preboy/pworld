@@ -18,6 +18,9 @@ namespace Net
     void g_net_close_socket(SOCKET_HANDER& socket);
 
 
+    int  g_net_socket_error(SOCKET_HANDER socket);
+
+
     // constanct
     const uint32 SEND_OR_RECV_BUFFER_SIZE = 0x1000;
 

@@ -91,13 +91,15 @@ namespace Net
         virtual ~CSession();
 
     private:
-        enum class SOCK_STATUS
+        enum SOCK_STATUS
         {
             SOCK_STATUS_NONE,
-            SOCK_STATUS_ALIVE,
-            SOCK_STATUS_DEADING,
-            SOCK_STATUS_DEADED,
-            SOCK_STATUS_DECAY,
+            SOCK_STATUS_ALIVE,          // active
+            SOCK_STATUS_RD_CLOSED,      // recv 0,  closed by peer
+            SOCK_STATUS_WR_CLOSING,     // i want close the socket
+            SOCK_STATUS_WR_CLOSED,      // write closed by me, all data be sended
+            SOCK_STATUS_ERROR,          // error occur
+            SOCK_STATUS_FULL_CLOSED,    // full closed
         };
     public:
 
@@ -123,6 +125,7 @@ namespace Net
         void _close();
         void _set_session_deading();
 
+        void _set_socket_status(SOCK_STATUS s);
 
     private:
         void _on_recv(char* pdata, uint32 size);
@@ -140,7 +143,7 @@ namespace Net
     private:
 
         SOCKET_HANDER               _socket = -1;
-        volatile SOCK_STATUS        _status = SOCK_STATUS::SOCK_STATUS_NONE;
+        std::atomic<uint32>         _status = SOCK_STATUS::SOCK_STATUS_NONE;
 
         Poll::CompletionKey*        _key = nullptr;
 
@@ -151,6 +154,8 @@ namespace Net
         // 等待发送的消息
         std::queue<CMessage*>       _q_send;
         CMessage*                   _b_send = nullptr;
+
+        bool    _send_pending = false;
 
         uint32 _send_error = 0;
         uint32 _recv_error = 0;

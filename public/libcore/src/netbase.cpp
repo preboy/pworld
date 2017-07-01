@@ -78,4 +78,12 @@ namespace Net
 
 #endif
 
+
+    int g_net_socket_error(SOCKET_HANDER socket)
+    {
+        int err = 0;
+        socklen_t len = sizeof(err);
+        getsockopt(socket, SOL_SOCKET, SO_ERROR, &err, &len);
+        return err;
+    }
 }

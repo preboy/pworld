@@ -353,38 +353,71 @@ namespace Net
     {
         CSession* pThis = (CSession*)obj;
 
-        if (events | EPOLLIN)
-        {
 
-        }
-        
-        if (events | EPOLLOUT)
-        {
-            
-        }
-
-        if (events | EPOLLRDHUP)
-        {
-
-        }
 
         if (events | EPOLLERR)
         {
-
+            pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
+            return;
         }
 
         if (events | EPOLLHUP)
         {
+            pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_RD_CLOSED);
+        }
 
+
+        if (events | EPOLLIN)
+        {
+            if (events | EPOLLRDHUP)
+            {
+                pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_RD_CLOSED);
+            }
+
+            do
+            {
+                const int MAX_RECV_SIZE = 0x1000;
+                static char data[MAX_RECV_SIZE];
+
+                int ret = recv(_socket, data, MAX_RECV_SIZE, 0);
+                if (ret > 0)
+                {
+
+                }
+                else if (ret == -1)
+                {
+                    if (errno == EAGAIN || errno == EWOULDBLOCK)
+                    {
+                        break;
+                    }
+                    else if (errno == EINTR)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        int err = g_net_socket_error(pThis->_socket);
+                        _on_recv_error(err);
+                        pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
+                        break;
+                    }
+                }
+                else
+                {
+                    // connection be closed by peer.
+                    pThis->_status = SOCK_STATUS::SOCK_STATUS_RD_CLOSED;
+                }
+
+
+            } while (true);
+        }
+
+        if (events | EPOLLOUT)
+        {
+            pThis->_send_pending = false;
         }
 
         
-
-            
-
-            
-
-
 
     }
 
@@ -473,9 +506,14 @@ namespace Net
     {
         if (!Alive())
             return;
+        
+        if (_send_pending)
+            return;
 
         if (_b_send)
             return;
+
+        
 
         if (_q_send.empty())
             return;
@@ -484,6 +522,8 @@ namespace Net
 
         if (!_b_send->DataLength())
             return;
+
+        
 
         _q_send.pop();
 
@@ -497,6 +537,7 @@ __SEND__:
             if (errno == EAGAIN || errno == EWOULDBLOCK)
             {
                 // ×¢²áÊÂ¼þ INSTANCE();
+                _send_pending = true;
             }
             else if( errno == EINTR)
             {
@@ -517,33 +558,7 @@ __SEND__:
         if (!Alive())
             return;
 
-        const int MAX_RECV_SIZE = 0x1000;
-        static char data[MAX_RECV_SIZE];
-
-        int ret = recv(_socket, data, MAX_RECV_SIZE, 0);
-        if (ret > 0)
-        {
-            
-        }
-        else if (ret == -1)
-        {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-            {
-
-            }
-            else if (errno == EINTR)
-            {
-
-            }
-            else
-            {
-
-            }
-        }
-        else
-        {
-            // connection be closed by peer.
-        }
+      
 
     }
 
@@ -622,6 +637,13 @@ __SEND__:
     }
 
 
+    void CSession::_set_socket_status(SOCK_STATUS s)
+    {
+        INSTANCE(CLogger)->Info("CSession::_status changed! prev = %d, curr = %d", _status, s);
+        _status = s;
+    }
+
+    
     void CSession::_on_send(char* pdata, uint32 size)
     {
 
@@ -632,7 +654,8 @@ __SEND__:
     {
         INSTANCE(CLogger)->Info("CSession::on_closed send_err=%u, recv_err=%u", _send_error, _recv_error);
     }
-
+    
+    
 
 #endif
 }

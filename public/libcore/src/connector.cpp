@@ -154,10 +154,7 @@ namespace Net
 
         if (events & EPOLLOUT)
         {
-            int err = 0;
-            socklen_t len = sizeof(err);
-            getsockopt(pThis->_socket, SOL_SOCKET, SO_ERROR, &err, &len);
-
+            int err = g_net_socket_error(pThis->_socket);
             if (err == 0)
             {
                 pThis->on_connect(pThis);

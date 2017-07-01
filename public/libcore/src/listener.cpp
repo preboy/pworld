@@ -44,7 +44,7 @@ namespace Net
     }
 
 
-    bool CListener::Init(const char* ip, uint16 port, DWORD& err)
+    bool CListener::Init(const char* ip, uint16 port, uint32& err)
     {
         err = 0;
         m_sockListener = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);

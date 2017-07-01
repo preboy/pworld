@@ -26,7 +26,7 @@ namespace Net
 
         virtual ~CListener() { SAFE_DELETE(m_pkey); }
 
-        bool Init(const char* ip, uint16 port, DWORD& err);
+        bool Init(const char* ip, uint16 port, uint32& err);
 
         void PostAccept();
         void StopAccept();

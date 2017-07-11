@@ -25,6 +25,7 @@ private:
 
     sigset_t    _set;
     std::thread _thread;
+    pthread_t   _tid;
 };
 
 #endif

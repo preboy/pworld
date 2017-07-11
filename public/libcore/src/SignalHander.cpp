@@ -9,6 +9,7 @@
 
 void CSignalHander::_signal_thread_func()
 {
+    _tid = pthread_self();
     while (true)
     {
         int sig = 0;
@@ -35,7 +36,7 @@ bool CSignalHander::Init()
     sigaddset(&_set, SIGHUP);
     sigaddset(&_set, SIGALRM);
     sigaddset(&_set, SIGTERM);
-    sigaddset(&_set, SIGINT);
+    // sigaddset(&_set, SIGINT); Unblock ctrl+c
     sigaddset(&_set, SIGQUIT);
     sigaddset(&_set, SIGUSR1);
     sigaddset(&_set, SIGUSR2);
@@ -57,7 +58,7 @@ void CSignalHander::Release()
     if (_thread.joinable())
     {
         // ·¢ËÍÍË³öÐÅºÅ
-        pthread_kill(pthread_self(), SIGUSR1);
+        pthread_kill(_tid, SIGUSR1);
         _thread.join();
     }
 }

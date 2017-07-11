@@ -53,14 +53,26 @@ void CCommandInput::Update()
 
 bool CCommandInput::_parse_command(char* szCmdLine)
 {
-    if (!strlen(szCmdLine))
+    size_t len = strlen(szCmdLine);
+    if (!len)
+    {
+        return false;
+    }
+
+    if (szCmdLine[len - 1] == '\n')
+    {
+        szCmdLine[len - 1] = '\0';
+    }
+    
+    len = strlen(szCmdLine);
+    if (!len)
     {
         return false;
     }
 
     cmd_input ci;
 
-    char seps[] = " \t,.";
+    char seps[] = " \t,.\n";
     char *token = nullptr;
     char *next_token = nullptr;
     token = strtok_s(szCmdLine, seps, &next_token);

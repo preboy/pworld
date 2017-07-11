@@ -126,13 +126,15 @@ void CPoller::_poller_thread_func()
     const int MAX_EVENT_COUNT = 128;
     struct epoll_event  evts[MAX_EVENT_COUNT];
     
-    while (true)
+    while (_running)
     {
         int counts = epoll_wait(_epoll_fd, evts, MAX_EVENT_COUNT, -1);
         if (counts == -1)
         {
-            if(errno == EINTR) continue;
-            break;
+            if(errno == EINTR)
+                continue;
+            else
+                break;
         }
         for (int i = 0; i < counts; i++)
         {
@@ -161,9 +163,11 @@ bool CPoller::Init(uint32 thread_count)
 
 void CPoller::Release()
 {
+    _running = false;
     if (_epoll_fd != -1)
     {
         close(_epoll_fd);
+        _epoll_fd = -1;
     }
 
     if (_thread.joinable())

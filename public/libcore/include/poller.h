@@ -64,7 +64,7 @@ namespace Poll
 
         int             _epoll_fd = -1;
         std::thread     _thread;
-
+        bool            _running;
     private:
         void _poller_thread_func();
     };

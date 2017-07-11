@@ -109,7 +109,7 @@ namespace Net
         void Disconnect();
 
         bool Alive()  { return _status == SOCK_STATUS::SOCK_STATUS_ALIVE; }
-        bool Closed() { return _status == SOCK_STATUS::SOCK_STATUS_CLOSED; }
+        bool Disposable() { return _status == SOCK_STATUS::SOCK_STATUS_CLOSED; }
 
 
     public:

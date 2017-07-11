@@ -81,7 +81,11 @@ namespace Net
 
     int g_net_socket_error(SOCKET_HANDER socket)
     {
+#ifdef PLAT_WIN32
+        char err = 0;
+#else
         int err = 0;
+#endif
         socklen_t len = sizeof(err);
         getsockopt(socket, SOL_SOCKET, SO_ERROR, &err, &len);
         return err;

@@ -337,57 +337,52 @@ namespace Net
 
 
 
-#else
+#else   //////////////////////////////////////////////////////////////////////////
 
 
-
-    void CSession::_set_session_deading()
-    {
-        if (_status == SOCK_STATUS::SOCK_STATUS_ALIVE)
-        {
-            _status = SOCK_STATUS::SOCK_STATUS_DEADING;
-        }
-    }
 
     void CORE_STDCALL CSession::session_cb(void* obj, uint32 events)
     {
         CSession* pThis = (CSession*)obj;
-
-
-
         if (events | EPOLLERR)
         {
+            pThis->_othe_error = g_net_socket_error(pThis->_socket);
             pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
             return;
         }
 
         if (events | EPOLLHUP)
         {
-            pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_RD_CLOSED);
+            pThis->_rd_status = 2;
+            pThis->_wr_status = 3;
+            pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
         }
-
 
         if (events | EPOLLIN)
         {
             if (events | EPOLLRDHUP)
             {
-                pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_RD_CLOSED);
+                pThis->_rd_status = 2;
             }
 
             do
             {
-                const int MAX_RECV_SIZE = 0x1000;
+                static const int MAX_RECV_SIZE = 0x1000;
                 static char data[MAX_RECV_SIZE];
 
-                int ret = recv(_socket, data, MAX_RECV_SIZE, 0);
+                int ret = recv(pThis->_socket, data, MAX_RECV_SIZE, 0);
                 if (ret > 0)
                 {
-
+                    pThis->_on_recv(data, ret);
+                    if(ret == MAX_RECV_SIZE)
+                        continue;
                 }
                 else if (ret == -1)
                 {
                     if (errno == EAGAIN || errno == EWOULDBLOCK)
                     {
+                        // 设置标识
+                        pThis->_rd_ready = 0;
                         break;
                     }
                     else if (errno == EINTR)
@@ -396,8 +391,7 @@ namespace Net
                     }
                     else
                     {
-                        int err = g_net_socket_error(pThis->_socket);
-                        _on_recv_error(err);
+                        pThis->_on_recv_error(errno);
                         pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
                         break;
                     }
@@ -405,25 +399,22 @@ namespace Net
                 else
                 {
                     // connection be closed by peer.
-                    pThis->_status = SOCK_STATUS::SOCK_STATUS_RD_CLOSED;
+                    pThis->_rd_status = 2;
+                    break;
                 }
-
-
             } while (true);
         }
 
         if (events | EPOLLOUT)
         {
-            pThis->_send_pending = false;
+            pThis->_wr_ready = 1;
         }
-
-        
 
     }
 
 
     CSession::CSession() :
-        _status(SOCK_STATUS::SOCK_STATUS_NONE),
+        _status(SOCK_STATUS::SOCK_STATUS_UNSET),
         _header(sizeof(uint32))
     {
     }
@@ -437,9 +428,8 @@ namespace Net
 
     void CSession::Attach(SOCKET_HANDER socket, void* key)
     {
-        _header.Reset(4);
-
         _socket = socket;
+        _header.Reset(4);
 
         linger ln = { 1, 0 };
         setsockopt(_socket, SOL_SOCKET, SO_LINGER, (char*)&ln, sizeof(linger));
@@ -453,22 +443,19 @@ namespace Net
         else
         {
             _key = new Poll::CompletionKey{ this, &CSession::session_cb };
-            if (INSTANCE(Poll::CPoller)->RegisterHandler(_socket, _key, EPOLLIN))
-            {
-                return;
-            }
         }
-
-      
-    
-        _status = SOCK_STATUS::SOCK_STATUS_ALIVE;
-        _post_recv();
+        
+        _set_socket_status(SOCK_STATUS::SOCK_STATUS_ALIVE);
+        if (INSTANCE(Poll::CPoller)->RegisterHandler(_socket, _key, EPOLLIN | EPOLLOUT | EPOLLRDHUP))
+        {
+            return;
+        }
     }
 
 
     void CSession::Send(const char* data, uint32 size)
     {
-        if (!Alive())
+        if (_wr_status)
             return;
 
         while (size)
@@ -487,110 +474,133 @@ namespace Net
     }
 
 
-    bool CSession::Update()
+    void CSession::Disconnect()
     {
-        if (Alive())
+        if (Alive() && _wr_status == 0)
         {
-            _post_send();
-            return false;
-        }
-        else
-        {
-            _close();
-            return true;
+            _wr_status = 2;
         }
     }
 
 
-    void CSession::_post_send()
+    bool CSession::Update()
     {
-        if (!Alive())
-            return;
+        uint32 status = _status.load();
         
-        if (_send_pending)
-            return;
-
-        if (_b_send)
-            return;
-
-        
-
-        if (_q_send.empty())
-            return;
-
-        _b_send = _q_send.front();
-
-        if (!_b_send->DataLength())
-            return;
-
-        
-
-        _q_send.pop();
-
-       
-
-__SEND__:
-
-        int ret = send(_socket, _b_send->Data(), _b_send->DataLength(), MSG_NOSIGNAL);
-        if (ret == -1)
+        if (status == SOCK_STATUS::SOCK_STATUS_ALIVE)
         {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
+            _update_send();
+            
+            if (_rd_status == 2 && _wr_status == 0)
             {
-                // 注册事件 INSTANCE();
-                _send_pending = true;
+                Disconnect();
             }
-            else if( errno == EINTR)
+
+            if (_wr_status == 2)
             {
-                goto __SEND__;
+                if (!_b_send && _q_send.empty())
+                {
+                    _wr_status = 3;
+                    shutdown(_socket, SHUT_WR);
+                }
+            }
+
+            if (_rd_status == 2 && _wr_status == 3)
+            {
+                _set_socket_status(SOCK_STATUS::SOCK_STATUS_CLOSED);
+            }
+        }
+        else if(status == SOCK_STATUS::SOCK_STATUS_ERROR)
+        {
+            on_closed();
+            g_net_close_socket(_socket);
+            _set_socket_status(SOCK_STATUS::SOCK_STATUS_CLOSED);
+            return true;
+        }
+        return false;
+    }
+
+
+    void CSession::_update_send()
+    {
+        if (!_wr_ready)
+            return;
+        
+        if (_wr_status != 0 && _wr_status != 2)
+            return;
+
+        while (true)
+        {
+            if (!_b_send)
+            {
+                if (_q_send.empty())
+                {
+                    return;
+                }
+                _b_send = _q_send.front();
+                _q_send.pop();
+                _send_len = 0;
+            }
+
+            char* data = (char*)_b_send->Data() + _send_len;
+            size_t len = (size_t)_b_send->DataLength() - (size_t)_send_len;
+
+            int ret = send(_socket, data, len, MSG_NOSIGNAL);
+            if (ret == -1)
+            {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                {
+                    _wr_ready = 0;
+                    break;
+                }
+                else if (errno == EINTR)
+                {
+                    continue;
+                }
+                else
+                {
+                    _on_send_error(errno);
+                    return;
+                }
             }
             else
             {
-                _on_send_error(errno);
+                if ((size_t)ret == len)
+                {
+                    INSTANCE_2(CMessageQueue)->FreeMessage(_b_send);
+                    _b_send = nullptr;
+                    _send_len = 0;
+                }
+                else
+                {
+                    _send_len += (uint32)ret;
+                    break;  // do not continue;
+                }
             }
         }
-
     }
 
 
-    void CSession::_post_recv()
+    void CSession::_set_socket_status(SOCK_STATUS s)
     {
-
-        if (!Alive())
-            return;
-
-      
-
+        INSTANCE(CLogger)->Info("CSession::_status changed! prev = %d, curr = %d", _status.load(), (uint32)s);
+        _status = s;
     }
 
 
     void CSession::_on_recv_error(uint32 err)
     {
+        _rd_status = 1;
         _recv_error = err;
+        _set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
     }
 
 
     void CSession::_on_send_error(uint32 err)
     {
+        _wr_status = 1;
         _send_error = err;
-    }
-
-
-    void CSession::_close()
-    {
-        if (_status == SOCK_STATUS::SOCK_STATUS_DEADED)
-        {
-            _status = SOCK_STATUS::SOCK_STATUS_DECAY;
-            g_net_close_socket(_socket);
-            on_closed();
-        }
-    }
-
-
-    void CSession::Disconnect()
-    {
-        if (!Alive())
-            return;
-
+        _set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
     }
 
 
@@ -637,16 +647,8 @@ __SEND__:
     }
 
 
-    void CSession::_set_socket_status(SOCK_STATUS s)
-    {
-        INSTANCE(CLogger)->Info("CSession::_status changed! prev = %d, curr = %d", _status, s);
-        _status = s;
-    }
-
-    
     void CSession::_on_send(char* pdata, uint32 size)
     {
-
     }
 
 
@@ -654,8 +656,6 @@ __SEND__:
     {
         INSTANCE(CLogger)->Info("CSession::on_closed send_err=%u, recv_err=%u", _send_error, _recv_error);
     }
-    
-    
 
 #endif
 }

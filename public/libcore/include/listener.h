@@ -64,7 +64,7 @@ namespace Net
 
 
 
-#else
+#else   //////////////////////////////////////////////////////////////////////////
 
 
 
@@ -75,7 +75,7 @@ namespace Net
     {
     public:
         CListener();
-        ~CListener();
+        virtual ~CListener();
 
     public:
         bool Init(const char* ip, uint16 port, uint32& err);

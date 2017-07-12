@@ -24,8 +24,8 @@ static const WORD wColor[] =
 #else
 const char* sColor[] =
 {
-    "\033[36m";     // Cyan     debug
-    "\033[32m";     // Green    info
+    "\033[36m",     // Cyan     debug
+    "\033[32m",     // Green    info
     "\033[33m",     // Yellow   warn
     "\033[31m",     // Red      fatal
     "\033[35m",     // Magenta  error

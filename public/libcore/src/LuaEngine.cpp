@@ -27,6 +27,7 @@ bool CLuaEngine::ExecFile(const char *fn)
     lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
     if ((luaL_loadfile(_L, fn) || lua_pcall(_L, 0, LUA_MULTRET, -2)) == 0)
     {
+        lua_remove(_L, -1);
         return true;
     }
     else
@@ -44,6 +45,7 @@ bool CLuaEngine::ExecString(const char *str)
     lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
     if ((luaL_loadstring(_L, str) || lua_pcall(_L, 0, LUA_MULTRET, -2)) == 0)
     {
+        lua_remove(_L, -1);
         return true;
     }
     else

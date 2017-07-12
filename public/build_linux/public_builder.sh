@@ -17,5 +17,5 @@ then
     read
     exit -1
 else
-    echo -e "\033[0;35mBuild OK !!!  \033[0"
+    echo -e "\033[0;32mBuild OK !!!  \033[0"
 fi

@@ -24,12 +24,14 @@ void CLuaEngine::Release()
 /// execute a file
 bool CLuaEngine::ExecFile(const char *fn)
 {
-    if (luaL_dofile(_L, fn) == 0)
+    lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
+    if ((luaL_loadfile(_L, fn) || lua_pcall(_L, 0, LUA_MULTRET, -2)) == 0)
     {
         return true;
     }
     else
     {
+        INSTANCE(CLogger)->Error("CLuaEngine::ExecFile Failed !!! fn = %s", fn);
         _emit_error();
         return false;
     }
@@ -39,12 +41,14 @@ bool CLuaEngine::ExecFile(const char *fn)
 /// execute a string
 bool CLuaEngine::ExecString(const char *str)
 {
-    if (luaL_dostring(_L, str) == 0)
+    lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
+    if ((luaL_loadstring(_L, str) || lua_pcall(_L, 0, LUA_MULTRET, -2)) == 0)
     {
         return true;
     }
     else
     {
+        INSTANCE(CLogger)->Error("CLuaEngine::ExecString Failed !!! str = %s", str);
         _emit_error();
         return false;
     }
@@ -55,7 +59,8 @@ int CLuaEngine::_on_lua_error(lua_State* L)
 {
     static char err[1024] = {};
     sprintf(err, "\nerror report:\n\t%s", lua_tostring(L, -1));
-    luaL_traceback(L, L, err, 1);
+    int level = 1;
+    luaL_traceback(L, L, err, level);
     lua_replace(L, -2);
     return 1;
 }
@@ -93,11 +98,9 @@ bool CLuaEngine::ExecFunction(int narg, int nresult)
     else
     {
         _emit_error();
-        _fn = nullptr;
-        return false;
     }
     _fn = nullptr;
-    return true;
+    return !r;
 }
 
 

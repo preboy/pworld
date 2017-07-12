@@ -29,5 +29,5 @@ RunFileInit = function()
     for _, func in ipairs(_file_init_funs) do
         func()
     end
-    _file_init_funs = nil
+    _file_init_funs = {}
 end

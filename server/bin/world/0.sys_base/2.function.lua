@@ -99,7 +99,7 @@ zcg.dump_locals = function(err)
         if info then
             func = string.format("name `%s`", info.name)
         end
-        print(string.format("==== The [%d  (%s)] stack level ====", i, func))
+        print(string.format("========The [%d](%s) stack level========", i, func))
         zcg.dump_local(i)
     end
 

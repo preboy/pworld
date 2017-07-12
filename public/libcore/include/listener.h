@@ -86,8 +86,8 @@ namespace Net
 
 
     protected:
-        virtual void            on_accept(SOCKET_HANDER sock);
-        virtual void            on_accept_error(uint32 err);
+        virtual void on_accept(SOCKET_HANDER sock);
+        virtual void on_accept_error(uint32 err);
 
 
     private:

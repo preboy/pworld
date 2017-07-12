@@ -73,7 +73,7 @@ public:                             \
 
 #ifdef PLAT_WIN32
     
-#define CORE_STDCALL // WINAPI  64位构架下(win32/linux)只有一种调用方式
+#define CORE_STDCALL __stdcall // WINAPI  64位构架下(win32/linux)只有一种调用方式
 
 #else
 

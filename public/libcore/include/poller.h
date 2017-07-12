@@ -33,7 +33,10 @@ namespace Poll
     };
 
 
-#else
+
+#else //////////////////////////////////////////////////////////////////////////
+
+
 
 #include <sys/epoll.h>
 
@@ -58,7 +61,6 @@ namespace Poll
        uint32  ReregisterHandler(int fd, CompletionKey* key, uint32 events);
        uint32  UnregisterHandler(int fd);
 
-       uint32  PostCompletion();
 
     private:
 

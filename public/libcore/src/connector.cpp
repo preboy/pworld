@@ -135,7 +135,8 @@ namespace Net
 
 
 
-#else
+#else //////////////////////////////////////////////////////////////////////////
+
 
 
 
@@ -151,6 +152,13 @@ namespace Net
         Net::CConnector* pThis = (Net::CConnector*)obj;
 
         INSTANCE(Poll::CPoller)->UnregisterHandler(pThis->_socket);
+
+        if (events & EPOLLERR)
+        {
+            int err = g_net_socket_error(pThis->_socket);
+            pThis->on_connect_error(err);
+            return;
+        }
 
         if (events & EPOLLOUT)
         {
@@ -170,6 +178,8 @@ namespace Net
     bool CConnector::Connect(const char* ip, uint16 port)
     {
         uint32 err = 0;
+        CORE_UNUSED(err);
+
         _socket = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
         if (_socket == -1)
             return false;
@@ -203,7 +213,7 @@ namespace Net
             {
                 if (errno == EINPROGRESS || errno == EWOULDBLOCK)
                 {
-                    if (INSTANCE(Poll::CPoller)->RegisterHandler(_socket, _key, EPOLLOUT))
+                    if (INSTANCE(Poll::CPoller)->RegisterHandler(_socket, _key, EPOLLOUT | EPOLLONESHOT))
                     {
                         err = GetSystemError();
                         return false;
@@ -231,20 +241,25 @@ namespace Net
 
     void CConnector::Abort()
     {
-        g_net_close_socket(_socket);
+        if (_socket != -1)
+        {
+            INSTANCE(Poll::CPoller)->UnregisterHandler(_socket);
+            g_net_close_socket(_socket);
+        }
     }
 
 
     void CConnector::on_connect(CConnector* sock)
     {
-        INSTANCE(CLogger)->Debug("ConnectEx 成功了");
+        INSTANCE(CLogger)->Debug("CConnector::on_connect OK");
     }
 
 
     void CConnector::on_connect_error(uint32 err)
     {
-        INSTANCE(CLogger)->Debug("ConnectEx  失败大多了");
+        INSTANCE(CLogger)->Debug("CConnector::on_connect_error err=%u", err);
     }
+
 
 #endif
 

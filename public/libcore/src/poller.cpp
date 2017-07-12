@@ -119,13 +119,18 @@ namespace Poll
         return 0;
     }
 
-#else
+
+
+#else //////////////////////////////////////////////////////////////////////////
+
+
 
 void CPoller::_poller_thread_func()
 {
     const int MAX_EVENT_COUNT = 128;
     struct epoll_event  evts[MAX_EVENT_COUNT];
     
+    _running = true;
     while (_running)
     {
         int counts = epoll_wait(_epoll_fd, evts, MAX_EVENT_COUNT, -1);
@@ -148,6 +153,8 @@ void CPoller::_poller_thread_func()
 
 bool CPoller::Init(uint32 thread_count)
 {
+    CORE_UNUSED(thread_count);
+
     _epoll_fd = epoll_create1(EPOLL_CLOEXEC);
 
     if (_epoll_fd == -1)
@@ -203,11 +210,6 @@ uint32  CPoller::UnregisterHandler(int fd)
     return ret == 0;
 }
 
-
-uint32 CPoller::PostCompletion()
-{
-    return 1;
-}
 
 #endif
 }

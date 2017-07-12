@@ -117,7 +117,8 @@ public:
 
                 lua_getfield(L, -1, "__name");
 
-                if (ObjectAPI<T>::name == (const char *)lua_touserdata(L, -1))
+                name = (const char *)lua_touserdata(L, -1);
+                if (ObjectAPI<T>::name == name)
                     r = 0;
 
                 lua_pop(L, 1);

@@ -213,6 +213,8 @@ namespace Net
 #else   //////////////////////////////////////////////////////////////////////////
 
 
+
+
     CListener::CListener()
     {
     }
@@ -319,11 +321,8 @@ namespace Net
 
     void CListener::StopAccept()
     {
-        if (_listener != -1)
-        {
-            close(_listener);
-            _listener = -1;
-        }
+        INSTANCE(Poll::CPoller)->UnregisterHandler(_listener);
+        g_net_close_socket(_listener);
     }
 
 
@@ -332,9 +331,10 @@ namespace Net
 
     }
 
+
     void CListener::on_accept_error(uint32 err)
     {
-
+        INSTANCE(CLogger)->Error("CListener::on_accept_error %u", err);
     }
 
 

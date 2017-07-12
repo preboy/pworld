@@ -7,7 +7,7 @@ class ScheduleBase
 {
 public:
     ScheduleBase();
-    ~ScheduleBase();
+    virtual ~ScheduleBase();
 
 public:
     void Update();

@@ -55,7 +55,7 @@ int CGameServerInput::OnZcg(int argc, char argv[PARAM_CNT][PARAM_LEN])
     uint32 a1 = 100;
     uint32 b1 = 200;
     uint32 c1 = 50;
-    if (a1 - b1 > (int32)c1)
+    if (int32(a1 - b1) > c1)
     {
         INSTANCE(CLogger)->Fatal(">>>");
     }

@@ -34,6 +34,7 @@ bool CLuaEngine::ExecFile(const char *fn)
     {
         INSTANCE(CLogger)->Error("CLuaEngine::ExecFile Failed !!! fn = %s", fn);
         _emit_error();
+        lua_pop(_L, 1);     // pop debug func
         return false;
     }
 }
@@ -52,6 +53,7 @@ bool CLuaEngine::ExecString(const char *str)
     {
         INSTANCE(CLogger)->Error("CLuaEngine::ExecString Failed !!! str = %s", str);
         _emit_error();
+        lua_pop(_L, 1);     // pop debug func
         return false;
     }
 }
@@ -100,6 +102,7 @@ bool CLuaEngine::ExecFunction(int narg, int nresult)
     else
     {
         _emit_error();
+        lua_pop(_L, 1);
     }
     _fn = nullptr;
     return !r;

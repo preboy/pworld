@@ -133,7 +133,7 @@ void CPoller::_poller_thread_func()
     _running = true;
     while (_running)
     {
-        int counts = epoll_wait(_epoll_fd, evts, MAX_EVENT_COUNT, -1);
+        int counts = epoll_wait(_epoll_fd, evts, MAX_EVENT_COUNT, 5*1000);
         if (counts == -1)
         {
             if(errno == EINTR)

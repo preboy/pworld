@@ -62,9 +62,9 @@ bool CCommandInput::_parse_command(char* szCmdLine)
     if (szCmdLine[len - 1] == '\n')
     {
         szCmdLine[len - 1] = '\0';
+        len--;
     }
     
-    len = strlen(szCmdLine);
     if (!len)
     {
         return false;
@@ -72,7 +72,7 @@ bool CCommandInput::_parse_command(char* szCmdLine)
 
     cmd_input ci;
 
-    char seps[] = " \t,.\n";
+    char seps[] = " \t,.\r\n";
     char *token = nullptr;
     char *next_token = nullptr;
     token = strtok_s(szCmdLine, seps, &next_token);

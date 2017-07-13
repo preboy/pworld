@@ -68,7 +68,10 @@ void CAsyncTask::Release()
     _running = false;
     for (auto& t : _threads)
     {
-        t.join();
+        if (t.joinable())
+        {
+            t.join();
+        }
     }
 }
 

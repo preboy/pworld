@@ -9,6 +9,6 @@ public:
 
 protected:
     virtual void    on_accept(SOCKET_HANDER sock) override;
-    virtual void    on_accept_error(uint32 err) override;
+    virtual void    on_closed(uint32 err) override;
 
 };

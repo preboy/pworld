@@ -1,5 +1,18 @@
 #pragma once
 
+
+#ifdef PLAT_WIN32
+
+class CSignalHander
+{
+public:
+    CSignalHander();
+    ~CSignalHander();
+};
+
+#endif
+
+
 #ifdef PLAT_LINUX
 
 #include <signal.h>

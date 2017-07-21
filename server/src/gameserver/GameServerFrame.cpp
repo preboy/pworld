@@ -80,6 +80,6 @@ void CGameServerFrame::on_msg(Net::CMessage* msg)
 
     }
 
-    INSTANCE(CLogger)->Warning("Unknown Opcode=%d, size=%d", opcode, packet->PacketLength());
+    sLogger->Warning("Unknown Opcode=%d, size=%d", opcode, packet->PacketLength());
 }
 

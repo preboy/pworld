@@ -17,13 +17,12 @@ namespace Net
     
     void g_net_close_socket(SOCKET_HANDER& socket);
 
-
     int  g_net_socket_error(SOCKET_HANDER socket);
 
 
     // constanct
-    const uint32 SEND_OR_RECV_BUFFER_SIZE = 0x1000;
-
+    const uint32 MAX_BUFFER_SIZE = 0x1000;      // 4k
+    const uint32 MAX_PACKET_SIZE = 0x4000;      // 16k
     // public enum
 
     enum class IO_TYPE : uint32
@@ -38,15 +37,18 @@ namespace Net
 
     enum class IO_STATUS : uint32
     {
-        IO_STATUS_IDLE,         // not post
-        IO_STATUS_PENDING,      // waitting
-        IO_STATUS_SUCCESSD,     // a succeed result
-        IO_STATUS_FAILED,       // a failed result
-        IO_STATUS_QUIT,         // not post
+        IO_STATUS_IDLE,             // idle
+        IO_STATUS_PENDING,          // pending
+        IO_STATUS_SUCCESSD,         // previous request succeed
+        IO_STATUS_FAILED,           // previous request failed
+        IO_STATUS_SUCCESSD_IMME,    // immediately succeed
     };
 
 
 #ifdef PLAT_WIN32
+
+
+
 
     // public data struct
 
@@ -55,18 +57,16 @@ namespace Net
         OVERLAPPED  _over;
         IO_TYPE     _type;
         IO_STATUS   _stag;
-        void*       _data;
         uint32      _size;
-        void*       _ptr;
         uint32      _err;
+        uint32      _bytes;
+        void*       _data;
+        void*       _ptr;
 
         PerIoData(IO_TYPE type, uint32 size);
-       ~PerIoData();
+        ~PerIoData();
 
         void Reset();
-
-        void  SetPtr(void* ptr) { _ptr = ptr; }
-        void* GetPtr() { return _ptr; }
     };
 
 #endif

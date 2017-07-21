@@ -10,7 +10,7 @@ void LoadSystemConfig()
     r.Attach(INSTANCE(CLuaEngine)->GetLuaState());
     if (!r.DoFile("./world/system_config.lua"))
     {
-        INSTANCE(CLogger)->Fatal("error occured in load config file.");
+        sLogger->Fatal("error occured in load config file.");
         return;
     }
 

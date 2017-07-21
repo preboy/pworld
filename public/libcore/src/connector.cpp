@@ -10,37 +10,41 @@ namespace Net
 
 #ifdef PLAT_WIN32
 
-    void CORE_STDCALL CConnector::connector_cb(void* key, OVERLAPPED* overlapped, DWORD bytes)
+    void CConnector::__connector_cb__(void* obj, OVERLAPPED* overlapped)
     {
-        CConnector* pThis = reinterpret_cast<CConnector*>(key);
+        CConnector* pThis = reinterpret_cast<CConnector*>(obj);
         PerIoData*  pData = reinterpret_cast<PerIoData*>(overlapped);
 
-        if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
+        if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD_IMME)
         {
-            pThis->on_connect(pThis);
+            pThis->_status = CONNECTOR_STATUS::CS_OVER;
         }
-        else
+        else if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
         {
-            DWORD err = pData->_err;
-            pThis->on_connect_error(err);
+            pThis->_status = CONNECTOR_STATUS::CS_CONNECTED;
+        }
+        else if (pData->_stag == IO_STATUS::IO_STATUS_FAILED)
+        {
+            pThis->_error = pData->_err;
+            pThis->_status = CONNECTOR_STATUS::CS_ERROR;
         }
     }
 
 
     CConnector::~CConnector()
     {
-        g_net_close_socket(_socket);
         SAFE_DELETE(_key);
+        g_net_close_socket(_socket);
     }
 
 
     bool CConnector::Connect(const char* ip, uint16 port)
     {
-        DWORD err = 0;
+        _status = CONNECTOR_STATUS::CS_OVER;
         _socket = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
         if (_socket == INVALID_SOCKET)
         {
-            err = WSAGetLastError();
+            _error = WSAGetLastError();
             return false;
         }
 
@@ -50,7 +54,8 @@ namespace Net
         local_addr.sin_port = ::htons(0);
         if (SOCKET_ERROR == bind(_socket, (const sockaddr*)&local_addr, sizeof(sockaddr_in)))
         {
-            err = WSAGetLastError();
+            g_net_close_socket(_socket);
+            _error = WSAGetLastError();
             return false;
         }
 
@@ -60,7 +65,8 @@ namespace Net
         int ret = inet_pton(AF_INET, ip, &remote_addr.sin_addr);
         if (ret != 1)
         {
-            err = WSAGetLastError();
+            _error = WSAGetLastError();
+            g_net_close_socket(_socket);
             return false;
         }
 
@@ -72,14 +78,16 @@ namespace Net
             &dwBytes, NULL, NULL);
         if (ret == SOCKET_ERROR)
         {
-            err = WSAGetLastError();
+            _error = WSAGetLastError();
+            g_net_close_socket(_socket);
             return false;
         }
 
-        _key = new Poll::CompletionKey{ this, &CConnector::connector_cb };
-        if (INSTANCE(Poll::CPoller)->RegisterHandler((HANDLE)_socket, _key))
+        _key = new Poll::CompletionKey{ this, &CConnector::__connector_cb__ };
+        if (sPoller->RegisterHandler((HANDLE)_socket, _key))
         {
-            err = WSAGetLastError();
+            _error = WSAGetLastError();
+            g_net_close_socket(_socket);
             return false;
         }
 
@@ -88,48 +96,71 @@ namespace Net
             0, nullptr, &_io_connect._over);
         if (bConnect)
         {
-            _io_connect._stag = IO_STATUS::IO_STATUS_SUCCESSD;
+            _io_connect._stag = IO_STATUS::IO_STATUS_SUCCESSD_IMME;
+            _status = CONNECTOR_STATUS::CS_CONNECTED_IMME;
             on_connect(this);
-            INSTANCE(CLogger)->Debug("哇塞，ConnectEx立即完成了，怎么这么快啊");
             return true;
         }
         else
         {
-            err = ::WSAGetLastError();
+            uint32 err = ::WSAGetLastError();
             if (err == WSA_IO_PENDING)
             {
                 _io_connect._stag = IO_STATUS::IO_STATUS_PENDING;
+                _status = CONNECTOR_STATUS::CS_PENDING;
                 return true;
             }
             else
             {
-                _io_connect._stag = IO_STATUS::IO_STATUS_QUIT;
+                _error = err;
+                _status = CONNECTOR_STATUS::CS_ERROR;
                 return false;
             }
         }
-
         return false;
     }
 
 
     void CConnector::Abort()
     {
-        if (_io_connect._stag == IO_STATUS::IO_STATUS_PENDING)
+        if (_status == CONNECTOR_STATUS::CS_PENDING)
         {
-            g_net_close_socket(_socket);
+            sPoller->PostCompletion(_key, &_io_connect._over, 0);
+        }
+    }
+
+
+    void CConnector::Update()
+    {
+        switch (_status)
+        {
+        case CONNECTOR_STATUS::CS_ERROR:
+        {
+            on_connect_error(_error);
+            _status = CONNECTOR_STATUS::CS_OVER;
+            break;
+        }
+        case CONNECTOR_STATUS::CS_CONNECTED:
+        {
+            on_connect(this);
+            _status = CONNECTOR_STATUS::CS_OVER;
+            break;
+        }
+        default:
+            break;
         }
     }
 
 
     void CConnector::on_connect(CConnector* sock)
     {
-        INSTANCE(CLogger)->Debug("ConnectEx 成功了");
+        sLogger->Info("CConnector::on_connect");
     }
 
 
     void CConnector::on_connect_error(uint32 err)
     {
-        INSTANCE(CLogger)->Debug("ConnectEx  失败大多了");
+        sLogger->Error("CConnector::on_connect_error, err = %u", err);
     }
 
 
@@ -142,34 +173,31 @@ namespace Net
 
     CConnector::~CConnector()
     {
-        g_net_close_socket(_socket);
         SAFE_DELETE(_key);
+        g_net_close_socket(_socket);
     }
 
 
-    void CConnector::connector_cb(void* obj, uint32 events)
+    void CConnector::__connector_cb__(void* obj, uint32 events)
     {
         Net::CConnector* pThis = (Net::CConnector*)obj;
-
-        INSTANCE(Poll::CPoller)->UnregisterHandler(pThis->_socket);
-
+        int err = g_net_socket_error(pThis->_socket);
         if (events & EPOLLERR)
         {
-            int err = g_net_socket_error(pThis->_socket);
-            pThis->on_connect_error(err);
+            pThis->_error = err;
+            pThis->_status = CONNECTOR_STATUS::CS_ERROR;
             return;
         }
-
         if (events & EPOLLOUT)
         {
-            int err = g_net_socket_error(pThis->_socket);
             if (err == 0)
             {
-                pThis->on_connect(pThis);
+                pThis->_status = CONNECTOR_STATUS::CS_CONNECTED;
             }
             else
             {
-                pThis->on_connect_error(err);
+                pThis->_error = err;
+                pThis->_status = CONNECTOR_STATUS::CS_ERROR;
             }
         }
     }
@@ -177,9 +205,7 @@ namespace Net
 
     bool CConnector::Connect(const char* ip, uint16 port)
     {
-        uint32 err = 0;
-        CORE_UNUSED(err);
-
+        _status = CONNECTOR_STATUS::CS_OVER;
         _socket = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
         if (_socket == -1)
             return false;
@@ -190,7 +216,8 @@ namespace Net
         local_addr.sin_port = ::htons(0);
         if (-1 == bind(_socket, (const sockaddr*)&local_addr, sizeof(sockaddr_in)))
         {
-            err = GetSystemError();
+            _error = GetSystemError();
+            g_net_close_socket(_socket);
             return false;
         }
 
@@ -200,11 +227,12 @@ namespace Net
         int ret = inet_pton(AF_INET, ip, &remote_addr.sin_addr);
         if (ret != 1)
         {
-            err = GetSystemError();
+            _error = GetSystemError();
+            g_net_close_socket(_socket);
             return false;
         }
 
-        _key = new Poll::CompletionKey{ this, &connector_cb };
+        _key = new Poll::CompletionKey{ this, &__connector_cb__ };
 
         do
         {
@@ -213,11 +241,13 @@ namespace Net
             {
                 if (errno == EINPROGRESS || errno == EWOULDBLOCK)
                 {
-                    if (INSTANCE(Poll::CPoller)->RegisterHandler(_socket, _key, EPOLLOUT | EPOLLONESHOT))
+                    if (!sPoller->RegisterHandler(_socket, _key, EPOLLOUT | EPOLLONESHOT))
                     {
-                        err = GetSystemError();
+                        _error = GetSystemError();
+                        g_net_close_socket(_socket);
                         return false;
                     }
+                    _status = CONNECTOR_STATUS::CS_PENDING;
                     return true;
                 }
                 else if (errno == EINTR)
@@ -226,24 +256,52 @@ namespace Net
                 }
                 else
                 {
-                    on_connect_error(errno);
+                    _error = errno;
+                    _status = CONNECTOR_STATUS::CS_ERROR;
                     return false;
                 }
             }
             else
             {
                 on_connect(this);
+                _status = CONNECTOR_STATUS::CS_CONNECTED_IMME;
                 return true;
             }
         } while (true);
     }
 
 
+    void CConnector::Update()
+    {
+        switch (_status)
+        {
+        case CONNECTOR_STATUS::CS_ERROR:
+        {
+            on_connect_error(_error);
+            _status = CONNECTOR_STATUS::CS_OVER;
+            break;
+        }
+        case CONNECTOR_STATUS::CS_CONNECTED_IMME:
+        {
+            _status = CONNECTOR_STATUS::CS_OVER;
+            break;
+        }
+        case CONNECTOR_STATUS::CS_CONNECTED:
+        {
+            on_connect(this);
+            _status = CONNECTOR_STATUS::CS_OVER;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+
     void CConnector::Abort()
     {
-        if (_socket != -1)
+        if (_status == CONNECTOR_STATUS::CS_PENDING)
         {
-            INSTANCE(Poll::CPoller)->UnregisterHandler(_socket);
             g_net_close_socket(_socket);
         }
     }
@@ -251,15 +309,14 @@ namespace Net
 
     void CConnector::on_connect(CConnector* sock)
     {
-        INSTANCE(CLogger)->Debug("CConnector::on_connect OK");
+        sLogger->Info("CConnector::on_connect");
     }
 
 
     void CConnector::on_connect_error(uint32 err)
     {
-        INSTANCE(CLogger)->Debug("CConnector::on_connect_error err=%u", err);
+        sLogger->Error("CConnector::on_connect_error, err = %u", err);
     }
-
 
 #endif
 

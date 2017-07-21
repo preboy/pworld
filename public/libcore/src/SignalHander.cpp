@@ -4,8 +4,21 @@
 #include "logger.h"
 
 
-#ifdef PLAT_LINUX
+#ifdef PLAT_WIN32
 
+CSignalHander::CSignalHander()
+{
+}
+
+CSignalHander::~CSignalHander()
+{
+}
+
+#endif
+
+
+
+#ifdef PLAT_LINUX
 
 void CSignalHander::_signal_thread_func()
 {
@@ -16,7 +29,7 @@ void CSignalHander::_signal_thread_func()
         int ret = sigwait(&_set, &sig);
         if (ret)
         {
-            INSTANCE(CLogger)->Error("sigwait failed with %d", ret);
+            sLogger->Error("sigwait failed with %d", ret);
             return;
         }
         if (sig == SIGUSR1)
@@ -66,7 +79,7 @@ void CSignalHander::Release()
 
 void CSignalHander::signal_handler(int sig)
 {
-    INSTANCE(CLogger)->Debug("new signal come in sig = %d", sig);
+    sLogger->Debug("new signal come in sig = %d", sig);
 }
 
 #endif

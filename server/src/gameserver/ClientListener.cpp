@@ -9,7 +9,7 @@ void CClientListener::on_accept(SOCKET_HANDER sock)
 }
 
 
-void CClientListener::on_accept_error(uint32 err)
+void CClientListener::on_closed(uint32 err)
 {
-    Net::CListener::on_accept_error(err);
+    Net::CListener::on_closed(err);
 }

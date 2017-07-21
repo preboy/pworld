@@ -46,7 +46,7 @@ bool CLuaReader::DoFile(const char* filename)
     if (ret)
     {
         const char* err = lua_tostring(_L, -1);
-        INSTANCE(CLogger)->Error("CLuaReader::DoFile err=%s", err);
+        sLogger->Error("CLuaReader::DoFile err=%s", err);
         lua_pop(_L, 1);
         return false;
     }

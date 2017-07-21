@@ -9,12 +9,10 @@ void CNetMgr::Begin()
 {
     uint32 err = 0;
     m_listener = new CClientListener();
-    if (!m_listener->Init("127.0.0.1", 19850, err))
+    if (!m_listener->Init("127.0.0.1", 19850))
     {
         return;
     }
-
-    m_listener->PostAccept();
 }
 
 
@@ -22,22 +20,36 @@ void CNetMgr::End()
 {
     if (m_listener)
     {
-        m_listener->StopAccept();
-        m_listener->Wait();
+        m_listener->Close();
+        while (!m_listener->Disposable())
+        {
+            Utils::Sleep(10);
+        }
         delete m_listener;
         m_listener = nullptr;
     }
 
+    if (m_connector)
+    {
+        m_connector->Abort();
+        while (!m_connector->Disposable())
+        {
+            Utils::Sleep(10);
+        }
+        delete m_connector;
+        m_connector = nullptr;
+    }
+
     for (auto& s : m_lstClients)
     {
-        if (s->Alive())
+        if (s->Active())
         {
             s->Disconnect();
         }
     }
     for (auto& s : m_lstServers)
     {
-        if (s->Alive())
+        if (s->Active())
         {
             s->Disconnect();
         }
@@ -52,17 +64,18 @@ void CNetMgr::End()
         }
         delete s;
     }
-    for (auto& s : m_lstServers)
-    {
-        while (!(s->Disposable()))
-        {
-            Utils::Sleep(10);
-            s->Update();
-        }
-        delete s;
-    }
-
     m_lstClients.clear();
+
+    for (auto& s : m_lstServers)
+    {
+        while (!(s->Disposable()))
+        {
+            Utils::Sleep(10);
+            s->Update();
+        }
+        delete s;
+    }
+
     m_lstServers.clear();
 }
 
@@ -81,29 +94,40 @@ void CNetMgr::OnAccepted(SOCKET_HANDER sock)
 
 void CNetMgr::ConnTest()
 {
-    CClientConnector* c = new CClientConnector();
-    c->Connect("127.0.0.1", 60000);
+    m_connector = new CClientConnector();
+    m_connector->Connect("127.0.0.1", 60000);
 }
 
 
 void CNetMgr::OnConnected(CClientConnector* sock)
 {
     CServerSocket* _s = new CServerSocket();
-    _s->Attach(sock->GetSocket(), sock->GetKey());
-    sock->Detach();
-    delete sock;
+    _s->Attach(m_connector->GetSocket(), m_connector->GetKey());
+    m_connector->DetachSocket();
+    delete m_connector;
     _s->Send("welcome to home", 15);
 }
 
 
 void CNetMgr::Update()
 {
+    if (m_listener)
+    {
+        m_listener->Update();
+    }
+
+    if (m_connector)
+    {
+        m_connector->Update();
+    }
+
     {
         auto it = m_lstClients.begin();
         auto end = m_lstClients.end();
         while (it != end)
         {
-            if ((*it)->Update())
+            (*it)->Update();
+            if ((*it)->Disposable())
             {
                 delete (*it);
                 it = m_lstClients.erase(it);
@@ -118,7 +142,8 @@ void CNetMgr::Update()
         auto end = m_lstServers.end();
         while (it != end)
         {
-            if ((*it)->Update())
+            (*it)->Update();
+            if ((*it)->Disposable())
             {
                 delete (*it);
                 it = m_lstServers.erase(it);
@@ -127,5 +152,6 @@ void CNetMgr::Update()
                 it++;
         }
     }
+
 }
 

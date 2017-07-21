@@ -32,7 +32,7 @@ bool CLuaEngine::ExecFile(const char *fn)
     }
     else
     {
-        INSTANCE(CLogger)->Error("CLuaEngine::ExecFile Failed !!! fn = %s", fn);
+        sLogger->Error("CLuaEngine::ExecFile Failed !!! fn = %s", fn);
         _emit_error();
         lua_pop(_L, 1);     // pop debug func
         return false;
@@ -51,7 +51,7 @@ bool CLuaEngine::ExecString(const char *str)
     }
     else
     {
-        INSTANCE(CLogger)->Error("CLuaEngine::ExecString Failed !!! str = %s", str);
+        sLogger->Error("CLuaEngine::ExecString Failed !!! str = %s", str);
         _emit_error();
         lua_pop(_L, 1);     // pop debug func
         return false;
@@ -85,7 +85,7 @@ bool CLuaEngine::PushFunction(const char* fn)
     if (lua_isnil(_L, -1))
     {
         lua_pop(_L, 2);
-        INSTANCE(CLogger)->Error("global function '%s' is NOT found!", fn);
+        sLogger->Error("global function '%s' is NOT found!", fn);
         return false;
     }
     return true;
@@ -114,11 +114,11 @@ void CLuaEngine::_emit_error()
     const char* err = lua_tostring(_L, -1);
     if (_fn)
     {
-        INSTANCE(CLogger)->Error("[script error(in `%s`)]:%s", _fn, err);
+        sLogger->Error("[script error(in `%s`)]:%s", _fn, err);
     }
     else
     {
-        INSTANCE(CLogger)->Error("[script error]:%s", err);
+        sLogger->Error("[script error]:%s", err);
     }
     lua_pop(_L, 1);
 }

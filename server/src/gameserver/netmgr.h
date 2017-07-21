@@ -35,6 +35,8 @@ public:
 private:
     CClientListener* m_listener;
 
+    CClientConnector* m_connector;
+
     std::list<CClientSocket*>       m_lstClients;
     std::list<CServerSocket*>       m_lstServers;
 

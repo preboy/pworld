@@ -30,11 +30,11 @@ int CGameServerInput::OnZcg(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
 
     // test
-    INSTANCE(CLogger)->Debug("ddddd");
-    INSTANCE(CLogger)->Info("xxxxx");
-    INSTANCE(CLogger)->Warning("eeeee");
-    INSTANCE(CLogger)->Error("eeeeeee");
-    INSTANCE(CLogger)->Fatal("bbbbb");
+    sLogger->Debug("ddddd");
+    sLogger->Info("xxxxx");
+    sLogger->Warning("eeeee");
+    sLogger->Error("eeeeeee");
+    sLogger->Fatal("bbbbb");
 
     CByteBuffer b(22);
    
@@ -57,17 +57,17 @@ int CGameServerInput::OnZcg(int argc, char argv[PARAM_CNT][PARAM_LEN])
     uint32 c1 = 50;
     if (int32(a1 - b1) > c1)
     {
-        INSTANCE(CLogger)->Fatal(">>>");
+        sLogger->Fatal(">>>");
     }
     else
     {
-        INSTANCE(CLogger)->Fatal(" error occurl");
+        sLogger->Fatal(" error occurl");
     }
 
     // test end
-    INSTANCE(CLogger)->SetColor(CLogger::LOG_TYPE::LT_DEBUG);
+    sLogger->SetColor(CLogger::LOG_TYPE::LT_DEBUG);
     std::cout << "this is preboy speaking!" << std::endl;
-    INSTANCE(CLogger)->ResetColor();
+    sLogger->ResetColor();
 
     if (!plr)
     {

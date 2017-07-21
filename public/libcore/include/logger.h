@@ -50,3 +50,6 @@ private:
 private:
     std::mutex  _mutex;
 };
+
+
+#define  sLogger INSTANCE(CLogger)

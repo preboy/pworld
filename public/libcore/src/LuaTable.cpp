@@ -240,7 +240,7 @@ static void serialize_val(lua_State* L, LuaValueType ty_val, int idx_val, CByteB
 {
     if (ty_val < LVT_i8 || ty_val > LVT_Hash)
     {
-        INSTANCE(CLogger)->Error("serialize_val:value type can ONLY be number | string | bool | table");
+        sLogger->Error("serialize_val:value type can ONLY be number | string | bool | table");
         return;
     }
     bb << uint8(ty_val);
@@ -252,12 +252,12 @@ static void serialize_key_val(lua_State* L, LuaValueType ty_key, int idx_key, Lu
 {
     if (ty_key < LVT_i8 || ty_key > LVT_str)
     {
-        INSTANCE(CLogger)->Error("key type can ONLY be integer | string ");
+        sLogger->Error("key type can ONLY be integer | string ");
         return;
     }
     if (ty_val < LVT_i8 || ty_val > LVT_Hash)
     {
-        INSTANCE(CLogger)->Error("serialize_key_val:value type can ONLY be number | string | bool | table");
+        sLogger->Error("serialize_key_val:value type can ONLY be number | string | bool | table");
         return;
     }
     
@@ -301,7 +301,7 @@ static void serialize_table(lua_State* L, int idx, LuaValueType type, CByteBuffe
     else
     {
         bb << (uint8)LVT_nil;
-        INSTANCE(CLogger)->Error("serialize_table out of max_depth !!!");
+        sLogger->Error("serialize_table out of max_depth !!!");
     }
 }
 
@@ -313,7 +313,7 @@ bool CLuaTable::Serialize(lua_State* L, CByteBuffer& bb)
 
     if (!lua_istable(L, -1))
     {
-        INSTANCE(CLogger)->Error("CLuaTable::Serialize Not a table on the stack.");
+        sLogger->Error("CLuaTable::Serialize Not a table on the stack.");
         return false;
     }
     

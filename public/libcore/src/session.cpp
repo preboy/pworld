@@ -7,46 +7,117 @@
 
 namespace Net
 {
-#ifdef PLAT_WIN32
 
-    void CSession::_set_session_deading()
+    // platform general
+    //////////////////////////////////////////////////////////////////////////
+
+    void CSession::Send(const char* data, uint32 size)
     {
-        if (_status == SOCK_STATUS::SOCK_STATUS_ALIVE)
+        if (!Active())
+            return;
+
+        while (size)
         {
-            _status = SOCK_STATUS::SOCK_STATUS_DEADING;
+            CMessage* msg_writer = nullptr;
+            if (_que_send.empty() || _que_send.back()->Full())
+            {
+                CMessage* msg = INSTANCE_2(CMessageQueue)->ApplyMessage();
+                msg->Reset(MAX_BUFFER_SIZE);
+                _que_send.push(msg);
+            }
+            msg_writer = _que_send.back();
+            char* pdata = const_cast<char*>(data);
+            msg_writer->Fill(pdata, size);
         }
     }
 
-    void CORE_STDCALL CSession::session_cb(void* key, OVERLAPPED* overlapped, DWORD bytes)
+
+    void CSession::_on_recv(char* pdata, uint32 size)
     {
-        CSession*  pThis = reinterpret_cast<CSession*>(key);
+        do
+        {
+            while (size && !_msg_header.Full())
+            {
+                _msg_header.Fill(pdata, size);
+            }
+
+            if (!_msg_header.Full() || !size) 
+                return;
+
+            if (!_msg_recv)
+            {
+                uint32 data_len = *(uint32*)_msg_header.Data();
+                if (data_len > MAX_PACKET_SIZE || data_len < 2)
+                {
+                    sLogger->Error("invalid packet size !!!");
+                    Disconnect();
+                    return;
+                }
+                _msg_recv = INSTANCE(CMessageQueue)->ApplyMessage();
+                _msg_recv->Reset(data_len);
+            }
+
+            while (size && !_msg_recv->Full())
+            {
+                _msg_recv->Fill(pdata, size);
+            }
+
+            if (_msg_recv->Full())
+            {
+                _msg_recv->_param = 0;
+                _msg_recv->_ptr = nullptr;
+                INSTANCE(CMessageQueue)->PushMessage(_msg_recv);
+                _msg_recv = nullptr;
+                _msg_header.Reset();
+            }
+        } while (size);
+    }
+
+
+    void CSession::_on_send(char* pdata, uint32 size)
+    {
+    }
+
+
+    void CSession::on_opened()
+    {
+    }
+
+
+    void CSession::on_closed()
+    {
+        sLogger->Info("CSession::on_closed send_err=%u, recv_err=%u", _send_error, _recv_error);
+    }
+
+
+
+
+#ifdef PLAT_WIN32
+
+
+
+
+    void CSession::__session_cb__(void* obj, OVERLAPPED* overlapped)
+    {
+        CSession*  pThis = reinterpret_cast<CSession*>(obj);
         PerIoData* pData = reinterpret_cast<PerIoData*>(overlapped);
 
-        if (pThis->_status == SOCK_STATUS::SOCK_STATUS_DEADING)
-        {
-            pThis->_status = SOCK_STATUS::SOCK_STATUS_DEADED;
-            return;
-        }
+        DWORD bytes = pData->_bytes;
 
         if (pData->_type == IO_TYPE::IO_TYPE_Send)
         {
             if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
             {
-                pThis->_on_send((char*)pThis->_b_send->Data(), bytes);
                 // 数据是否发送完
-                if (pThis->_b_send->DataLength() != bytes)
+                if (pThis->_msg_send->DataLength() != bytes)
                 {
-                    INSTANCE(CLogger)->Error("数据未完全发送");
+                    sLogger->Error("数据未完全发送");
                 }
-                INSTANCE_2(CMessageQueue)->FreeMessage(pThis->_b_send);
-                pThis->_b_send = nullptr;
             }
             else
             {
-                pThis->_set_session_deading();
-                INSTANCE(CLogger)->Error("数据发送失败，居然有这种情况，，");
-                DWORD err = pData->_err;
-                pThis->_on_send_error(err);
+                sLogger->Error("数据发送失败，居然有这种情况，，");
+                pThis->_on_send_error(pData->_err);
             }
         }
         else if (pData->_type == IO_TYPE::IO_TYPE_Recv)
@@ -55,19 +126,14 @@ namespace Net
             {
                 if (bytes)
                 {
-                    pThis->_on_recv((char*)pThis->_io_recv._data, bytes);
-                    pThis->_post_recv();
                 }
                 else
                 {
-                    pThis->_set_session_deading();
                 }
             }
             else
             {
-                pThis->_set_session_deading();
-                DWORD err = pData->_err;
-                pThis->_on_recv_error(err);
+                pThis->_on_recv_error(pData->_err);
             }
         }
 
@@ -76,22 +142,30 @@ namespace Net
 
     CSession::CSession() :
         _io_send(IO_TYPE::IO_TYPE_Send, 0),
-        _io_recv(IO_TYPE::IO_TYPE_Recv, 0x1000),
-        _status(SOCK_STATUS::SOCK_STATUS_NONE),
-        _header(sizeof(uint32))
+        _io_recv(IO_TYPE::IO_TYPE_Recv, MAX_BUFFER_SIZE),
+        _msg_header(sizeof(uint32))
     {
     }
 
 
     CSession::~CSession()
     {
+        SAFE_DELETE(_msg_recv);
+
+        if (_msg_send)
+        {
+            INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+            _msg_send = nullptr;
+        }
+
         SAFE_DELETE(_key);
+        g_net_close_socket(_socket);
     }
 
 
     void CSession::Attach(SOCKET_HANDER socket, void* key)
     {
-        _header.Reset(4);
+        _msg_header.Reset();
 
         _socket = socket;
         u_long v = 1;
@@ -104,84 +178,128 @@ namespace Net
         {
             _key = (Poll::CompletionKey*)key;
             _key->obj = this;
-            _key->func = &CSession::session_cb;
+            _key->func = &CSession::__session_cb__;
         }
         else
         {
-            _key = new Poll::CompletionKey{ this, &CSession::session_cb };
-            if (INSTANCE(Poll::CPoller)->RegisterHandler((HANDLE)_socket, _key))
+            _key = new Poll::CompletionKey{ this, &CSession::__session_cb__ };
+            if (sPoller->RegisterHandler((HANDLE)_socket, _key))
             {
                 return;
             }
         }
 
-        _io_recv._stag = IO_STATUS::IO_STATUS_SUCCESSD;
-        _io_send._stag = IO_STATUS::IO_STATUS_SUCCESSD;
-        _status = SOCK_STATUS::SOCK_STATUS_ALIVE;
-        _post_recv();
+        _status = SOCK_STATUS::SS_ALIVE;
+        on_opened();
     }
 
 
-    void CSession::Send(const char* data, uint32 size)
+    void CSession::Update()
     {
-        if (!Alive())
-            return;
-
-        while (size)
+        if (_io_send._stag == IO_STATUS::IO_STATUS_SUCCESSD)
         {
-            CMessage* msg_writer = nullptr;
-            if (_q_send.empty() || _q_send.back()->Full())
-            {
-                CMessage* msg = INSTANCE_2(CMessageQueue)->ApplyMessage();
-                msg->Reset(0x1000);
-                _q_send.push(msg);
-            }
-            msg_writer = _q_send.back();
-            char* pdata = const_cast<char*>(data);
-            msg_writer->Fill(pdata, size);
+            _on_send((char*)_msg_send->Data(), _io_send._bytes);
+            INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+            _msg_send = nullptr;
+            _io_send._stag = IO_STATUS::IO_STATUS_IDLE;
         }
-    }
+        else if (_io_send._stag == IO_STATUS::IO_STATUS_SUCCESSD_IMME)
+        {
+            INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+            _msg_send = nullptr;
+            _io_send._stag = IO_STATUS::IO_STATUS_IDLE;
+        }
 
+        if (_io_recv._stag == IO_STATUS::IO_STATUS_SUCCESSD)
+        {
+            if (_io_recv._bytes)
+            {
+                _on_recv((char*)_io_recv._data, _io_recv._bytes);
+            }
+            else
+            {
+                if (_disconnect)
+                    _status = SOCK_STATUS::SS_CLOSED;
+                else
+                    _status = SOCK_STATUS::SS_RECV0;
+            }
+            _io_recv._stag = IO_STATUS::IO_STATUS_IDLE;
+        }
+        else if (_io_recv._stag == IO_STATUS::IO_STATUS_SUCCESSD_IMME)
+        {
+            _io_recv._stag = IO_STATUS::IO_STATUS_IDLE;
+        }
 
-    bool CSession::Update()
-    {
-        if (Alive())
+        switch (_status)
+        {
+        case SOCK_STATUS::SS_ALIVE:
+        {
+            _post_recv();
+            _post_send();
+            break;
+        }
+        case SOCK_STATUS::SS_ERROR:
+        {
+            if ((_io_recv._stag == IO_STATUS::IO_STATUS_IDLE || _io_recv._stag == IO_STATUS::IO_STATUS_FAILED)
+                &&
+                (_io_send._stag == IO_STATUS::IO_STATUS_IDLE || _io_send._stag == IO_STATUS::IO_STATUS_FAILED))
+            {
+                _status = SOCK_STATUS::SS_CLOSED;
+                g_net_close_socket(_socket);
+            }
+            break;
+        }
+        case SOCK_STATUS::SS_RECV0:
         {
             _post_send();
-            return false;
+            if (_que_send.empty())
+            {
+                ::shutdown(_socket, SD_SEND);
+                _status = SOCK_STATUS::SS_CLOSED;
+            }
+            break;
         }
-        else
+        case SOCK_STATUS::SS_CLOSING:
         {
-            _close();
-            return true;
+            _post_recv();
+            _post_send();
+            if (_que_send.empty())
+            {
+                ::shutdown(_socket, SD_SEND);
+            }
+            break;
+        }
+        case SOCK_STATUS::SS_CLOSED:
+        {
+            break;
+        }
+        default:
+            break;
         }
     }
 
 
     void CSession::_post_send()
     {
-        if (!Alive())
+        if (_io_send._stag != IO_STATUS::IO_STATUS_IDLE)
             return;
 
-        if (_io_send._stag != IO_STATUS::IO_STATUS_SUCCESSD)
+        if (_que_send.empty())
             return;
 
-        if (_b_send)
+        _msg_send = _que_send.front();
+
+        if (!_msg_send->DataLength())
+        {
+            _msg_send = nullptr;
             return;
+        }
 
-        if (_q_send.empty())
-            return;
-
-        _b_send = _q_send.front();
-
-        if (!_b_send->DataLength())
-            return;
-
-        _q_send.pop();
+        _que_send.pop();
 
         WSABUF buf;
-        buf.buf = (char*)_b_send->Data();
-        buf.len = _b_send->DataLength();
+        buf.buf = (char*)_msg_send->Data();
+        buf.len = _msg_send->DataLength();
         _io_send.Reset();
         int ret = ::WSASend(_socket, &buf, 1, nullptr, 0, &_io_send._over, nullptr);
         if (ret)
@@ -193,33 +311,32 @@ namespace Net
             }
             else
             {
-                _io_send._stag = IO_STATUS::IO_STATUS_QUIT;
                 _on_send_error(err);
+                _status = SOCK_STATUS::SS_ERROR;
             }
         }
         else
         {
-            _io_send._stag = IO_STATUS::IO_STATUS_SUCCESSD;
-            INSTANCE(CLogger)->Debug("数据发送立即完成");
+            _io_send._stag = IO_STATUS::IO_STATUS_SUCCESSD_IMME;
+            _on_send(buf.buf, buf.len);
+            sLogger->Info("数据发送立即完成");
         }
     }
 
 
     void CSession::_post_recv()
     {
-        if (!Alive())
-            return;
-
-        if (_io_recv._stag != IO_STATUS::IO_STATUS_SUCCESSD)
+        if (_io_recv._stag != IO_STATUS::IO_STATUS_IDLE)
             return;
 
         WSABUF buf;
         buf.buf = (char*)_io_recv._data;
-        buf.len = 0x1000;
+        buf.len = MAX_BUFFER_SIZE;
 
         DWORD flags = 0;
+        DWORD bytes = 0;
         _io_recv.Reset();
-        int ret = ::WSARecv(_socket, &buf, 1, nullptr, &flags, &_io_recv._over, nullptr);
+        int ret = ::WSARecv(_socket, &buf, 1, &bytes, &flags, &_io_recv._over, nullptr);
         if (ret)
         {
             int err = WSAGetLastError();
@@ -229,14 +346,14 @@ namespace Net
             }
             else
             {
-                _io_recv._stag = IO_STATUS::IO_STATUS_QUIT;
                 _on_recv_error(err);
             }
         }
         else
         {
-            _io_recv._stag = IO_STATUS::IO_STATUS_SUCCESSD;
-            INSTANCE(CLogger)->Debug("数据接收立即完成，这该怎么办啊");
+            _io_recv._stag = IO_STATUS::IO_STATUS_SUCCESSD_IMME;
+            _on_recv(buf.buf, bytes);
+            sLogger->Info("数据接收立即完成，这该怎么办啊");
         }
     }
 
@@ -253,86 +370,16 @@ namespace Net
     }
 
 
-    void CSession::_close()
-    {
-        if (_status == SOCK_STATUS::SOCK_STATUS_DEADED)
-        {
-            _status = SOCK_STATUS::SOCK_STATUS_DECAY;
-            g_net_close_socket(_socket);
-            on_closed();
-        }
-    }
-
-
     void CSession::Disconnect()
     {
-        if (!Alive())
+        if (_disconnect)
             return;
 
-        if (_io_recv._stag != IO_STATUS::IO_STATUS_PENDING && _io_send._stag != IO_STATUS::IO_STATUS_PENDING)
+        if (Active())
         {
-            _status = SOCK_STATUS::SOCK_STATUS_DEADED;
+            _disconnect = true;
+            _status = SOCK_STATUS::SS_CLOSING;
         }
-        else
-        {
-            _status = SOCK_STATUS::SOCK_STATUS_DEADING;
-            ::shutdown(_socket, SD_SEND);
-        }
-    }
-
-
-    void CSession::_on_recv(char* pdata, uint32 size)
-    {
-        do
-        {
-            while (size && !_header.Full())
-            {
-                _header.Fill(pdata, size);
-            }
-
-            if (!size) return;
-
-            if (!_msg)
-            {
-                uint32 data_len = *(uint32*)_header.Data();
-                if (data_len >= max_packet_size() || data_len < 2)
-                {
-                    INSTANCE(CLogger)->Error("packet size exceed max_packet_size !!!");
-                    this->Disconnect();
-                    return;
-                }
-
-                _msg = INSTANCE(CMessageQueue)->ApplyMessage();
-                _msg->Reset(data_len);
-            }
-
-            while (size && !_msg->Full())
-            {
-                _msg->Fill(pdata, size);
-            }
-
-            if (_msg->Full())
-            {
-                _msg->_param = 0;
-                _msg->_ptr = nullptr;
-                INSTANCE(CMessageQueue)->PushMessage(_msg);
-                _msg = nullptr;
-                _header.Reset(4);
-            }
-
-        } while (size);
-    }
-
-
-    void CSession::_on_send(char* pdata, uint32 size)
-    {
-
-    }
-
-
-    void CSession::on_closed()
-    {
-        INSTANCE(CLogger)->Info("CSession::on_closed send_err=%u, recv_err=%u", _send_error, _recv_error);
     }
 
 
@@ -343,7 +390,7 @@ namespace Net
 
 
 
-    void CORE_STDCALL CSession::session_cb(void* obj, uint32 events)
+    void CORE_STDCALL CSession::__session_cb__(void* obj, uint32 events)
     {
         CSession* pThis = (CSession*)obj;
         if (events | EPOLLERR)
@@ -369,8 +416,7 @@ namespace Net
 
             do
             {
-                static const int MAX_RECV_SIZE = 0x1000;
-                static char data[MAX_RECV_SIZE];
+                static char data[MAX_BUFFER_SIZE];
 
                 int ret = recv(pThis->_socket, data, MAX_RECV_SIZE, 0);
                 if (ret > 0)
@@ -417,7 +463,7 @@ namespace Net
 
     CSession::CSession() :
         _status(SOCK_STATUS::SOCK_STATUS_UNSET),
-        _header(sizeof(uint32))
+        _msg_header(sizeof(uint32))
     {
     }
 
@@ -431,7 +477,7 @@ namespace Net
     void CSession::Attach(SOCKET_HANDER socket, void* key)
     {
         _socket = socket;
-        _header.Reset(4);
+        _msg_header.Reset();
 
         linger ln = { 1, 0 };
         setsockopt(_socket, SOL_SOCKET, SO_LINGER, (char*)&ln, sizeof(linger));
@@ -440,38 +486,17 @@ namespace Net
         {
             _key = (Poll::CompletionKey*)key;
             _key->obj = this;
-            _key->func = &CSession::session_cb;
+            _key->func = &CSession::__session_cb__;
         }
         else
         {
-            _key = new Poll::CompletionKey{ this, &CSession::session_cb };
+            _key = new Poll::CompletionKey{ this, &CSession::__session_cb__ };
         }
         
         _set_socket_status(SOCK_STATUS::SOCK_STATUS_ALIVE);
-        if (INSTANCE(Poll::CPoller)->RegisterHandler(_socket, _key, EPOLLIN | EPOLLOUT | EPOLLRDHUP))
+        if (sPoller->RegisterHandler(_socket, _key, EPOLLIN | EPOLLOUT | EPOLLRDHUP))
         {
             return;
-        }
-    }
-
-
-    void CSession::Send(const char* data, uint32 size)
-    {
-        if (_wr_status)
-            return;
-
-        while (size)
-        {
-            CMessage* msg_writer = nullptr;
-            if (_q_send.empty() || _q_send.back()->Full())
-            {
-                CMessage* msg = INSTANCE_2(CMessageQueue)->ApplyMessage();
-                msg->Reset(0x1000);
-                _q_send.push(msg);
-            }
-            msg_writer = _q_send.back();
-            char* pdata = const_cast<char*>(data);
-            msg_writer->Fill(pdata, size);
         }
     }
 
@@ -500,7 +525,7 @@ namespace Net
 
             if (_wr_status == 2)
             {
-                if (!_b_send && _q_send.empty())
+                if (!_msg_send && _que_send.empty())
                 {
                     _wr_status = 3;
                     shutdown(_socket, SHUT_WR);
@@ -533,19 +558,19 @@ namespace Net
 
         while (true)
         {
-            if (!_b_send)
+            if (!_msg_send)
             {
-                if (_q_send.empty())
+                if (_que_send.empty())
                 {
                     return;
                 }
-                _b_send = _q_send.front();
-                _q_send.pop();
+                _msg_send = _que_send.front();
+                _que_send.pop();
                 _send_len = 0;
             }
 
-            char* data = (char*)_b_send->Data() + _send_len;
-            size_t len = (size_t)_b_send->DataLength() - (size_t)_send_len;
+            char* data = (char*)_msg_send->Data() + _send_len;
+            size_t len = (size_t)_msg_send->DataLength() - (size_t)_send_len;
 
             int ret = send(_socket, data, len, MSG_NOSIGNAL);
             if (ret == -1)
@@ -569,8 +594,8 @@ namespace Net
             {
                 if ((size_t)ret == len)
                 {
-                    INSTANCE_2(CMessageQueue)->FreeMessage(_b_send);
-                    _b_send = nullptr;
+                    INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+                    _msg_send = nullptr;
                     _send_len = 0;
                 }
                 else
@@ -585,7 +610,7 @@ namespace Net
 
     void CSession::_set_socket_status(SOCK_STATUS s)
     {
-        INSTANCE(CLogger)->Info("CSession::_status changed! prev = %d, curr = %d", _status.load(), (uint32)s);
+        sLogger->Info("CSession::_status changed! prev = %d, curr = %d", _status.load(), (uint32)s);
         _status = s;
     }
 
@@ -605,59 +630,6 @@ namespace Net
         _set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
     }
 
-
-    void CSession::_on_recv(char* pdata, uint32 size)
-    {
-        do
-        {
-            while (size && !_header.Full())
-            {
-                _header.Fill(pdata, size);
-            }
-
-            if (!size) return;
-
-            if (!_msg)
-            {
-                uint32 data_len = *(uint32*)_header.Data();
-                if (data_len >= max_packet_size() || data_len < 2)
-                {
-                    INSTANCE(CLogger)->Error("packet size exceed max_packet_size !!!");
-                    this->Disconnect();
-                    return;
-                }
-
-                _msg = INSTANCE(CMessageQueue)->ApplyMessage();
-                _msg->Reset(data_len);
-            }
-
-            while (size && !_msg->Full())
-            {
-                _msg->Fill(pdata, size);
-            }
-
-            if (_msg->Full())
-            {
-                _msg->_param = 0;
-                _msg->_ptr = nullptr;
-                INSTANCE(CMessageQueue)->PushMessage(_msg);
-                _msg = nullptr;
-                _header.Reset(4);
-            }
-
-        } while (size);
-    }
-
-
-    void CSession::_on_send(char* pdata, uint32 size)
-    {
-    }
-
-
-    void CSession::on_closed()
-    {
-        INSTANCE(CLogger)->Info("CSession::on_closed send_err=%u, recv_err=%u", _send_error, _recv_error);
-    }
 
 #endif
 }

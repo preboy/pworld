@@ -1,5 +1,6 @@
 #pragma once
 #include "lock.h"
+#include "netbase.h"
 
 
 namespace Net
@@ -9,7 +10,7 @@ namespace Net
     {
 
     private:
-        enum { MEMORY_UNIT_SIZE = 0x1000, };
+        enum { MEMORY_UNIT_SIZE = MAX_BUFFER_SIZE, };
 
     protected:
         uint32  _size;

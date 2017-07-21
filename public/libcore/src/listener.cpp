@@ -11,46 +11,24 @@ namespace Net
 
 #ifdef PLAT_WIN32
 
-    void CListener::listener_cb(void* key, OVERLAPPED* overlapped, DWORD bytes)
+    void CListener::__listener_cb__(void* obj, OVERLAPPED* overlapped)
     {
-        CListener* pThis = reinterpret_cast<CListener*>(key);
+        CListener* pThis = reinterpret_cast<CListener*>(obj);
         PerIoData* pData = (PerIoData*)overlapped;
-
-        if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
+        if (pData->_stag == IO_STATUS::IO_STATUS_FAILED)
         {
-            ::setsockopt(pThis->m_sockAcceptor,
-                SOL_SOCKET,
-                SO_UPDATE_ACCEPT_CONTEXT,
-                (char *)&(pThis->m_sockAcceptor),
-                sizeof(pThis->m_sockAcceptor));
-
-            pThis->on_accept(pThis->m_sockAcceptor);
-
-            if (pThis->_status == LS_INITED)
-            {
-                pThis->PostAccept();
-            }
-        }
-        else
-        {
-            DWORD err = pData->_err;
-            if (pThis->_status == LS_CLOSING)
-            {
-                pThis->_status = LS_CLOSED;
-                return;
-            }
-            pThis->_on_accept_error(err);
+            pThis->_error = pData->_err;
         }
     }
 
 
-    bool CListener::Init(const char* ip, uint16 port, uint32& err)
+    bool CListener::Init(const char* ip, uint16 port)
     {
-        err = 0;
+        _status = LISTENER_STATUS::LS_CLOSED;
         m_sockListener = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
         if (m_sockListener == INVALID_SOCKET)
         {
-            err = ::WSAGetLastError();
+            _error = ::WSAGetLastError();
             return false;
         }
 
@@ -61,14 +39,14 @@ namespace Net
         if (ret != 1)
         {
             g_net_close_socket(m_sockListener);
-            err = ::WSAGetLastError();
+            _error = ::WSAGetLastError();
             return false;
         }
 
         ret = ::bind(m_sockListener, (const sockaddr*)&listen_addr, sizeof(sockaddr_in));
         if (ret == SOCKET_ERROR)
         {
-            err = ::WSAGetLastError();
+            _error = ::WSAGetLastError();
             g_net_close_socket(m_sockListener);
             return false;
         }
@@ -76,7 +54,7 @@ namespace Net
         ret = ::listen(m_sockListener, SOMAXCONN);
         if (ret == SOCKET_ERROR)
         {
-            err = ::WSAGetLastError();
+            _error = ::WSAGetLastError();
             g_net_close_socket(m_sockListener);
             return false;
         }
@@ -89,123 +67,148 @@ namespace Net
             &dwBytes, NULL, NULL);
         if (ret == SOCKET_ERROR)
         {
-            err = WSAGetLastError();
+            _error = WSAGetLastError();
             g_net_close_socket(m_sockListener);
             return false;
         }
 
-        m_pkey = new Poll::CompletionKey{ this, &CListener::listener_cb };
-        err = INSTANCE(Poll::CPoller)->RegisterHandler((HANDLE)m_sockListener, m_pkey);
-        if (err)
+        _pkey = new Poll::CompletionKey{ this, &CListener::__listener_cb__ };
+
+        if (!sPoller->RegisterHandler((HANDLE)m_sockListener, _pkey))
         {
+            _error = ::WSAGetLastError();
             g_net_close_socket(m_sockListener);
             return false;
         }
 
-        _status = LS_INITED;
+        _status = LISTENER_STATUS::LS_RUNNING;
         return true;
     }
 
 
-    void CListener::PostAccept()
+    void CListener::Update()
     {
-        if (_status != LS_INITED)
+        switch (_status)
         {
+        case LISTENER_STATUS::LS_RUNNING:
+        {
+            if (_io_accept._stag == IO_STATUS::IO_STATUS_IDLE)
+            {
+                _post_accept();
+            }
+            else if (_io_accept._stag == IO_STATUS::IO_STATUS_SUCCESSD_IMME)
+            {
+                _io_accept._stag = IO_STATUS::IO_STATUS_IDLE;
+            }
+            else if (_io_accept._stag == IO_STATUS::IO_STATUS_SUCCESSD)
+            {
+                _on_accept();
+                _io_accept._stag = IO_STATUS::IO_STATUS_IDLE;
+            }
+            else if (_io_accept._stag == IO_STATUS::IO_STATUS_FAILED)
+            {
+                _on_accept_error(_error);
+            }
+            break;
+        }
+
+        case LISTENER_STATUS::LS_ERROR:
+        {
+            _status = LISTENER_STATUS::LS_CLOSED;
+            break;
+        }
+
+        case LISTENER_STATUS::LS_CLOSING:
+        {
+            if (_io_accept._stag == IO_STATUS::IO_STATUS_IDLE || _io_accept._stag == IO_STATUS::IO_STATUS_FAILED)
+            {
+                _status = LISTENER_STATUS::LS_CLOSED;
+            }
+            break;
+        }
+
+        case LISTENER_STATUS::LS_CLOSED:
+        {
+            g_net_close_socket(m_sockListener);
+            g_net_close_socket(m_sockAcceptor);
+            on_closed(_error);
+            break;
+        }
+
+        default:
+            break;
+        }
+    }
+
+
+    void CListener::_post_accept()
+    {
+        m_sockAcceptor = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+        if (m_sockAcceptor == INVALID_SOCKET)
+        {
+            _on_accept_error(WSAGetLastError());
             return;
         }
 
-        DWORD err;
-        while (true)
+        _io_accept.Reset();
+        BOOL r = lpfnAcceptEx(m_sockListener, m_sockAcceptor, _io_accept._data, 0,
+            ADDRESS_BUFFER_SIZE, ADDRESS_BUFFER_SIZE, nullptr, &_io_accept._over);
+        if (r)
         {
-            err = 0;
-            m_sockAcceptor = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
-            if (m_sockAcceptor == INVALID_SOCKET)
+            _on_accept();
+            _io_accept._stag = IO_STATUS::IO_STATUS_SUCCESSD_IMME;
+        }
+        else
+        {
+            DWORD err = WSAGetLastError();
+            if (err == WSA_IO_PENDING)
             {
-                err = WSAGetLastError();
-                break;
-            }
-
-            _io_accept.Reset();
-            DWORD dwBytes = 0;
-            BOOL r = lpfnAcceptEx(m_sockListener, m_sockAcceptor, _io_accept._data, 0,
-                ADDRESS_BUFFER_SIZE, ADDRESS_BUFFER_SIZE, &dwBytes, &_io_accept._over);
-            if (r)
-            {
-                _io_accept._stag = IO_STATUS::IO_STATUS_SUCCESSD;
-                on_accept(m_sockAcceptor);
-                INSTANCE(CLogger)->Debug("哇塞，acceptex立即完成了，这该怎么办呢？");
-                continue;
+                _io_accept._stag = IO_STATUS::IO_STATUS_PENDING;
             }
             else
             {
-                err = ::WSAGetLastError();
-                if (err == ERROR_IO_PENDING)
-                {
-                    err = 0;
-                    _io_accept._stag = IO_STATUS::IO_STATUS_PENDING;
-                    break;
-                }
-                else if (err == WSAECONNRESET)
-                {
-                    err = 0;
-                    INSTANCE(CLogger)->Debug("PostAccept Error: WSAECONNRESET");
-                    g_net_close_socket(m_sockAcceptor);
-                    continue;
-                }
-            }
-        }
-        if (err)
-        {
-            _status = LS_CLOSED;
-            _io_accept._stag = IO_STATUS::IO_STATUS_QUIT;
-            _on_accept_error(err);
-        }
-    }
-
-
-    void CListener::StopAccept()
-    {
-        if (_status == LS_INITED)
-        {
-            _status = LS_CLOSING;
-            if (_io_accept._stag == IO_STATUS::IO_STATUS_PENDING)
-            {
-                g_net_close_socket(m_sockListener);
+                _on_accept_error(err);
             }
         }
     }
 
 
-    void CListener::Wait()
+    void CListener::Close()
     {
-        while (_status != LS_CLOSED)
+        if (_status == LISTENER_STATUS::LS_RUNNING)
         {
-            Utils::Sleep(10);
+            _status = LISTENER_STATUS::LS_CLOSING;
         }
-        g_net_close_socket(m_sockAcceptor);
-        g_net_close_socket(m_sockListener);
+    }
+
+
+    void CListener::_on_accept()
+    {
+        ::setsockopt(m_sockAcceptor, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
+            (char *)&(m_sockListener),
+            sizeof(m_sockListener));
+        // GetAcceptExSockaddrs ...
+
+        on_accept(m_sockAcceptor);
     }
 
 
     void CListener::_on_accept_error(uint32 err)
     {
-        accept_error = err;
-        on_accept_error(err);
+        _error = err;
+        _status = LISTENER_STATUS::LS_ERROR;
     }
 
-
-    //--------------------------------------------
 
     void CListener::on_accept(SOCKET_HANDER sock)
     {
     }
 
 
-    void CListener::on_accept_error(uint32 err)
+    void CListener::on_closed(uint32 err)
     {
-        INSTANCE(CLogger)->Error("CListener::on_accept_error err=%u", err);
+        sLogger->Error("CListener::on_closed err=%u", err);
     }
-
 
 
 
@@ -222,29 +225,28 @@ namespace Net
 
     CListener::~CListener()
     {
-        SAFE_DELETE(m_pkey);
+        SAFE_DELETE(_pkey);
     }
 
 
-    void CListener::listener_cb(void* obj, uint32 events)
+    void CListener::__listener_cb__(void* obj, uint32 events)
     {
         CListener* pThis = (CListener*)obj;
-
         if (events | EPOLLERR)
         {
-            pThis->on_accept_error(errno);
+            pThis->_error = errno;
             return;
         }
-
         if (events | EPOLLIN)
         {
-            pThis->PostAccept();
+            pThis->_io_pending = 0;
         }
     }
 
 
-    bool CListener::Init(const char* ip, uint16 port, uint32& err)
+    bool CListener::Init(const char* ip, uint16 port)
     {
+        _status = LISTENER_STATUS::LS_CLOSED;
         _listener = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
         if (_listener == -1)
             return false;
@@ -256,14 +258,14 @@ namespace Net
         if (ret != 1)
         {
             g_net_close_socket(_listener);
-            err = GetSystemError();
+            _error = GetSystemError();
             return false;
         }
 
         ret = ::bind(_listener, (const sockaddr*)&listen_addr, sizeof(sockaddr_in));
         if (ret == -1)
         {
-            err = GetSystemError();
+            _error = GetSystemError();
             g_net_close_socket(_listener);
             return false;
         }
@@ -271,25 +273,77 @@ namespace Net
         ret = ::listen(_listener, 128);
         if (ret == -1)
         {
-            err = ::GetSystemError();
+            _error = ::GetSystemError();
             g_net_close_socket(_listener);
             return false;
         }
 
-        m_pkey = new Poll::CompletionKey{ this, &CListener::listener_cb };
+        _io_pending = 1; 
+        _pkey = new Poll::CompletionKey{ this, &CListener::__listener_cb__ };
+        if (!sPoller->RegisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT))
+        {
+            _error = ::GetSystemError();
+            g_net_close_socket(_listener);
+            return false;
+        }
 
-        INSTANCE(Poll::CPoller)->RegisterHandler(_listener, m_pkey, EPOLLIN);
-
+        _status = LISTENER_STATUS::LS_RUNNING;
         return true;
     }
 
 
-    void CListener::Wait()
+    void CListener::Update()
     {
+        switch (_status)
+        {
+        case LISTENER_STATUS::LS_RUNNING:
+        {
+            if (!_io_pending)
+            {
+                _post_accept();
+            }
+            break;
+        }
+
+        case LISTENER_STATUS::LS_ERROR:
+        {
+            _status = LISTENER_STATUS::LS_CLOSED;
+            break;
+        }
+
+        case LISTENER_STATUS::LS_CLOSING:
+        {
+            if (!_io_pending)
+            {
+                _status = LISTENER_STATUS::LS_CLOSED;
+            }
+            break;
+        }
+
+        case LISTENER_STATUS::LS_CLOSED:
+        {
+            sPoller->UnregisterHandler(_listener);
+            g_net_close_socket(_listener);
+            on_closed(_error);
+            break;
+        }
+
+        default:
+            break;
+        }
     }
 
 
-    void CListener::PostAccept()
+    void CListener::Close()
+    {
+        if (_status == LISTENER_STATUS::LS_RUNNING)
+        {
+            _status = LISTENER_STATUS::LS_CLOSING;
+        }
+    }
+
+
+    void CListener::_post_accept()
     {
         do
         {
@@ -302,12 +356,13 @@ namespace Net
                 }
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                 {
-                    // INSTANCE(CPoller)->ReregisterHandler(_listener, m_pkey, EPOLLIN);
+                    _io_pending = 1;
+                    INSTANCE(CPoller)->ReregisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT);
                     break;
                 }
                 else
                 {
-                    on_accept_error(errno);
+                    _on_accept_error(errno);
                     return;
                 }
             }
@@ -319,24 +374,22 @@ namespace Net
     }
 
 
-    void CListener::StopAccept()
+    void CListener::_on_accept_error(uint32 err)
     {
-        INSTANCE(Poll::CPoller)->UnregisterHandler(_listener);
-        g_net_close_socket(_listener);
+        _error = err;
+        _status = LISTENER_STATUS:LS_ERROR;
     }
 
 
     void CListener::on_accept(SOCKET_HANDER sock)
     {
-
     }
 
 
-    void CListener::on_accept_error(uint32 err)
+    void CListener::on_closed(uint32 err)
     {
-        INSTANCE(CLogger)->Error("CListener::on_accept_error %u", err);
+        sLogger->Error("CListener::on_closed err=%u", err);
     }
-
 
 #endif
 }

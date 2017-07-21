@@ -49,11 +49,11 @@ bool CDatabase::Connect()
     if (ret)
     {
         _last_travel_time = 0;
-        INSTANCE(CLogger)->Info("connect to database completed.");
+        sLogger->Info("connect to database completed.");
     }
     else
     {
-        INSTANCE(CLogger)->Error("connect to database failed.");
+        sLogger->Error("connect to database failed.");
     }
     return ret;
 }
@@ -68,7 +68,7 @@ void CDatabase::Update()
 
     if (!_db_handler.IsAlive())
     {
-        INSTANCE(CLogger)->Info("Reconnect to database...");
+        sLogger->Info("Reconnect to database...");
         this->Connect();
     }
 

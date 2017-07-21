@@ -104,7 +104,7 @@ bool CMysqlQueryResultStmt::NextRow()
     }
     if (ret == MYSQL_DATA_TRUNCATED)
     {
-        INSTANCE(CLogger)->Warning("MYSQL_DATA_TRUNCATED !!!");
+        sLogger->Warning("MYSQL_DATA_TRUNCATED !!!");
         return false;
     }
     return false;
@@ -294,7 +294,7 @@ CMysqlQueryResultStmt* CMysqlHanderStmt::Execute(MysqlBindParam* params)
                 break;
 
             default:
-                INSTANCE(CLogger)->Error("MysqlBindParam ONLY available for MBT_String or MBT_Binary !!!");
+                sLogger->Error("MysqlBindParam ONLY available for MBT_String or MBT_Binary !!!");
                 break;
             }
         }
@@ -565,13 +565,13 @@ CMysqlHanderStmt* CMysqlHandler::CreateStmtHander(const char* sql)
 
 void CMysqlHandler::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
 {
-    INSTANCE(CLogger)->Error("mysql state:%s", err_stage);
-    INSTANCE(CLogger)->Error("mysql error:[%d]%s", err_no, err_msg);
+    sLogger->Error("mysql state:%s", err_stage);
+    sLogger->Error("mysql error:[%d]%s", err_no, err_msg);
     
     if (err_no == 2006 || err_no == 2013 || err_no == 2055)
     {
         _alive = false;
-        INSTANCE(CLogger)->Error("Mysql connection losted !!!");
+        sLogger->Error("Mysql connection losted !!!");
     }
 }
 
@@ -581,7 +581,7 @@ void CMysqlService::Init()
 {
     if (mysql_library_init(0, nullptr, nullptr))
     {
-        INSTANCE(CLogger)->Error("could not initialize MySQL library");
+        sLogger->Error("could not initialize MySQL library");
     }
 }
 

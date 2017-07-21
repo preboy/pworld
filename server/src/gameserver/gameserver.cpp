@@ -48,18 +48,18 @@ int main()
 
 
     INSTANCE(CAsyncTask)->Init(4);
-    INSTANCE(CLogger)->Init("aaa.txt");
+    sLogger->Init("aaa.txt");
 
 
     if (!Net::g_net_init())
     {
-        INSTANCE(CLogger)->Fatal("fatal error: Net::g_net_init()");
+        sLogger->Fatal("fatal error: Net::g_net_init()");
         return 1;
     }
   
-    if (!INSTANCE(Poll::CPoller)->Init(0))
+    if (!sPoller->Init(0))
     {
-        INSTANCE(CLogger)->Fatal("fatal error: INSTANCE(Poll::Poller)->Init()");
+        sLogger->Fatal("fatal error: INSTANCE(Poll::Poller)->Init()");
         return 2;
     }
 
@@ -67,7 +67,7 @@ int main()
 
     if (!INSTANCE(CGameServerFrame)->Start())
     {
-        INSTANCE(CLogger)->Fatal("fatal error: INSTANCE(CGameServerFrame)->Start()");
+        sLogger->Fatal("fatal error: INSTANCE(CGameServerFrame)->Start()");
         return 3;
     }
 
@@ -84,9 +84,9 @@ int main()
     INSTANCE(CGameServerFrame)->Stop();
 
 
-    INSTANCE(Poll::CPoller)->Release();
+    sPoller->Release();
     Net::g_net_release();
-    INSTANCE(CLogger)->Release();
+    sLogger->Release();
     INSTANCE(CAsyncTask)->Release();
 
 

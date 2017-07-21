@@ -6,17 +6,21 @@ namespace Net
 {
 #ifdef PLAT_WIN32
 
-    class CompletionKey;
-
     class CListener
     {
     private:
-        enum LISTENER_STATUS
+        enum class LISTENER_STATUS
         {
-            LS_UNINIT,
-            LS_INITED,
-            LS_CLOSING,
-            LS_CLOSED,
+            LS_UNINIT,         // un init
+            LS_RUNNING,        // normal running
+            LS_ERROR,          // error occur
+            LS_CLOSING,        // request close
+            LS_CLOSED,         // closed
+        };
+    
+        enum
+        {
+            ADDRESS_BUFFER_SIZE = sizeof(sockaddr_in) + 16,
         };
 
     public:
@@ -24,41 +28,43 @@ namespace Net
             _io_accept(IO_TYPE::IO_TYPE_Accept, ADDRESS_BUFFER_SIZE * 2)
         {}
 
-        virtual ~CListener() { SAFE_DELETE(m_pkey); }
+        virtual ~CListener()
+        {
+            SAFE_DELETE(_pkey); 
+        }
 
-        bool Init(const char* ip, uint16 port, uint32& err);
+        bool Init(const char* ip, uint16 port);
+        void Update();
+        void Close();
 
-        void PostAccept();
-        void StopAccept();
-
-        void Wait();
+        bool Active() { return _status == LISTENER_STATUS::LS_RUNNING; }
+        bool Disposable() { return _status == LISTENER_STATUS::LS_CLOSED; }
 
     private:
-        static void CORE_STDCALL    listener_cb(void* key, OVERLAPPED* overlapped, DWORD bytes);
+        static void             __listener_cb__(void* obj, OVERLAPPED* overlapped);
 
     private:
-        virtual void            _on_accept_error(uint32 err);
+        void                    _on_accept();
+        void                    _on_accept_error(uint32 err);
+        void                    _post_accept();
 
     protected:
         virtual void            on_accept(SOCKET_HANDER sock);
-        virtual void            on_accept_error(uint32 err);
+        virtual void            on_closed(uint32 err);
 
     private:
         SOCKET                  m_sockAcceptor = INVALID_SOCKET;
         SOCKET                  m_sockListener = INVALID_SOCKET;
-        Poll::CompletionKey*    m_pkey = nullptr;
+        
         LPFN_ACCEPTEX           lpfnAcceptEx = nullptr;
-        uint32                  accept_error = 0;
 
-    private:
-        enum
-        {
-            ADDRESS_BUFFER_SIZE = sizeof(sockaddr_in) + 16,
-        };
+        Poll::CompletionKey*    _pkey = nullptr;
+        
+        uint32                  _error = 0;
 
-        PerIoData                       _io_accept;
+        PerIoData                           _io_accept;
 
-        volatile LISTENER_STATUS         _status = LS_UNINIT;
+        volatile LISTENER_STATUS            _status = LISTENER_STATUS::LS_UNINIT;
     };
 
 
@@ -69,36 +75,47 @@ namespace Net
 
 
 
-    class CompletionKey;
-
     class CListener
     {
     public:
         CListener();
         virtual ~CListener();
 
+    private:
+        enum class LISTENER_STATUS
+        {
+            LS_UNINIT,         // un init
+            LS_RUNNING,        // normal running
+            LS_ERROR,          // error occur
+            LS_CLOSING,        // request close
+            LS_CLOSED,         // closed
+        };
+
     public:
-        bool Init(const char* ip, uint16 port, uint32& err);
-        void Wait();
+        bool Init(const char* ip, uint16 port);
+        void Update();
+        void Close();
 
-        void PostAccept();
-        void StopAccept();
-
+        bool Active() { return _status == LISTENER_STATUS::LS_RUNNING; }
+        bool Disposable() { return _status == LISTENER_STATUS::LS_CLOSED; }
 
     protected:
-        virtual void on_accept(SOCKET_HANDER sock);
-        virtual void on_accept_error(uint32 err);
-
-
-    private:
-        static void CORE_STDCALL listener_cb(void* obj, uint32 events);
-
+        virtual void    on_accept(SOCKET_HANDER sock);
+        virtual void    on_closed(uint32 err);
 
     private:
-        SOCKET_HANDER _listener = -1;
+        static void     __listener_cb__(void* obj, uint32 events);
 
-        Poll::CompletionKey*    m_pkey = nullptr;
+    private:
+        void            _on_accept_error(uint32 err);
+        void            _post_accept();
 
+    private:
+        SOCKET_HANDER                   _listener   = -1;
+        Poll::CompletionKey*            _pkey       = nullptr;
+        uint32                          _error      = 0;
+        volatile LISTENER_STATUS        _status     = LISTENER_STATUS::LS_UNINIT;
+        uint8                           _io_pending = 0;
     };
 
 #endif

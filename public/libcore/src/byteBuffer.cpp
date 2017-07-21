@@ -86,7 +86,7 @@ bool CByteBuffer::Out(void* data, uint32 size)
         _rd_ptr += size;
         return true;
     }
-    INSTANCE(CLogger)->Warning("CByteBuffer::Out, Not Enough data !!!");
+    sLogger->Warning("CByteBuffer::Out, Not Enough data !!!");
     return false;
 }
 
@@ -99,7 +99,7 @@ bool CByteBuffer::In(const void* data, uint32 size)
         _wr_ptr += size;
         return true;
     }
-    INSTANCE(CLogger)->Warning("CByteBuffer::In, Not Enough space !!!");
+    sLogger->Warning("CByteBuffer::In, Not Enough space !!!");
     return false;
 }
 
@@ -124,7 +124,7 @@ CByteBuffer& CByteBuffer::operator >> (std::string& str)
     uint32 len = (uint32)src.length() + 1;
     if (_rd_ptr + len > _wr_ptr)
     {
-        INSTANCE(CLogger)->Warning("CByteBuffer::operator >> (std::string& str), invalid string !!!");
+        sLogger->Warning("CByteBuffer::operator >> (std::string& str), invalid string !!!");
         return *this;
     }
     else

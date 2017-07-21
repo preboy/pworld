@@ -47,12 +47,12 @@ namespace Net
 #ifdef PLAT_WIN32
 
     PerIoData::PerIoData(IO_TYPE type, uint32 size) :
+        _type(type),
         _stag(IO_STATUS::IO_STATUS_IDLE),
-        _data(nullptr),
         _size(size),
+        _data(nullptr),
         _ptr(nullptr)
     {
-        _type = type;
         if (_size) 
         {
             _data = malloc(size);
@@ -68,6 +68,7 @@ namespace Net
     void PerIoData::Reset()
     {
         this->_err          = 0;
+        this->_bytes        = 0;
         _over.Internal      = 0;
         _over.InternalHigh  = 0;
         _over.Offset        = 0;

@@ -6,7 +6,7 @@ ObjectAPI_Begin(CCreature)
 
 ObjectAPI_Map("Attackable", CCreatureApi::attackable)
 
-ObjectAPI_End
+ObjectAPI_End;
 
 
 

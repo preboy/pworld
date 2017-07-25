@@ -6,11 +6,14 @@ ObjectAPI_Begin(CSceneObject)
 
 ObjectAPI_Map("Pos", CSceneObjectApi::pos)
 
-ObjectAPI_End
+ObjectAPI_End;
 
 
 
 int CSceneObjectApi::pos(lua_State* L, CSceneObject* obj)
 {
-    return 0;
+    lua_pushnumber(L, 100.2);
+    lua_pushnumber(L, 200.1);
+    lua_pushnumber(L, 0.021);
+    return 3;
 }

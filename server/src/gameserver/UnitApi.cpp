@@ -6,7 +6,7 @@ ObjectAPI_Begin(CUnit)
 
 ObjectAPI_Map("Level", CUnitApi::level)
 
-ObjectAPI_End
+ObjectAPI_End;
 
 
 

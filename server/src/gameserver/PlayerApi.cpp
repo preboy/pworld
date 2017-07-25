@@ -6,7 +6,7 @@ ObjectAPI_Begin(CPlayer)
 
 ObjectAPI_Map("Sex", CPlayerApi::sex)
 
-ObjectAPI_End
+ObjectAPI_End;
 
 
 int CPlayerApi::sex(lua_State * L, CPlayer * obj)

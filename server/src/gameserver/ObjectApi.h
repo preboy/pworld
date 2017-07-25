@@ -8,7 +8,9 @@ ObjectAPI_Parent(CObject, CObject);
 class CObjectApi
 {
 public:
-    static int get_name(lua_State* L, CObject* obj);
+    static int name(lua_State* L, CObject* obj);
+    static int type(lua_State* L, CObject* obj);
+    static int table(lua_State* L, CObject* obj);
 
 };
 

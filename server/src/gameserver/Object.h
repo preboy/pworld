@@ -66,6 +66,7 @@ private:
 public:
     uint64  entry() { return _entry; }
     void    entry(uint64 v) { _entry = v; }
+
 private:
     uint64  _entry;
 

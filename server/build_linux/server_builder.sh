@@ -7,7 +7,7 @@ unzip server.zip
 
 cd server/src
 
-make
+make -j 4
 
 if [ "$?" != "0" ]
 then

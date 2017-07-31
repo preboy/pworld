@@ -7,7 +7,7 @@ unzip public.zip
 
 cd public/libcore
 
-make
+make -j 4
 
 if [ "$?" != "0" ]
 then

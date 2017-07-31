@@ -71,7 +71,7 @@ namespace Poll
         bool            _running;
 
     private:
-        static void     __poller_thread_func__();
+        void     __poller_thread_func__();
     };
 
 #endif

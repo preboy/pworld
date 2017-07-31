@@ -357,7 +357,7 @@ namespace Net
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                 {
                     _io_pending = 1;
-                    INSTANCE(CPoller)->ReregisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT);
+                    sPoller->ReregisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT);
                     break;
                 }
                 else
@@ -377,7 +377,7 @@ namespace Net
     void CListener::_on_accept_error(uint32 err)
     {
         _error = err;
-        _status = LISTENER_STATUS:LS_ERROR;
+        _status = LISTENER_STATUS::LS_ERROR;
     }
 
 

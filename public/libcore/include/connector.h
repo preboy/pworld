@@ -76,12 +76,12 @@ namespace Net
     private:
         enum CONNECTOR_STATUS
         {
-            UNINIT,
-            PENDING,    // wait overlapped result
-            ERROR,
-            CONNECTED_IMME,
-            CONNECTED,
-            OVER,
+            CS_UNINIT,
+            CS_PENDING,    // wait overlapped result
+            CS_ERROR,
+            CS_CONNECTED_IMME,
+            CS_CONNECTED,
+            CS_OVER,
         };
 
     public:
@@ -91,7 +91,7 @@ namespace Net
 
         void*           GetKey() { return _key; }
         SOCKET_HANDER   GetSocket() { return _socket; }
-        void            Detach() { _socket = -1; _key = nullptr; }
+        void            DetachSocket() { _socket = -1; _key = nullptr; }
         
         bool            Disposable() { return _status == CONNECTOR_STATUS::CS_OVER || _status == CONNECTOR_STATUS::CS_UNINIT; }
 

@@ -89,13 +89,42 @@ namespace Net
         sLogger->Info("CSession::on_closed send_err=%u, recv_err=%u", _send_error, _recv_error);
     }
 
+    void CSession::_set_socket_status(SOCK_STATUS s)
+    {
+        sLogger->Info("CSession::_status changed! this = %p, prev = %d, curr = %d", this, (uint32)_status, (uint32)s);
+        _status = s;
+    }
 
 
+    void CSession::_on_recv_error(uint32 err)
+    {
+        _recv_error = err;
+    }
 
-#ifdef PLAT_WIN32
+
+    void CSession::_on_send_error(uint32 err)
+    {
+        _send_error = err;
+    }
 
 
+    void CSession::Disconnect()
+    {
+        if (_disconnect)
+            return;
 
+        if (Active())
+        {
+            _disconnect = true;
+            _set_socket_status(SOCK_STATUS::SS_CLOSING);
+        }
+    }
+
+    
+
+//////////////////////////////////////////////////////////////////////////
+
+#ifdef PLAT_WIN32 
 
     void CSession::__session_cb__(void* obj, OVERLAPPED* overlapped)
     {
@@ -189,7 +218,7 @@ namespace Net
             }
         }
 
-        _status = SOCK_STATUS::SS_ALIVE;
+        _set_socket_status(SOCK_STATUS::SS_ALIVE);
         on_opened();
     }
 
@@ -219,9 +248,9 @@ namespace Net
             else
             {
                 if (_disconnect)
-                    _status = SOCK_STATUS::SS_CLOSED;
+                    _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
                 else
-                    _status = SOCK_STATUS::SS_RECV0;
+                    _set_socket_status(SOCK_STATUS::SS_RECV0);
             }
             _io_recv._stag = IO_STATUS::IO_STATUS_IDLE;
         }
@@ -244,18 +273,17 @@ namespace Net
                 &&
                 (_io_send._stag == IO_STATUS::IO_STATUS_IDLE || _io_send._stag == IO_STATUS::IO_STATUS_FAILED))
             {
-                _status = SOCK_STATUS::SS_CLOSED;
-                g_net_close_socket(_socket);
+                _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
             }
             break;
         }
         case SOCK_STATUS::SS_RECV0:
         {
             _post_send();
-            if (_que_send.empty())
+            if (!_msg_send && _que_send.empty())
             {
                 ::shutdown(_socket, SD_SEND);
-                _status = SOCK_STATUS::SS_CLOSED;
+                _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
             }
             break;
         }
@@ -263,10 +291,17 @@ namespace Net
         {
             _post_recv();
             _post_send();
-            if (_que_send.empty())
+            if (!_msg_send && _que_send.empty())
             {
                 ::shutdown(_socket, SD_SEND);
             }
+            break;
+        }
+        case SOCK_STATUS::SS_PRECLOSED:
+        {
+            on_closed();
+            g_net_close_socket(_socket);
+            _set_socket_status(SOCK_STATUS::SS_CLOSED);
             break;
         }
         case SOCK_STATUS::SS_CLOSED:
@@ -312,7 +347,7 @@ namespace Net
             else
             {
                 _on_send_error(err);
-                _status = SOCK_STATUS::SS_ERROR;
+                _set_socket_status(SOCK_STATUS::SS_ERROR);
             }
         }
         else
@@ -358,31 +393,6 @@ namespace Net
     }
 
 
-    void CSession::_on_recv_error(uint32 err)
-    {
-        _recv_error = err;
-    }
-
-
-    void CSession::_on_send_error(uint32 err)
-    {
-        _send_error = err;
-    }
-
-
-    void CSession::Disconnect()
-    {
-        if (_disconnect)
-            return;
-
-        if (Active())
-        {
-            _disconnect = true;
-            _status = SOCK_STATUS::SS_CLOSING;
-        }
-    }
-
-
 
 
 #else   //////////////////////////////////////////////////////////////////////////
@@ -393,76 +403,12 @@ namespace Net
     void CORE_STDCALL CSession::__session_cb__(void* obj, uint32 events)
     {
         CSession* pThis = (CSession*)obj;
-        if (events | EPOLLERR)
-        {
-            pThis->_othe_error = g_net_socket_error(pThis->_socket);
-            pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
-            return;
-        }
-
-        if (events | EPOLLHUP)
-        {
-            pThis->_rd_status = 2;
-            pThis->_wr_status = 3;
-            pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
-        }
-
-        if (events | EPOLLIN)
-        {
-            if (events | EPOLLRDHUP)
-            {
-                pThis->_rd_status = 2;
-            }
-
-            do
-            {
-                static char data[MAX_BUFFER_SIZE];
-
-                int ret = recv(pThis->_socket, data, MAX_RECV_SIZE, 0);
-                if (ret > 0)
-                {
-                    pThis->_on_recv(data, ret);
-                    if(ret == MAX_RECV_SIZE)
-                        continue;
-                }
-                else if (ret == -1)
-                {
-                    if (errno == EAGAIN || errno == EWOULDBLOCK)
-                    {
-                        // ÉèÖÃ±êÊ¶
-                        pThis->_rd_ready = 0;
-                        break;
-                    }
-                    else if (errno == EINTR)
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        pThis->_on_recv_error(errno);
-                        pThis->_set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
-                        break;
-                    }
-                }
-                else
-                {
-                    // connection be closed by peer.
-                    pThis->_rd_status = 2;
-                    break;
-                }
-            } while (true);
-        }
-
-        if (events | EPOLLOUT)
-        {
-            pThis->_wr_ready = 1;
-        }
-
+        std::lock_guard<std::mutex> l(pThis->_mutex);
+        pThis->_events = events;
     }
 
 
     CSession::CSession() :
-        _status(SOCK_STATUS::SOCK_STATUS_UNSET),
         _msg_header(sizeof(uint32))
     {
     }
@@ -493,84 +439,145 @@ namespace Net
             _key = new Poll::CompletionKey{ this, &CSession::__session_cb__ };
         }
         
-        _set_socket_status(SOCK_STATUS::SOCK_STATUS_ALIVE);
-        if (sPoller->RegisterHandler(_socket, _key, EPOLLIN | EPOLLOUT | EPOLLRDHUP))
+        if (sPoller->RegisterHandler(_socket, _key, EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLONESHOT))
         {
             return;
         }
+
+        _set_socket_status(SOCK_STATUS::SS_ALIVE);
+        on_opened();
     }
 
 
-    void CSession::Disconnect()
+    void CSession::Update()
     {
-        if (Alive() && _wr_status == 0)
-        {
-            _wr_status = 2;
-        }
-    }
+        if (_mutex.try_lock())
+            return;
 
-
-    bool CSession::Update()
-    {
-        uint32 status = _status.load();
-        
-        if (status == SOCK_STATUS::SOCK_STATUS_ALIVE)
+        if (_events)
         {
-            _update_send();
-            
-            if (_rd_status == 2 && _wr_status == 0)
+            if (_events | EPOLLERR)
             {
-                Disconnect();
+                _othe_error = g_net_socket_error(_socket);
+                _set_socket_status(SOCK_STATUS::SS_ERROR);
             }
-
-            if (_wr_status == 2)
+            if (_events | EPOLLHUP)
             {
-                if (!_msg_send && _que_send.empty())
+                sLogger->Error("EPOLLHUP");
+            }
+            if (_events | EPOLLIN)
+            {
+                if (_events | EPOLLRDHUP)
                 {
-                    _wr_status = 3;
-                    shutdown(_socket, SHUT_WR);
+                    sLogger->Error("EPOLLRDHUP");
                 }
+                _rd_ready = 1;
             }
-
-            if (_rd_status == 2 && _wr_status == 3)
+            if (_events | EPOLLOUT)
             {
-                _set_socket_status(SOCK_STATUS::SOCK_STATUS_CLOSED);
+                _wr_ready = 1;
             }
+            _events = 0;
         }
-        else if(status == SOCK_STATUS::SOCK_STATUS_ERROR)
+
+        uint8 rd_ready = _rd_ready;
+        uint8 wr_ready = _wr_ready;
+
+        switch (_status)
+        {
+        case SOCK_STATUS::SS_ALIVE:
+        {
+            _post_recv();
+            _post_send();
+            break;
+        }
+        case SOCK_STATUS::SS_ERROR:
+        {
+            _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
+            break;
+        }
+        case SOCK_STATUS::SS_RECV0:
+        {
+            _post_send();
+            if (!_msg_send && _que_send.empty())
+            {
+                ::shutdown(_socket, SHUT_RDWR);
+                _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
+            }
+            break;
+        }
+        case SOCK_STATUS::SS_CLOSING:
+        {
+            _post_recv();
+            _post_send();
+            if (!_msg_send && _que_send.empty())
+            {
+                ::shutdown(_socket, SHUT_RDWR);
+            }
+            break;
+        }
+        case SOCK_STATUS::SS_PRECLOSED:
         {
             on_closed();
+            sPoller->UnregisterHandler(_socket);
             g_net_close_socket(_socket);
-            _set_socket_status(SOCK_STATUS::SOCK_STATUS_CLOSED);
-            return true;
+            _set_socket_status(SOCK_STATUS::SS_CLOSED);
+            break;
         }
-        return false;
+        case SOCK_STATUS::SS_CLOSED:
+        {
+            break;
+        }
+        default:
+            break;
+        }
+
+        uint32 events = EPOLLRDHUP | EPOLLONESHOT;
+        if (rd_ready == 1 && _rd_ready == 0)
+        {
+            events = events | EPOLLIN;
+        }
+        if (wr_ready == 1 && _wr_ready == 0)
+        {
+            events = events | EPOLLIN;
+        }
+        if (events != (EPOLLRDHUP | EPOLLONESHOT))
+        {
+            sPoller->ReregisterHandler(_socket, _key, events);
+        }
+
+        _mutex.unlock();
     }
 
 
-    void CSession::_update_send()
+    void CSession::_post_send()
     {
         if (!_wr_ready)
             return;
-        
-        if (_wr_status != 0 && _wr_status != 2)
+
+        if (!_msg_send && _que_send.empty())
             return;
 
-        while (true)
+        do
         {
+            char* data = nullptr;
+            size_t len = 0;
+
             if (!_msg_send)
             {
-                if (_que_send.empty())
+                _msg_send = _que_send.front();
+                _send_len = 0;
+                if (!_msg_send->DataLength())
                 {
+                    _msg_send = nullptr;
+                    _send_len = 0;
                     return;
                 }
-                _msg_send = _que_send.front();
-                _que_send.pop();
-                _send_len = 0;
+                _que_send.pop();                
             }
 
-            char* data = (char*)_msg_send->Data() + _send_len;
-            size_t len = (size_t)_msg_send->DataLength() - (size_t)_send_len;
+            data = (char*)_msg_send->Data() + _send_len;
+            len = (size_t)_msg_send->DataLength() - (size_t)_send_len;
 
             int ret = send(_socket, data, len, MSG_NOSIGNAL);
             if (ret == -1)
@@ -578,7 +585,7 @@ namespace Net
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                 {
                     _wr_ready = 0;
-                    break;
+                    return;
                 }
                 else if (errno == EINTR)
                 {
@@ -600,34 +607,57 @@ namespace Net
                 }
                 else
                 {
-                    _send_len += (uint32)ret;
-                    break;  // do not continue;
+                    _send_len += (size_t)ret;
+                    return;  // May be BLOCK, do not continue;
                 }
             }
-        }
+        } while (true);
     }
 
-
-    void CSession::_set_socket_status(SOCK_STATUS s)
+    
+    void CSession::_post_recv()
     {
-        sLogger->Info("CSession::_status changed! prev = %d, curr = %d", _status.load(), (uint32)s);
-        _status = s;
-    }
+        if (!_rd_ready)
+            return;
 
-
-    void CSession::_on_recv_error(uint32 err)
-    {
-        _rd_status = 1;
-        _recv_error = err;
-        _set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
-    }
-
-
-    void CSession::_on_send_error(uint32 err)
-    {
-        _wr_status = 1;
-        _send_error = err;
-        _set_socket_status(SOCK_STATUS::SOCK_STATUS_ERROR);
+        static char data[MAX_BUFFER_SIZE];
+        do 
+        {
+            int ret = recv(_socket, data, MAX_BUFFER_SIZE, 0);
+            if (ret > 0)
+            {
+                _on_recv(data, ret);
+                if (ret == MAX_BUFFER_SIZE)
+                    continue;
+            }
+            else if (ret == -1)
+            {
+                if (errno == EAGAIN || errno == EWOULDBLOCK)
+                {
+                    _rd_ready = 0;
+                    return;
+                }
+                else if (errno == EINTR)
+                {
+                    continue;
+                }
+                else
+                {
+                    _on_recv_error(errno);
+                    _set_socket_status(SOCK_STATUS::SS_ERROR);
+                    return;
+                }
+            }
+            else
+            {
+                // connection be closed by peer.
+                if (_disconnect)
+                    _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
+                else
+                    _set_socket_status(SOCK_STATUS::SS_RECV0);
+                return;
+            }
+        } while (true);
     }
 
 

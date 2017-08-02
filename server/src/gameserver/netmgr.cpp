@@ -85,9 +85,9 @@ void CNetMgr::OnAccepted(SOCKET_HANDER sock)
     CClientSocket* s = new CClientSocket();
     int err = 0;
     s->Attach(sock);
-    std::string text("this is server said");
+    /*std::string text("this is server said");
     s->Send(text.c_str(), (uint16)text.length());
-
+*/
     m_lstClients.push_back(s);
 }
 
@@ -105,7 +105,6 @@ void CNetMgr::OnConnected(CClientConnector* sock)
     _s->Attach(m_connector->GetSocket(), m_connector->GetKey());
     m_connector->DetachSocket();
     delete m_connector;
-    _s->Send("welcome to home", 15);
 }
 
 

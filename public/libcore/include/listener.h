@@ -11,11 +11,12 @@ namespace Net
     private:
         enum class LISTENER_STATUS
         {
-            LS_UNINIT,         // un init
-            LS_RUNNING,        // normal running
-            LS_ERROR,          // error occur
-            LS_CLOSING,        // request close
-            LS_CLOSED,         // closed
+            LS_UNINIT,          // un init
+            LS_RUNNING,         // normal running
+            LS_ERROR,           // error occur
+            LS_CLOSING,         // request close
+            LS_PRECLOSED,       // before close
+            LS_CLOSED,          // closed
         };
     
         enum
@@ -45,8 +46,8 @@ namespace Net
 
     private:
         void                    _on_accept();
+        bool                    _post_accept();
         void                    _on_accept_error(uint32 err);
-        void                    _post_accept();
 
     protected:
         virtual void            on_accept(SOCKET_HANDER sock);
@@ -88,13 +89,14 @@ namespace Net
             LS_RUNNING,        // normal running
             LS_ERROR,          // error occur
             LS_CLOSING,        // request close
+            LS_PRECLOSED,
             LS_CLOSED,         // closed
         };
 
     public:
         bool Init(const char* ip, uint16 port);
-        void Update();
         void Close();
+        void Update();
 
         bool Active() { return _status == LISTENER_STATUS::LS_RUNNING; }
         bool Disposable() { return _status == LISTENER_STATUS::LS_CLOSED; }
@@ -107,8 +109,8 @@ namespace Net
         static void     __listener_cb__(void* obj, uint32 events);
 
     private:
+        bool            _post_accept();
         void            _on_accept_error(uint32 err);
-        void            _post_accept();
 
     private:
         SOCKET_HANDER                   _listener   = -1;

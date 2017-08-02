@@ -48,10 +48,13 @@ namespace Net
 
     PerIoData::PerIoData(IO_TYPE type, uint32 size) :
         _type(type),
-        _stag(IO_STATUS::IO_STATUS_IDLE),
+        _status(IO_STATUS::IO_STATUS_IDLE),
         _size(size),
-        _data(nullptr),
-        _ptr(nullptr)
+        _err(0),
+        _succ(0),
+        _bytes(0),
+        _ptr(nullptr),
+        _data(nullptr)
     {
         if (_size) 
         {
@@ -67,15 +70,20 @@ namespace Net
 
     void PerIoData::Reset()
     {
-        this->_err          = 0;
-        this->_bytes        = 0;
-        _over.Internal      = 0;
-        _over.InternalHigh  = 0;
-        _over.Offset        = 0;
-        _over.OffsetHigh    = 0;
-        _over.hEvent        = nullptr;
-        _over.Pointer       = nullptr;
+        _status   = IO_STATUS::IO_STATUS_PENDING;
+        _err    = 0;
+        _succ   = 0;
+        _bytes  = 0;
+        memset(&_ol, 0, sizeof(_ol));
     }
+
+
+    void PerIoData::Error(uint32 err)
+    {
+        _err = err;
+        _status = IO_STATUS::IO_STATUS_ERROR;
+    }
+
 
 #endif
 

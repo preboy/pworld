@@ -23,6 +23,12 @@ namespace Net
     // constanct
     const uint32 MAX_BUFFER_SIZE = 0x1000;      // 4k
     const uint32 MAX_PACKET_SIZE = 0x4000;      // 16k
+
+    
+
+
+#ifdef PLAT_WIN32
+    
     // public enum
 
     enum class IO_TYPE : uint32
@@ -38,35 +44,32 @@ namespace Net
     enum class IO_STATUS : uint32
     {
         IO_STATUS_IDLE,             // idle
+        IO_STATUS_ERROR,            // error
         IO_STATUS_PENDING,          // pending
-        IO_STATUS_SUCCESSD,         // previous request succeed
-        IO_STATUS_FAILED,           // previous request failed
-        IO_STATUS_SUCCESSD_IMME,    // immediately succeed
+        IO_STATUS_COMPLETED,        // CALLBACK completed
     };
-
-
-#ifdef PLAT_WIN32
-
-
 
 
     // public data struct
 
     struct PerIoData
     {
-        OVERLAPPED  _over;
+        OVERLAPPED  _ol;
         IO_TYPE     _type;
-        IO_STATUS   _stag;
+        IO_STATUS   _status;
         uint32      _size;
         uint32      _err;
+        uint32      _succ;
         uint32      _bytes;
-        void*       _data;
         void*       _ptr;
+        void*       _data;
+
 
         PerIoData(IO_TYPE type, uint32 size);
         ~PerIoData();
 
         void Reset();
+        void Error(uint32 err);
     };
 
 #endif

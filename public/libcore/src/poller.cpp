@@ -80,12 +80,10 @@ namespace Poll
                 Poll::CompletionKey* key = (Poll::CompletionKey*)lpCompletionKey;
                 Net::PerIoData* data = (Net::PerIoData*)lpOverlapped;
                 data->_err = 0;
+                data->_succ = 1;
                 data->_bytes = bytes;
-                if (data->_stag == Net::IO_STATUS::IO_STATUS_PENDING)
-                {
-                    data->_stag = Net::IO_STATUS::IO_STATUS_SUCCESSD;
-                }
                 key->func(key->obj, lpOverlapped);
+                data->_status = Net::IO_STATUS::IO_STATUS_COMPLETED;
             }
             else
             {
@@ -95,9 +93,10 @@ namespace Poll
                     Poll::CompletionKey* key = (Poll::CompletionKey*)lpCompletionKey;
                     Net::PerIoData* data = (Net::PerIoData*)lpOverlapped;
                     data->_err = err;
+                    data->_succ = 0;
                     data->_bytes = bytes;
-                    data->_stag = Net::IO_STATUS::IO_STATUS_FAILED;
                     key->func(key->obj, lpOverlapped);
+                    data->_status = Net::IO_STATUS::IO_STATUS_COMPLETED;
                 }
                 else
                 {

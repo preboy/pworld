@@ -11,11 +11,8 @@ namespace Net
     // platform general
     //////////////////////////////////////////////////////////////////////////
 
-    void CSession::Send(const char* data, uint32 size)
+    void CSession::_send(const char* data, uint32 size)
     {
-        if (!Active())
-            return;
-
         while (size)
         {
             CMessage* msg_writer = nullptr;
@@ -32,6 +29,18 @@ namespace Net
     }
 
 
+    void CSession::Send(const char* data, uint32 size)
+    {
+        if (!Active())
+            return;
+
+        uint32 head = size;
+
+        _send((char*)&head, sizeof(uint32));
+        _send(data, size);
+    }
+
+
     void CSession::_on_recv(char* pdata, uint32 size)
     {
         do
@@ -41,7 +50,7 @@ namespace Net
                 _msg_header.Fill(pdata, size);
             }
 
-            if (!_msg_header.Full() || !size) 
+            if (!_msg_header.Full()) 
                 return;
 
             if (!_msg_recv)
@@ -65,10 +74,10 @@ namespace Net
             if (_msg_recv->Full())
             {
                 _msg_recv->_param = 0;
-                _msg_recv->_ptr = nullptr;
+                _msg_recv->_ptr = this;
                 INSTANCE(CMessageQueue)->PushMessage(_msg_recv);
                 _msg_recv = nullptr;
-                _msg_header.Reset();
+                _msg_header.Reset(sizeof(uint32));
             }
         } while (size);
     }
@@ -116,7 +125,6 @@ namespace Net
         if (Active())
         {
             _disconnect = true;
-            _set_socket_status(SOCK_STATUS::SS_CLOSING);
         }
     }
 
@@ -130,42 +138,6 @@ namespace Net
     {
         CSession*  pThis = reinterpret_cast<CSession*>(obj);
         PerIoData* pData = reinterpret_cast<PerIoData*>(overlapped);
-
-        DWORD bytes = pData->_bytes;
-
-        if (pData->_type == IO_TYPE::IO_TYPE_Send)
-        {
-            if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
-            {
-                // 数据是否发送完
-                if (pThis->_msg_send->DataLength() != bytes)
-                {
-                    sLogger->Error("数据未完全发送");
-                }
-            }
-            else
-            {
-                sLogger->Error("数据发送失败，居然有这种情况，，");
-                pThis->_on_send_error(pData->_err);
-            }
-        }
-        else if (pData->_type == IO_TYPE::IO_TYPE_Recv)
-        {
-            if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
-            {
-                if (bytes)
-                {
-                }
-                else
-                {
-                }
-            }
-            else
-            {
-                pThis->_on_recv_error(pData->_err);
-            }
-        }
-
     }
 
 
@@ -194,7 +166,7 @@ namespace Net
 
     void CSession::Attach(SOCKET_HANDER socket, void* key)
     {
-        _msg_header.Reset();
+        _msg_header.Reset(sizeof(uint32));
 
         _socket = socket;
         u_long v = 1;
@@ -212,88 +184,111 @@ namespace Net
         else
         {
             _key = new Poll::CompletionKey{ this, &CSession::__session_cb__ };
-            if (sPoller->RegisterHandler((HANDLE)_socket, _key))
+            if (!sPoller->RegisterHandler((HANDLE)_socket, _key))
             {
                 return;
             }
         }
 
-        _set_socket_status(SOCK_STATUS::SS_ALIVE);
+        _set_socket_status(SOCK_STATUS::SS_RUNNING);
         on_opened();
+
+        _post_recv();
+    }
+
+
+    void CSession::_dispose_recv()
+    {
+        if (_status != SOCK_STATUS::SS_RUNNING || _recv_over)
+        {
+            return;
+        }
+
+        if (_io_recv._status == IO_STATUS::IO_STATUS_COMPLETED)
+        {
+            _io_recv._status = IO_STATUS::IO_STATUS_IDLE;
+            if (_io_recv._succ)
+            {
+                if (_io_recv._bytes)
+                {
+                    _on_recv((char*)_io_recv._data, _io_recv._bytes);
+                    _post_recv();
+                }
+                else
+                {  
+                    _recv_over = true;
+                }
+            }
+            else
+            {
+                _recv_error = _io_recv._err;
+                _set_socket_status(SOCK_STATUS::SS_ERROR);
+            }
+        }
+    }
+
+
+    void CSession::_dispose_send()
+    {
+        if (_status != SOCK_STATUS::SS_RUNNING || _send_over)
+        {
+            return;
+        }
+        
+        if (_io_send._status == IO_STATUS::IO_STATUS_IDLE)
+        {
+            _post_send();
+        }
+        else if (_io_send._status == IO_STATUS::IO_STATUS_COMPLETED)
+        {
+            _io_send._status = IO_STATUS::IO_STATUS_IDLE;
+            if (_io_send._succ)
+            {
+                _on_send((char*)_msg_send->Data(), _io_send._bytes);
+                INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+                _msg_send = nullptr;
+                if (_disconnect)
+                {
+                    if (!_msg_send && _que_send.empty())
+                    {
+                        ::shutdown(_socket, SD_SEND);
+                        _send_over = true;
+                        return;
+                    }
+                }
+                _post_send();
+            }
+            else
+            {
+                _send_error = _io_send._err;
+                _set_socket_status(SOCK_STATUS::SS_ERROR);
+            }
+        }
     }
 
 
     void CSession::Update()
     {
-        if (_io_send._stag == IO_STATUS::IO_STATUS_SUCCESSD)
-        {
-            _on_send((char*)_msg_send->Data(), _io_send._bytes);
-            INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
-            _msg_send = nullptr;
-            _io_send._stag = IO_STATUS::IO_STATUS_IDLE;
-        }
-        else if (_io_send._stag == IO_STATUS::IO_STATUS_SUCCESSD_IMME)
-        {
-            INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
-            _msg_send = nullptr;
-            _io_send._stag = IO_STATUS::IO_STATUS_IDLE;
-        }
-
-        if (_io_recv._stag == IO_STATUS::IO_STATUS_SUCCESSD)
-        {
-            if (_io_recv._bytes)
-            {
-                _on_recv((char*)_io_recv._data, _io_recv._bytes);
-            }
-            else
-            {
-                if (_disconnect)
-                    _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
-                else
-                    _set_socket_status(SOCK_STATUS::SS_RECV0);
-            }
-            _io_recv._stag = IO_STATUS::IO_STATUS_IDLE;
-        }
-        else if (_io_recv._stag == IO_STATUS::IO_STATUS_SUCCESSD_IMME)
-        {
-            _io_recv._stag = IO_STATUS::IO_STATUS_IDLE;
-        }
+        _dispose_recv();
+        _dispose_send();
 
         switch (_status)
         {
-        case SOCK_STATUS::SS_ALIVE:
+        case SOCK_STATUS::SS_RUNNING:
         {
-            _post_recv();
-            _post_send();
+            if (_recv_over && _send_over)
+            {
+                _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
+            }
             break;
         }
         case SOCK_STATUS::SS_ERROR:
         {
-            if ((_io_recv._stag == IO_STATUS::IO_STATUS_IDLE || _io_recv._stag == IO_STATUS::IO_STATUS_FAILED)
+            if ((_io_recv._status == IO_STATUS::IO_STATUS_IDLE || _io_recv._status == IO_STATUS::IO_STATUS_COMPLETED)
                 &&
-                (_io_send._stag == IO_STATUS::IO_STATUS_IDLE || _io_send._stag == IO_STATUS::IO_STATUS_FAILED))
+                (_io_send._status == IO_STATUS::IO_STATUS_IDLE || _io_send._status == IO_STATUS::IO_STATUS_COMPLETED))
             {
                 _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
-            }
-            break;
-        }
-        case SOCK_STATUS::SS_RECV0:
-        {
-            _post_send();
-            if (!_msg_send && _que_send.empty())
-            {
-                ::shutdown(_socket, SD_SEND);
-                _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
-            }
-            break;
-        }
-        case SOCK_STATUS::SS_CLOSING:
-        {
-            _post_recv();
-            _post_send();
-            if (!_msg_send && _que_send.empty())
-            {
-                ::shutdown(_socket, SD_SEND);
             }
             break;
         }
@@ -304,22 +299,20 @@ namespace Net
             _set_socket_status(SOCK_STATUS::SS_CLOSED);
             break;
         }
-        case SOCK_STATUS::SS_CLOSED:
+        default:
         {
             break;
         }
-        default:
-            break;
         }
     }
 
 
     void CSession::_post_send()
     {
-        if (_io_send._stag != IO_STATUS::IO_STATUS_IDLE)
+        if (_io_send._status != IO_STATUS::IO_STATUS_IDLE)
             return;
 
-        if (_que_send.empty())
+        if (_msg_send || _que_send.empty())
             return;
 
         _msg_send = _que_send.front();
@@ -336,60 +329,45 @@ namespace Net
         buf.buf = (char*)_msg_send->Data();
         buf.len = _msg_send->DataLength();
         _io_send.Reset();
-        int ret = ::WSASend(_socket, &buf, 1, nullptr, 0, &_io_send._over, nullptr);
+        int ret = ::WSASend(_socket, &buf, 1, nullptr, 0, &_io_send._ol, nullptr);
         if (ret)
         {
             int err = WSAGetLastError();
-            if (err == WSA_IO_PENDING)
+            if (err != WSA_IO_PENDING)
             {
-                _io_send._stag = IO_STATUS::IO_STATUS_PENDING;
-            }
-            else
-            {
+                _io_send.Error(err);
                 _on_send_error(err);
                 _set_socket_status(SOCK_STATUS::SS_ERROR);
             }
         }
-        else
-        {
-            _io_send._stag = IO_STATUS::IO_STATUS_SUCCESSD_IMME;
-            _on_send(buf.buf, buf.len);
-            sLogger->Info("数据发送立即完成");
-        }
     }
 
 
-    void CSession::_post_recv()
+    bool CSession::_post_recv()
     {
-        if (_io_recv._stag != IO_STATUS::IO_STATUS_IDLE)
-            return;
+        if (_io_recv._status != IO_STATUS::IO_STATUS_IDLE)
+            return false;
 
         WSABUF buf;
         buf.buf = (char*)_io_recv._data;
         buf.len = MAX_BUFFER_SIZE;
 
         DWORD flags = 0;
-        DWORD bytes = 0;
         _io_recv.Reset();
-        int ret = ::WSARecv(_socket, &buf, 1, &bytes, &flags, &_io_recv._over, nullptr);
-        if (ret)
+        int r = ::WSARecv(_socket, &buf, 1, nullptr, &flags, &_io_recv._ol, nullptr);
+        if (r)
         {
             int err = WSAGetLastError();
-            if (err == WSA_IO_PENDING)
+            if (err != WSA_IO_PENDING)
             {
-                _io_recv._stag = IO_STATUS::IO_STATUS_PENDING;
-            }
-            else
-            {
+                _io_recv.Error(err);
                 _on_recv_error(err);
+                _set_socket_status(SOCK_STATUS::SS_ERROR);
+                return false;
             }
         }
-        else
-        {
-            _io_recv._stag = IO_STATUS::IO_STATUS_SUCCESSD_IMME;
-            _on_recv(buf.buf, bytes);
-            sLogger->Info("数据接收立即完成，这该怎么办啊");
-        }
+
+        return true;
     }
 
 
@@ -416,14 +394,23 @@ namespace Net
 
     CSession::~CSession()
     {
+        SAFE_DELETE(_msg_recv);
+
+        if (_msg_send)
+        {
+            INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+            _msg_send = nullptr;
+        }
+
         SAFE_DELETE(_key);
+        g_net_close_socket(_socket);
     }
 
 
     void CSession::Attach(SOCKET_HANDER socket, void* key)
     {
         _socket = socket;
-        _msg_header.Reset();
+        _msg_header.Reset(sizeof(uint32));
 
         linger ln = { 1, 0 };
         setsockopt(_socket, SOL_SOCKET, SO_LINGER, (char*)&ln, sizeof(linger));
@@ -439,7 +426,7 @@ namespace Net
             _key = new Poll::CompletionKey{ this, &CSession::__session_cb__ };
         }
         
-        if (sPoller->RegisterHandler(_socket, _key, EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLONESHOT))
+        if (!sPoller->RegisterHandler(_socket, _key, EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLONESHOT))
         {
             return;
         }

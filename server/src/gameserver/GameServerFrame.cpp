@@ -77,7 +77,8 @@ void CGameServerFrame::on_msg(Net::CMessage* msg)
 
     if (opcode)
     {
-
+        Net::CSession* s = (Net::CSession*)(msg->_ptr);
+        s->Send((const char*)msg->Data(), msg->DataLength());
     }
 
     sLogger->Warning("Unknown Opcode=%d, size=%d", opcode, packet->PacketLength());

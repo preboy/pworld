@@ -18,10 +18,8 @@ namespace Net
         enum class SOCK_STATUS
         {
             SS_NONE,
-            SS_ALIVE,
+            SS_RUNNING,
             SS_ERROR,
-            SS_RECV0,       // receive close
-            SS_CLOSING,     // request close
             SS_PRECLOSED,
             SS_CLOSED,
         };
@@ -35,16 +33,23 @@ namespace Net
 
         void Disconnect();
 
-        bool Active()    { return _status == SOCK_STATUS::SS_ALIVE; }
+        bool Active()    { return _status == SOCK_STATUS::SS_RUNNING; }
         bool Disposable() { return _status == SOCK_STATUS::SS_CLOSED; }
 
     private:
         static void __session_cb__(void* obj, OVERLAPPED* overlapped);
 
     private:
+
+        void _send(const char* data, uint32 size);
+
         void _post_send();
-        void _post_recv();
+        bool _post_recv();
+
         void _set_socket_status(SOCK_STATUS s);
+
+        void _dispose_recv();
+        void _dispose_send();
 
         void _on_recv(char* pdata, uint32 size);
         void _on_send(char* pdata, uint32 size);
@@ -77,6 +82,8 @@ namespace Net
         uint32  _recv_error = 0;
 
         bool    _disconnect = false;
+        bool    _send_over  = false;
+        bool    _recv_over  = false;
     };
 
 

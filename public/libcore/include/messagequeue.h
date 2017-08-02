@@ -27,7 +27,7 @@ namespace Net
        ~CMessage();
 
     public:
-        void            Reset(uint32 size = 0);
+        void            Reset(uint32 size);
         void            Fill(char*& pdata, uint32& size);
         bool            Full();
         void*           Data() { return _data;  }

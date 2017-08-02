@@ -20,11 +20,9 @@ namespace Net
         enum CONNECTOR_STATUS
         {
             CS_UNINIT,
-            CS_PENDING,    // wait overlapped result
+            CS_CONNECTING,
             CS_ERROR,
-            CS_CONNECTED_IMME,
-            CS_CONNECTED,
-            CS_OVER,
+            CS_CLOSED,
         };
 
     public:
@@ -36,10 +34,13 @@ namespace Net
         SOCKET_HANDER   GetSocket() { return _socket; }
         void            DetachSocket() { _socket = INVALID_SOCKET; _key = nullptr; }
 
-        bool            Disposable() { return _status == CONNECTOR_STATUS::CS_OVER || _status == CONNECTOR_STATUS::CS_UNINIT; }
+        bool            Disposable() { return _status == CONNECTOR_STATUS::CS_CLOSED || _status == CONNECTOR_STATUS::CS_UNINIT; }
 
     private:
         static void     __connector_cb__(void* obj, OVERLAPPED* overlapped);
+
+    private:
+        void            _on_connect_error(uint32 err);
 
     protected:
         virtual void    on_connect(CConnector* sock);

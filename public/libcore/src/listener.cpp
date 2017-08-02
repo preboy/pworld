@@ -15,10 +15,6 @@ namespace Net
     {
         CListener* pThis = reinterpret_cast<CListener*>(obj);
         PerIoData* pData = (PerIoData*)overlapped;
-        if (pData->_stag == IO_STATUS::IO_STATUS_FAILED)
-        {
-            pThis->_error = pData->_err;
-        }
     }
 
 
@@ -82,7 +78,7 @@ namespace Net
         }
 
         _status = LISTENER_STATUS::LS_RUNNING;
-        return true;
+        return _post_accept();
     }
 
 
@@ -92,46 +88,48 @@ namespace Net
         {
         case LISTENER_STATUS::LS_RUNNING:
         {
-            if (_io_accept._stag == IO_STATUS::IO_STATUS_IDLE)
+            if (_io_accept._status == IO_STATUS::IO_STATUS_COMPLETED)
             {
-                _post_accept();
-            }
-            else if (_io_accept._stag == IO_STATUS::IO_STATUS_SUCCESSD_IMME)
-            {
-                _io_accept._stag = IO_STATUS::IO_STATUS_IDLE;
-            }
-            else if (_io_accept._stag == IO_STATUS::IO_STATUS_SUCCESSD)
-            {
-                _on_accept();
-                _io_accept._stag = IO_STATUS::IO_STATUS_IDLE;
-            }
-            else if (_io_accept._stag == IO_STATUS::IO_STATUS_FAILED)
-            {
-                _on_accept_error(_error);
+                if (_io_accept._succ)
+                {
+                    _io_accept._status =  IO_STATUS::IO_STATUS_IDLE;
+                    _on_accept();
+                    _post_accept();
+                }
+                else
+                {
+                    _on_accept_error(_io_accept._err);
+                }
             }
             break;
         }
 
         case LISTENER_STATUS::LS_ERROR:
         {
-            _status = LISTENER_STATUS::LS_CLOSED;
+            _status = LISTENER_STATUS::LS_PRECLOSED;
             break;
         }
 
         case LISTENER_STATUS::LS_CLOSING:
         {
-            if (_io_accept._stag == IO_STATUS::IO_STATUS_IDLE || _io_accept._stag == IO_STATUS::IO_STATUS_FAILED)
+            if (_io_accept._status == IO_STATUS::IO_STATUS_COMPLETED || _io_accept._status == IO_STATUS::IO_STATUS_IDLE)
             {
-                _status = LISTENER_STATUS::LS_CLOSED;
+                _status = LISTENER_STATUS::LS_PRECLOSED;
             }
             break;
         }
 
-        case LISTENER_STATUS::LS_CLOSED:
+        case LISTENER_STATUS::LS_PRECLOSED:
         {
             g_net_close_socket(m_sockListener);
             g_net_close_socket(m_sockAcceptor);
             on_closed(_error);
+            _status = LISTENER_STATUS::LS_CLOSED;
+            break;
+        }
+        
+        case LISTENER_STATUS::LS_CLOSED:
+        {
             break;
         }
 
@@ -141,35 +139,30 @@ namespace Net
     }
 
 
-    void CListener::_post_accept()
+    bool CListener::_post_accept()
     {
         m_sockAcceptor = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
         if (m_sockAcceptor == INVALID_SOCKET)
         {
             _on_accept_error(WSAGetLastError());
-            return;
+            return false;
         }
 
         _io_accept.Reset();
         BOOL r = lpfnAcceptEx(m_sockListener, m_sockAcceptor, _io_accept._data, 0,
-            ADDRESS_BUFFER_SIZE, ADDRESS_BUFFER_SIZE, nullptr, &_io_accept._over);
-        if (r)
-        {
-            _on_accept();
-            _io_accept._stag = IO_STATUS::IO_STATUS_SUCCESSD_IMME;
-        }
-        else
+            ADDRESS_BUFFER_SIZE, ADDRESS_BUFFER_SIZE, nullptr, &_io_accept._ol);
+        if (!r)
         {
             DWORD err = WSAGetLastError();
-            if (err == WSA_IO_PENDING)
+            if (err != WSA_IO_PENDING)
             {
-                _io_accept._stag = IO_STATUS::IO_STATUS_PENDING;
-            }
-            else
-            {
+                _io_accept.Error(err);
                 _on_accept_error(err);
+                return false;
             }
         }
+
+        return true;
     }
 
 
@@ -307,7 +300,7 @@ namespace Net
 
         case LISTENER_STATUS::LS_ERROR:
         {
-            _status = LISTENER_STATUS::LS_CLOSED;
+            _status = LISTENER_STATUS::LS_PRECLOSED;
             break;
         }
 
@@ -315,16 +308,22 @@ namespace Net
         {
             if (!_io_pending)
             {
-                _status = LISTENER_STATUS::LS_CLOSED;
+                _status = LISTENER_STATUS::LS_PRECLOSED;
             }
+            break;
+        }
+
+        case LISTENER_STATUS::LS_PRECLOSED:
+        {
+            sPoller->UnregisterHandler(_listener);
+            g_net_close_socket(_listener);
+            on_closed(_error);
+            _status = LISTENER_STATUS::LS_CLOSED
             break;
         }
 
         case LISTENER_STATUS::LS_CLOSED:
         {
-            sPoller->UnregisterHandler(_listener);
-            g_net_close_socket(_listener);
-            on_closed(_error);
             break;
         }
 

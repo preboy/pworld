@@ -10,24 +10,11 @@ namespace Net
 
 #ifdef PLAT_WIN32
 
+
     void CConnector::__connector_cb__(void* obj, OVERLAPPED* overlapped)
     {
         CConnector* pThis = reinterpret_cast<CConnector*>(obj);
         PerIoData*  pData = reinterpret_cast<PerIoData*>(overlapped);
-
-        if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD_IMME)
-        {
-            pThis->_status = CONNECTOR_STATUS::CS_OVER;
-        }
-        else if (pData->_stag == IO_STATUS::IO_STATUS_SUCCESSD)
-        {
-            pThis->_status = CONNECTOR_STATUS::CS_CONNECTED;
-        }
-        else if (pData->_stag == IO_STATUS::IO_STATUS_FAILED)
-        {
-            pThis->_error = pData->_err;
-            pThis->_status = CONNECTOR_STATUS::CS_ERROR;
-        }
     }
 
 
@@ -40,7 +27,7 @@ namespace Net
 
     bool CConnector::Connect(const char* ip, uint16 port)
     {
-        _status = CONNECTOR_STATUS::CS_OVER;
+        _status = CONNECTOR_STATUS::CS_CLOSED;
         _socket = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
         if (_socket == INVALID_SOCKET)
         {
@@ -91,41 +78,30 @@ namespace Net
             return false;
         }
 
+        _status = CONNECTOR_STATUS::CS_CONNECTING;
         _io_connect.Reset();
-        BOOL bConnect = lpfnConnectEx(_socket, (const sockaddr*)&remote_addr, sizeof(sockaddr_in), nullptr,
-            0, nullptr, &_io_connect._over);
-        if (bConnect)
-        {
-            _io_connect._stag = IO_STATUS::IO_STATUS_SUCCESSD_IMME;
-            _status = CONNECTOR_STATUS::CS_CONNECTED_IMME;
-            on_connect(this);
-            return true;
-        }
-        else
+        BOOL r = lpfnConnectEx(_socket, (const sockaddr*)&remote_addr, sizeof(sockaddr_in), nullptr,
+            0, nullptr, &_io_connect._ol);
+        if (!r)
         {
             uint32 err = ::WSAGetLastError();
-            if (err == WSA_IO_PENDING)
+            if (err != WSA_IO_PENDING)
             {
-                _io_connect._stag = IO_STATUS::IO_STATUS_PENDING;
-                _status = CONNECTOR_STATUS::CS_PENDING;
-                return true;
-            }
-            else
-            {
-                _error = err;
-                _status = CONNECTOR_STATUS::CS_ERROR;
+                _io_connect.Error(err);
+                _on_connect_error(err);
                 return false;
             }
         }
-        return false;
+
+        return true;
     }
 
 
     void CConnector::Abort()
     {
-        if (_status == CONNECTOR_STATUS::CS_PENDING)
+        if (_io_connect._status == IO_STATUS::IO_STATUS_PENDING)
         {
-            sPoller->PostCompletion(_key, &_io_connect._over, 0);
+            sPoller->PostCompletion(_key, &_io_connect._ol, 0);
         }
     }
 
@@ -134,22 +110,48 @@ namespace Net
     {
         switch (_status)
         {
+        case CONNECTOR_STATUS::CS_CONNECTING:
+        {
+            if (_io_connect._status == IO_STATUS::IO_STATUS_COMPLETED)
+            {
+                if (_io_connect._succ)
+                {
+                    on_connect(this);
+                    _status = CONNECTOR_STATUS::CS_CLOSED;
+                }
+                else
+                {
+                    _on_connect_error(_io_connect._err);
+                }
+            }
+            break;
+        }
+        
         case CONNECTOR_STATUS::CS_ERROR:
         {
             on_connect_error(_error);
-            _status = CONNECTOR_STATUS::CS_OVER;
+            g_net_close_socket(_socket);
+            _status = CONNECTOR_STATUS::CS_CLOSED;
             break;
         }
-        case CONNECTOR_STATUS::CS_CONNECTED:
+
+        case CONNECTOR_STATUS::CS_CLOSED:
         {
-            on_connect(this);
-            _status = CONNECTOR_STATUS::CS_OVER;
             break;
         }
+
         default:
             break;
         }
     }
+
+
+    void CConnector::_on_connect_error(uint32 err)
+    {
+        _error = err;
+        _status = CONNECTOR_STATUS::CS_ERROR;
+    }
+
 
 
     void CConnector::on_connect(CConnector* sock)

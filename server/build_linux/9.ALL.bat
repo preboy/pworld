@@ -10,4 +10,4 @@ echo building ...
 call 3.build.bat
 
 echo Done !!!
-puase
+pause

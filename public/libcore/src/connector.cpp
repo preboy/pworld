@@ -183,31 +183,14 @@ namespace Net
     void CConnector::__connector_cb__(void* obj, uint32 events)
     {
         Net::CConnector* pThis = (Net::CConnector*)obj;
-        int err = g_net_socket_error(pThis->_socket);
-        if (events & EPOLLERR)
-        {
-            pThis->_error = err;
-            pThis->_status = CONNECTOR_STATUS::CS_ERROR;
-            return;
-        }
-        if (events & EPOLLOUT)
-        {
-            if (err == 0)
-            {
-                pThis->_status = CONNECTOR_STATUS::CS_CONNECTED;
-            }
-            else
-            {
-                pThis->_error = err;
-                pThis->_status = CONNECTOR_STATUS::CS_ERROR;
-            }
-        }
+        std::lock_guard<std::mutex> lock(pThis->_mutex);
+        pThis->_events = events;
     }
 
 
     bool CConnector::Connect(const char* ip, uint16 port)
     {
-        _status = CONNECTOR_STATUS::CS_OVER;
+        _status = CONNECTOR_STATUS::CS_CLOSED;
         _socket = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
         if (_socket == -1)
             return false;
@@ -223,10 +206,9 @@ namespace Net
             return false;
         }
 
-        sockaddr_in remote_addr;
-        remote_addr.sin_family = AF_INET;
-        remote_addr.sin_port = ::htons(port);
-        int ret = inet_pton(AF_INET, ip, &remote_addr.sin_addr);
+        _remote_addr.sin_family = AF_INET;
+        _remote_addr.sin_port = ::htons(port);
+        int ret = inet_pton(AF_INET, ip, &_remote_addr.sin_addr);
         if (ret != 1)
         {
             _error = GetSystemError();
@@ -236,9 +218,15 @@ namespace Net
 
         _key = new Poll::CompletionKey{ this, &__connector_cb__ };
 
+        return _post_connect();
+    }
+
+    
+    bool CConnector::_post_connect()
+    {
         do
         {
-            int ret = connect(_socket, (sockaddr*)(&remote_addr), sizeof(remote_addr));
+            int ret = connect(_socket, (sockaddr*)(&_remote_addr), sizeof(_remote_addr));
             if (ret == -1)
             {
                 if (errno == EINPROGRESS || errno == EWOULDBLOCK)
@@ -249,7 +237,7 @@ namespace Net
                         g_net_close_socket(_socket);
                         return false;
                     }
-                    _status = CONNECTOR_STATUS::CS_PENDING;
+                    _status = CONNECTOR_STATUS::CS_CONNECTING;
                     return true;
                 }
                 else if (errno == EINTR)
@@ -266,32 +254,52 @@ namespace Net
             else
             {
                 on_connect(this);
-                _status = CONNECTOR_STATUS::CS_CONNECTED_IMME;
+                _status = CONNECTOR_STATUS::CS_CLOSED;
                 return true;
             }
         } while (true);
+
+        return false;
     }
 
 
     void CConnector::Update()
     {
+        if (!_mutex.try_lock())
+            return;
+
+        if (_events)
+        {
+            if (events & EPOLLOUT)
+            {
+                int err = g_net_socket_error(_socket);
+                if (err == 0)
+                {
+                    _post_connect();
+                }
+                else
+                {
+                    _error = err;
+                    _status = CONNECTOR_STATUS::CS_ERROR;
+                }
+            }
+            _events = 0;
+        }
+
         switch (_status)
         {
+        case CONNECTOR_STATUS::CS_CONNECTING:
+        {
+            break;
+        }
         case CONNECTOR_STATUS::CS_ERROR:
         {
             on_connect_error(_error);
-            _status = CONNECTOR_STATUS::CS_OVER;
+            _status = CONNECTOR_STATUS::CS_CLOSED;
             break;
         }
-        case CONNECTOR_STATUS::CS_CONNECTED_IMME:
+        case CONNECTOR_STATUS::CS_CLOSED:
         {
-            _status = CONNECTOR_STATUS::CS_OVER;
-            break;
-        }
-        case CONNECTOR_STATUS::CS_CONNECTED:
-        {
-            on_connect(this);
-            _status = CONNECTOR_STATUS::CS_OVER;
             break;
         }
         default:

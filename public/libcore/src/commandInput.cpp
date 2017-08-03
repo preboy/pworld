@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "commandInput.h"
 #include "utils.h"
+#include "singleton.h"
+#include "logger.h"
 
 
 CCommandInput::CCommandInput(void)
@@ -8,6 +10,7 @@ CCommandInput::CCommandInput(void)
     add_command("quit", &CCommandInput::OnQuit, "quit", "quit this program.");
     add_command("help", &CCommandInput::OnHelp, "help <cmd>", "detail info of command.");
     add_command("list", &CCommandInput::OnList, "list", "show commands list.");
+    add_command("?",    &CCommandInput::OnList, "list", "show commands list.");
 }
 
 CCommandInput::~CCommandInput(void)
@@ -168,11 +171,12 @@ int CCommandInput::OnHelp(int argc, char argv[PARAM_CNT][PARAM_LEN])
 
 int CCommandInput::OnList(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
+    sLogger->SetColor(1);
     for (auto & cc : m_vecCmdConfig)
     {
         std::cout << cc.name << ":\t\t" << cc.help << std::endl;
     }
-
+    sLogger->ResetColor();
     return 0;
 }
 

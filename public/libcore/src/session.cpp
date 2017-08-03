@@ -284,9 +284,7 @@ namespace Net
         }
         case SOCK_STATUS::SS_ERROR:
         {
-            if ((_io_recv._status == IO_STATUS::IO_STATUS_IDLE || _io_recv._status == IO_STATUS::IO_STATUS_COMPLETED)
-                &&
-                (_io_send._status == IO_STATUS::IO_STATUS_IDLE || _io_send._status == IO_STATUS::IO_STATUS_COMPLETED))
+            if (_io_recv._status != IO_STATUS::IO_STATUS_PENDING && _io_send._status != IO_STATUS::IO_STATUS_PENDING )
             {
                 _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
             }
@@ -378,10 +376,10 @@ namespace Net
 
 
 
-    void CORE_STDCALL CSession::__session_cb__(void* obj, uint32 events)
+    void CSession::__session_cb__(void* obj, uint32 events)
     {
         CSession* pThis = (CSession*)obj;
-        std::lock_guard<std::mutex> l(pThis->_mutex);
+        std::lock_guard<std::mutex> lock(pThis->_mutex);
         pThis->_events = events;
     }
 
@@ -438,7 +436,7 @@ namespace Net
 
     void CSession::Update()
     {
-        if (_mutex.try_lock())
+        if (!_mutex.try_lock())
             return;
 
         if (_events)

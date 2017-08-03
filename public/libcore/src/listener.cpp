@@ -225,15 +225,8 @@ namespace Net
     void CListener::__listener_cb__(void* obj, uint32 events)
     {
         CListener* pThis = (CListener*)obj;
-        if (events | EPOLLERR)
-        {
-            pThis->_error = errno;
-            return;
-        }
-        if (events | EPOLLIN)
-        {
-            pThis->_io_pending = 0;
-        }
+        std::lock_guard<std::mutex> lock(pThis->_mutex);
+        pThis->_events = events;
     }
 
 
@@ -287,6 +280,23 @@ namespace Net
 
     void CListener::Update()
     {
+        if (!_mutex.try_lock())
+            return;
+
+        if (_events)
+        {
+            if (_events | EPOLLERR)
+            {
+                _on_accept_error(g_net_socket_error(_listener));
+                return;
+            }
+            if (_events | EPOLLIN)
+            {
+                _io_pending = 0;
+            }
+            _events = 0;
+        }
+       
         switch (_status)
         {
         case LISTENER_STATUS::LS_RUNNING:
@@ -318,12 +328,7 @@ namespace Net
             sPoller->UnregisterHandler(_listener);
             g_net_close_socket(_listener);
             on_closed(_error);
-            _status = LISTENER_STATUS::LS_CLOSED
-            break;
-        }
-
-        case LISTENER_STATUS::LS_CLOSED:
-        {
+            _status = LISTENER_STATUS::LS_CLOSED;
             break;
         }
 

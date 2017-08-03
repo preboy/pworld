@@ -118,6 +118,9 @@ namespace Net
         uint32                          _error      = 0;
         volatile LISTENER_STATUS        _status     = LISTENER_STATUS::LS_UNINIT;
         uint8                           _io_pending = 0;
+
+        uint32          _events = 0;
+        std::mutex      _mutex;
     };
 
 #endif

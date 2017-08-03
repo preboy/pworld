@@ -75,14 +75,13 @@ namespace Net
         virtual ~CConnector();
 
     private:
+
         enum CONNECTOR_STATUS
         {
             CS_UNINIT,
-            CS_PENDING,    // wait overlapped result
+            CS_CONNECTING,
             CS_ERROR,
-            CS_CONNECTED_IMME,
-            CS_CONNECTED,
-            CS_OVER,
+            CS_CLOSED,
         };
 
     public:
@@ -94,25 +93,31 @@ namespace Net
         SOCKET_HANDER   GetSocket() { return _socket; }
         void            DetachSocket() { _socket = -1; _key = nullptr; }
         
-        bool            Disposable() { return _status == CONNECTOR_STATUS::CS_OVER || _status == CONNECTOR_STATUS::CS_UNINIT; }
+        bool            Disposable() { return _status == CONNECTOR_STATUS::CS_CLOSED || _status == CONNECTOR_STATUS::CS_UNINIT; }
 
 
     protected:
-        virtual void on_connect(CConnector* sock);
-        virtual void on_connect_error(uint32 err);
+        virtual void    on_connect(CConnector* sock);
+        virtual void    on_connect_error(uint32 err);
 
     private:
-        static void CORE_STDCALL __connector_cb__(void* obj, uint32 events);
+        static void     __connector_cb__(void* obj, uint32 events);
 
     private:
+        bool            _post_connect();
+
+    private:
+
+        sockaddr_in                 _remote_addr;
+        SOCKET_HANDER               _socket = -1;
+        volatile CONNECTOR_STATUS   _status = CONNECTOR_STATUS::CS_UNINIT;
 
         Poll::CompletionKey*        _key = nullptr;
 
-        SOCKET_HANDER               _socket = -1;
-
         uint32                      _error = 0;
-            
-        volatile CONNECTOR_STATUS   _status = CONNECTOR_STATUS::CS_UNINIT;
+
+        std::mutex                  _mutex;
+        uint32                      _events;
 
     };
 

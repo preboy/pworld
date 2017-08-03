@@ -217,6 +217,7 @@ namespace Net
         }
 
         _key = new Poll::CompletionKey{ this, &__connector_cb__ };
+        _status = CONNECTOR_STATUS::CS_CONNECTING;
 
         return _post_connect();
     }
@@ -237,7 +238,6 @@ namespace Net
                         g_net_close_socket(_socket);
                         return false;
                     }
-                    _status = CONNECTOR_STATUS::CS_CONNECTING;
                     return true;
                 }
                 else if (errno == EINTR)
@@ -258,7 +258,6 @@ namespace Net
                 return true;
             }
         } while (true);
-
         return false;
     }
 
@@ -270,7 +269,7 @@ namespace Net
 
         if (_events)
         {
-            if (events & EPOLLOUT)
+            if (_events & EPOLLOUT)
             {
                 int err = g_net_socket_error(_socket);
                 if (err == 0)
@@ -305,12 +304,14 @@ namespace Net
         default:
             break;
         }
+
+        _mutex.unlock();
     }
 
 
     void CConnector::Abort()
     {
-        if (_status == CONNECTOR_STATUS::CS_PENDING)
+        if (_status == CONNECTOR_STATUS::CS_CONNECTING)
         {
             g_net_close_socket(_socket);
         }

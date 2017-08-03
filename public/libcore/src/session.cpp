@@ -215,7 +215,7 @@ namespace Net
                     _post_recv();
                 }
                 else
-                {  
+                {
                     _recv_over = true;
                 }
             }
@@ -429,7 +429,7 @@ namespace Net
             return;
         }
 
-        _set_socket_status(SOCK_STATUS::SS_ALIVE);
+        _set_socket_status(SOCK_STATUS::SS_RUNNING);
         on_opened();
     }
 
@@ -441,24 +441,24 @@ namespace Net
 
         if (_events)
         {
-            if (_events | EPOLLERR)
+            if (_events & EPOLLERR)
             {
                 _othe_error = g_net_socket_error(_socket);
                 _set_socket_status(SOCK_STATUS::SS_ERROR);
             }
-            if (_events | EPOLLHUP)
+            if (_events & EPOLLHUP)
             {
                 sLogger->Error("EPOLLHUP");
             }
-            if (_events | EPOLLIN)
+            if (_events & EPOLLIN)
             {
-                if (_events | EPOLLRDHUP)
+                if (_events & EPOLLRDHUP)
                 {
                     sLogger->Error("EPOLLRDHUP");
                 }
                 _rd_ready = 1;
             }
-            if (_events | EPOLLOUT)
+            if (_events & EPOLLOUT)
             {
                 _wr_ready = 1;
             }
@@ -468,12 +468,17 @@ namespace Net
         uint8 rd_ready = _rd_ready;
         uint8 wr_ready = _wr_ready;
 
+        _post_recv();
+        _post_send();
+
         switch (_status)
         {
-        case SOCK_STATUS::SS_ALIVE:
+        case SOCK_STATUS::SS_RUNNING:
         {
-            _post_recv();
-            _post_send();
+            if (_send_over && _recv_over)
+            {
+                _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
+            }
             break;
         }
         case SOCK_STATUS::SS_ERROR:
@@ -481,32 +486,12 @@ namespace Net
             _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
             break;
         }
-        case SOCK_STATUS::SS_RECV0:
-        {
-            _post_send();
-            if (!_msg_send && _que_send.empty())
-            {
-                ::shutdown(_socket, SHUT_RDWR);
-                _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
-            }
-            break;
-        }
-        case SOCK_STATUS::SS_CLOSING:
-        {
-            _post_recv();
-            _post_send();
-            if (!_msg_send && _que_send.empty())
-            {
-                ::shutdown(_socket, SHUT_RDWR);
-            }
-            break;
-        }
         case SOCK_STATUS::SS_PRECLOSED:
         {
             on_closed();
-            sPoller->UnregisterHandler(_socket);
             g_net_close_socket(_socket);
             _set_socket_status(SOCK_STATUS::SS_CLOSED);
+            sPoller->UnregisterHandler(_socket);
             break;
         }
         case SOCK_STATUS::SS_CLOSED:
@@ -524,7 +509,7 @@ namespace Net
         }
         if (wr_ready == 1 && _wr_ready == 0)
         {
-            events = events | EPOLLIN;
+            events = events | EPOLLOUT;
         }
         if (events != (EPOLLRDHUP | EPOLLONESHOT))
         {
@@ -537,11 +522,18 @@ namespace Net
 
     void CSession::_post_send()
     {
-        if (!_wr_ready)
+        if (_send_over || _status != SOCK_STATUS::SS_RUNNING || !_wr_ready)
             return;
 
         if (!_msg_send && _que_send.empty())
+        {
+            if (_disconnect && !_send_over)
+            {
+                _send_over = true;
+                ::shutdown(_socket, SHUT_RDWR);
+            }
             return;
+        }
 
         do
         {
@@ -584,6 +576,7 @@ namespace Net
             }
             else
             {
+                _on_send(data, ret);
                 if ((size_t)ret == len)
                 {
                     INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
@@ -602,10 +595,11 @@ namespace Net
     
     void CSession::_post_recv()
     {
-        if (!_rd_ready)
+        if (_recv_over || _status != SOCK_STATUS::SS_RUNNING || !_rd_ready)
             return;
 
         static char data[MAX_BUFFER_SIZE];
+        
         do 
         {
             int ret = recv(_socket, data, MAX_BUFFER_SIZE, 0);
@@ -614,6 +608,8 @@ namespace Net
                 _on_recv(data, ret);
                 if (ret == MAX_BUFFER_SIZE)
                     continue;
+                else
+                    break;
             }
             else if (ret == -1)
             {
@@ -635,11 +631,10 @@ namespace Net
             }
             else
             {
+                _recv_over = true;
                 // connection be closed by peer.
                 if (_disconnect)
                     _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
-                else
-                    _set_socket_status(SOCK_STATUS::SS_RECV0);
                 return;
             }
         } while (true);
@@ -647,4 +642,5 @@ namespace Net
 
 
 #endif
+
 }

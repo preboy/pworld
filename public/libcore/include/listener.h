@@ -109,7 +109,7 @@ namespace Net
         static void     __listener_cb__(void* obj, uint32 events);
 
     private:
-        bool            _post_accept();
+        void            _post_accept();
         void            _on_accept_error(uint32 err);
 
     private:

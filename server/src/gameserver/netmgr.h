@@ -33,9 +33,9 @@ public:
     void Update();
 
 private:
-    CClientListener* m_listener;
+    CClientListener* m_listener = nullptr;
 
-    CClientConnector* m_connector;
+    CClientConnector* m_connector =  nullptr;
 
     std::list<CClientSocket*>       m_lstClients;
     std::list<CServerSocket*>       m_lstServers;

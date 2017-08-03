@@ -285,12 +285,14 @@ namespace Net
 
         if (_events)
         {
-            if (_events | EPOLLERR)
+            if (_events & EPOLLERR)
             {
                 _on_accept_error(g_net_socket_error(_listener));
+                _mutex.unlock();
+                _events = 0;
                 return;
             }
-            if (_events | EPOLLIN)
+            if (_events & EPOLLIN)
             {
                 _io_pending = 0;
             }
@@ -335,6 +337,8 @@ namespace Net
         default:
             break;
         }
+
+        _mutex.unlock();
     }
 
 

@@ -104,11 +104,9 @@ namespace Net
         enum SOCK_STATUS
         {
             SS_NONE,
-            SS_ALIVE,
+            SS_RUNNING,
             SS_ERROR,
-            SS_RECV0,       // receive close
-            SS_CLOSING,     // request close
-            SS_PRECLOSED,   // before close
+            SS_PRECLOSED,
             SS_CLOSED,
         };
 
@@ -121,7 +119,7 @@ namespace Net
 
         void Disconnect();
 
-        bool Active()  { return _status == SOCK_STATUS::SS_ALIVE; }
+        bool Active()  { return _status == SOCK_STATUS::SS_RUNNING; }
         bool Disposable() { return _status == SOCK_STATUS::SS_CLOSED; }
 
 
@@ -129,8 +127,12 @@ namespace Net
         static void __session_cb__(void* obj, uint32 events);
 
     private:
+
+        void _send(const char* data, uint32 size);
+
         void _post_send();
         void _post_recv();
+
         void _set_socket_status(SOCK_STATUS s);
 
         void _on_recv(char* pdata, uint32 size);
@@ -152,25 +154,27 @@ namespace Net
         Poll::CompletionKey*        _key = nullptr;
 
         // 接收数据包
-        CMessage    _msg_header;
-        CMessage*   _msg_recv = nullptr;
+        CMessage        _msg_header;
+        CMessage*       _msg_recv = nullptr;
 
         // 等待发送的消息
         std::queue<CMessage*>       _que_send;
         CMessage*                   _msg_send = nullptr;
         size_t                      _send_len = 0;
 
-        uint32 _send_error = 0;
-        uint32 _recv_error = 0;
-        uint32 _othe_error = 0;
+        uint32          _send_error = 0;
+        uint32          _recv_error = 0;
+        uint32          _othe_error = 0;
 
-        volatile uint8   _rd_ready = 1;
-        volatile uint8   _wr_ready = 1;
+        volatile uint8  _rd_ready = 1;
+        volatile uint8  _wr_ready = 1;
 
         uint32          _events = 0;
-
         std::mutex      _mutex;
+
         bool            _disconnect = false;
+        bool            _send_over = false;
+        bool            _recv_over = false;
     };
 
 

@@ -144,6 +144,7 @@ void CCommandInput::add_command(const char* name, CMD_FUNC func, const char* hel
 int CCommandInput::OnQuit(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     m_bRunning = false;
+    on_quit();
     return 0;
 }
 

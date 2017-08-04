@@ -217,6 +217,7 @@ namespace Net
                 else
                 {
                     _recv_over = true;
+                    Disconnect();
                 }
             }
             else
@@ -247,16 +248,6 @@ namespace Net
                 _on_send((char*)_msg_send->Data(), _io_send._bytes);
                 INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
                 _msg_send = nullptr;
-                if (_disconnect)
-                {
-                    if (!_msg_send && _que_send.empty())
-                    {
-                        ::shutdown(_socket, SD_SEND);
-                        _send_over = true;
-                        return;
-                    }
-                }
-                _post_send();
             }
             else
             {
@@ -310,8 +301,15 @@ namespace Net
         if (_io_send._status != IO_STATUS::IO_STATUS_IDLE)
             return;
 
-        if (_msg_send || _que_send.empty())
+        if (!_msg_send && _que_send.empty())
+        {
+            if (!_send_over && _disconnect)
+            {
+                _send_over = true;
+                ::shutdown(_socket, SD_SEND);
+            }
             return;
+        }
 
         _msg_send = _que_send.front();
 
@@ -490,12 +488,8 @@ namespace Net
         {
             on_closed();
             g_net_close_socket(_socket);
-            _set_socket_status(SOCK_STATUS::SS_CLOSED);
             sPoller->UnregisterHandler(_socket);
-            break;
-        }
-        case SOCK_STATUS::SS_CLOSED:
-        {
+            _set_socket_status(SOCK_STATUS::SS_CLOSED);
             break;
         }
         default:
@@ -527,7 +521,7 @@ namespace Net
 
         if (!_msg_send && _que_send.empty())
         {
-            if (_disconnect && !_send_over)
+            if (!_send_over && _disconnect)
             {
                 _send_over = true;
                 ::shutdown(_socket, SHUT_RDWR);
@@ -542,6 +536,8 @@ namespace Net
 
             if (!_msg_send)
             {
+                if (_que_send.empty())
+                    return;
                 _msg_send = _que_send.front();
                 _send_len = 0;
                 if (!_msg_send->DataLength())
@@ -571,6 +567,7 @@ namespace Net
                 else
                 {
                     _on_send_error(errno);
+                    _set_socket_status(SOCK_STATUS::SS_ERROR);
                     return;
                 }
             }
@@ -629,12 +626,16 @@ namespace Net
                     return;
                 }
             }
-            else
+            else if(ret == 0)
             {
                 _recv_over = true;
-                // connection be closed by peer.
-                if (_disconnect)
-                    _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
+                Disconnect();
+                return;
+            }
+            else
+            {
+                sLogger->Error("No Way !!!");
+                _on_recv_error(errno);
                 return;
             }
         } while (true);

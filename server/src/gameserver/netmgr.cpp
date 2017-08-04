@@ -108,6 +108,19 @@ void CNetMgr::OnConnected(CClientConnector* sock)
 }
 
 
+void CNetMgr::OnQuit()
+{
+    if (m_listener)
+    {
+        m_listener->Close();
+    }
+    if (m_connector)
+    {
+        m_connector->Abort();
+    }
+}
+
+
 void CNetMgr::Update()
 {
     if (m_listener)

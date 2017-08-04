@@ -35,8 +35,8 @@ namespace Net
         }
 
         bool Init(const char* ip, uint16 port);
-        void Update();
         void Close();
+        void Update();
 
         bool Active() { return _status == LISTENER_STATUS::LS_RUNNING; }
         bool Disposable() { return _status == LISTENER_STATUS::LS_CLOSED; }
@@ -117,7 +117,7 @@ namespace Net
         Poll::CompletionKey*            _pkey       = nullptr;
         uint32                          _error      = 0;
         volatile LISTENER_STATUS        _status     = LISTENER_STATUS::LS_UNINIT;
-        uint8                           _io_pending = 0;
+        uint8                           _ac_ready   = 1;
 
         uint32          _events = 0;
         std::mutex      _mutex;

@@ -9,6 +9,8 @@ public:
     CGameServerInput();
     ~CGameServerInput();
 
+protected:
+    virtual void on_quit() override;
 
 private:
     int OnZcg(int argc, char argv[PARAM_CNT][PARAM_LEN]);

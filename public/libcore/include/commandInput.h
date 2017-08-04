@@ -56,6 +56,9 @@ private:
     int OnHelp(int argc, char argv[PARAM_CNT][PARAM_LEN]);
     int OnList(int argc, char argv[PARAM_CNT][PARAM_LEN]);
 
+protected:
+    virtual void on_quit() {};
+
 private:
     bool                    m_bRunning = false;
     std::string             m_strPrompt= "server# ";

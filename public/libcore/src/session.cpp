@@ -248,16 +248,6 @@ namespace Net
                 _on_send((char*)_msg_send->Data(), _io_send._bytes);
                 INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
                 _msg_send = nullptr;
-                if (_disconnect)
-                {
-                    if (!_msg_send && _que_send.empty())
-                    {
-                        ::shutdown(_socket, SD_SEND);
-                        _send_over = true;
-                        return;
-                    }
-                }
-                _post_send();
             }
             else
             {
@@ -311,8 +301,15 @@ namespace Net
         if (_io_send._status != IO_STATUS::IO_STATUS_IDLE)
             return;
 
-        if (_msg_send || _que_send.empty())
+        if (!_msg_send && _que_send.empty())
+        {
+            if (!_send_over && _disconnect)
+            {
+                _send_over = true;
+                ::shutdown(_socket, SD_SEND);
+            }
             return;
+        }
 
         _msg_send = _que_send.front();
 

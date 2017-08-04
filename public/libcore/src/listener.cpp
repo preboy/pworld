@@ -90,15 +90,17 @@ namespace Net
         {
             if (_io_accept._status == IO_STATUS::IO_STATUS_COMPLETED)
             {
+                _io_accept._status = IO_STATUS::IO_STATUS_IDLE;
                 if (_io_accept._succ)
                 {
-                    _io_accept._status =  IO_STATUS::IO_STATUS_IDLE;
                     _on_accept();
                     _post_accept();
                 }
                 else
                 {
-                    _on_accept_error(_io_accept._err);
+                    // NOTE
+                    _post_accept();
+                    // _on_accept_error(_io_accept._err);
                 }
             }
             break;

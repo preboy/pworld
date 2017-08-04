@@ -21,10 +21,18 @@ CGameServerInput::CGameServerInput()
     plr = nullptr;
 }
 
+
 CGameServerInput::~CGameServerInput()
 {
 
 }
+
+
+void CGameServerInput::on_quit()
+{
+    INSTANCE(CNetMgr)->OnQuit();
+}
+
 
 int CGameServerInput::OnZcg(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {

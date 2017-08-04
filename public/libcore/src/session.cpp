@@ -217,6 +217,7 @@ namespace Net
                 else
                 {
                     _recv_over = true;
+                    Disconnect();
                 }
             }
             else
@@ -631,6 +632,7 @@ namespace Net
             else if(ret == 0)
             {
                 _recv_over = true;
+                Disconnect();
                 return;
             }
             else

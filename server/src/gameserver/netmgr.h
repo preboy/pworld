@@ -22,6 +22,9 @@ public:
     void End();
 
 public:
+    void OnQuit();
+
+public:
 
     void ConnTest();
 

@@ -112,7 +112,7 @@ namespace Net
 
         case LISTENER_STATUS::LS_CLOSING:
         {
-            if (_io_accept._status == IO_STATUS::IO_STATUS_COMPLETED || _io_accept._status == IO_STATUS::IO_STATUS_IDLE)
+            if (_io_accept._status != IO_STATUS::IO_STATUS_PENDING)
             {
                 _status = LISTENER_STATUS::LS_PRECLOSED;
             }
@@ -171,6 +171,10 @@ namespace Net
         if (_status == LISTENER_STATUS::LS_RUNNING)
         {
             _status = LISTENER_STATUS::LS_CLOSING;
+            if (_io_accept._status == IO_STATUS::IO_STATUS_PENDING)
+            {
+                sPoller->PostCompletion(_pkey, &_io_accept._ol, 0);
+            }
         }
     }
 
@@ -264,7 +268,7 @@ namespace Net
             return false;
         }
 
-        _io_pending = 1; 
+        _ac_ready = 1;
         _pkey = new Poll::CompletionKey{ this, &CListener::__listener_cb__ };
         if (!sPoller->RegisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT))
         {
@@ -294,7 +298,7 @@ namespace Net
             }
             if (_events & EPOLLIN)
             {
-                _io_pending = 0;
+                _ac_ready = 1;
             }
             _events = 0;
         }
@@ -303,7 +307,7 @@ namespace Net
         {
         case LISTENER_STATUS::LS_RUNNING:
         {
-            if (!_io_pending)
+            if (_ac_ready)
             {
                 _post_accept();
             }
@@ -318,10 +322,7 @@ namespace Net
 
         case LISTENER_STATUS::LS_CLOSING:
         {
-            if (!_io_pending)
-            {
-                _status = LISTENER_STATUS::LS_PRECLOSED;
-            }
+            _status = LISTENER_STATUS::LS_PRECLOSED;
             break;
         }
 
@@ -347,6 +348,7 @@ namespace Net
         if (_status == LISTENER_STATUS::LS_RUNNING)
         {
             _status = LISTENER_STATUS::LS_CLOSING;
+            g_net_close_socket(_listener);
         }
     }
 
@@ -364,7 +366,7 @@ namespace Net
                 }
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                 {
-                    _io_pending = 1;
+                    _ac_ready = 0;
                     sPoller->ReregisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT);
                     break;
                 }

@@ -41,6 +41,9 @@ void CGameServerFrame::on_start()
     INSTANCE(CScriptMgr)->Init();
 
     INSTANCE(CDBMgr)->Start();
+
+    INSTANCE(CNetMgr)->Begin();
+
 }
 
 

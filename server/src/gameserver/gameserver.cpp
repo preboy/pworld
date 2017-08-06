@@ -71,7 +71,6 @@ int main()
         return 3;
     }
 
-    INSTANCE(CNetMgr)->Begin();
 
     //// start
     INSTANCE(CGameServerInput)->Run();

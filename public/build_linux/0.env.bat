@@ -2,7 +2,7 @@
 
 set PATH="C:\program files\7-zip";"D:\Tools\putty";%PATH%
 
-set HOST=172.31.244.4
+set HOST=52.78.151.75
 set USER=preboy
 set PASS=zhang
 

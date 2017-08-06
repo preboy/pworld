@@ -1,21 +1,16 @@
 #include "stdafx.h"
 #include "DbMgr.h"
+#include "SystemConfig.h"
 
 
 void CDBMgr::Start()
 {
     CMysqlService::Init();
-
-    std::string host("172.31.248.17");
-    std::string user("dev");
-    std::string pwd("dev");
-    std::string db_name("dev_world");
-    std::string char_set("gbk");
-    uint16      port(3306);
-
+    
+    SystemConfig* sc = INSTANCE(SystemConfig);
     for (uint8 i = 0; i < 1; i++)
     {
-        CDatabase* db = new CDatabase(host, user, pwd, db_name, char_set, port);
+        CDatabase* db = new CDatabase(sc->db_host, sc->db_user, sc->db_pwd, sc->db_name, sc->db_chat_set, sc->db_port);
         db->Connect();
         _dbs.push_back(db);
     }

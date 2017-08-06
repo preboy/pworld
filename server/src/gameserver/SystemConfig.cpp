@@ -28,6 +28,31 @@ void LoadSystemConfig()
         r.LeaveTable();
     }
     
+    if (r.EnterGlobalTable())
+    {
+        if (r.EnterTable("SystemConfig"))
+        {
+            sc->listen_ip = r.GetString("listen_ip");
+            sc->listen_pt = r.GetInteger("listen_pt");
+
+            sc->connect_ip = r.GetString("connect_ip");
+            sc->connect_pt = r.GetInteger("connect_pt");
+
+            if (r.EnterTable("db"))
+            {
+                sc->db_host = r.GetString("host");
+                sc->db_user = r.GetString("user");
+                sc->db_pwd = r.GetString("pwd");
+                sc->db_name = r.GetString("name");
+                sc->db_port = r.GetInteger("port");
+                sc->db_chat_set = r.GetString("chat_set");
+                r.LeaveTable();
+            }
+        }
+        r.LeaveTable();
+    }
+
+
     std::cout << "read config done" << std::endl;
 }
 

@@ -3,13 +3,14 @@
 #include "ClientListener.h"
 #include "ClientSocket.h"
 #include "ClientConnector.h"
+#include "SystemConfig.h"
 
 
 void CNetMgr::Begin()
 {
-    uint32 err = 0;
+    SystemConfig* sc = INSTANCE(SystemConfig);
     m_listener = new CClientListener();
-    if (!m_listener->Init("127.0.0.1", 19850))
+    if (!m_listener->Init(sc->listen_ip.c_str(), sc->listen_pt))
     {
         return;
     }
@@ -94,8 +95,10 @@ void CNetMgr::OnAccepted(SOCKET_HANDER sock)
 
 void CNetMgr::ConnTest()
 {
+    SystemConfig* sc = INSTANCE(SystemConfig);
+
     m_connector = new CClientConnector();
-    m_connector->Connect("127.0.0.1", 60000);
+    m_connector->Connect(sc->connect_ip.c_str(), sc->connect_pt);
 }
 
 

@@ -84,6 +84,6 @@ void CGameServerFrame::on_msg(Net::CMessage* msg)
         s->Send((const char*)msg->Data(), msg->DataLength());
     }
 
-    sLogger->Warning("Unknown Opcode=%d, size=%d", opcode, packet->PacketLength());
+    // sLogger->Warning("Unknown Opcode=%d, size=%d", opcode, packet->PacketLength());
 }
 

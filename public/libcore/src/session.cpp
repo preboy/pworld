@@ -119,10 +119,7 @@ namespace Net
 
     void CSession::Disconnect()
     {
-        if (_disconnect)
-            return;
-
-        if (Active())
+        if (!_disconnect)
         {
             _disconnect = true;
         }
@@ -303,7 +300,7 @@ namespace Net
 
         if (!_msg_send && _que_send.empty())
         {
-            if (!_send_over && _disconnect)
+            if (_disconnect && !_send_over)
             {
                 _send_over = true;
                 ::shutdown(_socket, SD_SEND);
@@ -446,13 +443,13 @@ namespace Net
             }
             if (_events & EPOLLHUP)
             {
-                sLogger->Error("EPOLLHUP");
+                sLogger->Error("EPOLLHUP = %p", this);
             }
             if (_events & EPOLLIN)
             {
                 if (_events & EPOLLRDHUP)
                 {
-                    sLogger->Error("EPOLLRDHUP");
+                    sLogger->Error("EPOLLRDHUP = %p", this);
                 }
                 _rd_ready = 1;
             }
@@ -516,18 +513,18 @@ namespace Net
 
     void CSession::_post_send()
     {
-        if (_send_over || _status != SOCK_STATUS::SS_RUNNING || !_wr_ready)
-            return;
-
         if (!_msg_send && _que_send.empty())
         {
-            if (!_send_over && _disconnect)
+            if (_disconnect && !_send_over)
             {
                 _send_over = true;
                 ::shutdown(_socket, SHUT_RDWR);
             }
             return;
         }
+
+        if (_send_over || _status != SOCK_STATUS::SS_RUNNING || !_wr_ready)
+            return;
 
         do
         {

@@ -1,8 +1,17 @@
 CC				= g++
-CFLAGS			= -g -O0 -Wall -std=c++14
+CFLAGS			= -Wall -std=c++14
 INCLUDES        = -I../../public/common -I../../public/libcore/include -I/usr/include/lua5.3/ -I/usr/include/mariadb/
 LIB_INCLUDES    = -L../../public/libcore/lib/ -L/usr/lib/x86_64-linux-gnu/
 LIBS            = -lcore -lpthread -llua5.3 -lmariadb
+
+
+DEBUG ?= y
+ifeq ($(CONF), y)
+    CFLAGS += -g3 -O0 -D_DEBUG
+else
+    CFLAGS += -s  -O3
+endif
+
 
 SRC_DIR			= gameserver
 BUILD_DIR		= build

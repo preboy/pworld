@@ -1,9 +1,18 @@
 CC       = g++
-CFLAGS   = -g -O0 -Wall -std=c++14
+CFLAGS   = -Wall -std=c++14
 INCLUDES = -Iinclude -I../common -I/usr/include/lua5.3/ -I/usr/include/mariadb/
 
-BUILD_DIR = build
+
+DEBUG ?= y
+ifeq ($(CONF), y)
+    CFLAGS += -g3 -O0 -D_DEBUG
+else
+    CFLAGS += -s  -O3
+endif
+
+
 SRC_DIR   = src
+BUILD_DIR = build
 
 TARGET = lib/libcore.a
 

@@ -34,7 +34,15 @@ template<typename T,
     typename S1, typename S2, typename S3, typename S4, typename S5, typename S6>
 class CallbackP6;
 
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7,
+    typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7>
+class CallbackP7;
 
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8,
+    typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7, typename S8>
+class CallbackP8;
 /**
 * @class Callback
 *
@@ -173,6 +181,59 @@ public:
                 std::forward<P6>(p6)
                 );
     }
+    template<typename T,
+        typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7,
+        typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7>
+        inline static CCallback *Bind(T *obj,
+        void (T::*m)(S1, S2, S3, S4, S5, S6, S7),
+        P1 p1,
+        P2 p2,
+        P3 p3,
+        P4 p4,
+        P5 p5,
+        P6 p6,
+        P7 p7)
+    {
+            return new CallbackP7<T, P1, P2, P3, P4, P5, P6, P7, S1, S2, S3, S4, S5, S6, S7>
+                (
+                obj, m,
+                std::forward<P1>(p1),
+                std::forward<P2>(p2),
+                std::forward<P3>(p3),
+                std::forward<P4>(p4),
+                std::forward<P5>(p5),
+                std::forward<P6>(p6),
+                std::forward<P7>(p7)
+                );
+        }
+
+    template<typename T,
+        typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8,
+        typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7, typename S8>
+        inline static CCallback *Bind(T *obj,
+        void (T::*m)(S1, S2, S3, S4, S5, S6, S7, S8),
+        P1 p1,
+        P2 p2,
+        P3 p3,
+        P4 p4,
+        P5 p5,
+        P6 p6,
+        P7 p7,
+        P8 p8)
+    {
+            return new CallbackP8<T, P1, P2, P3, P4, P5, P6, P7, P8, S1, S2, S3, S4, S5, S6, S7, S8>
+                (
+                obj, m,
+                std::forward<P1>(p1),
+                std::forward<P2>(p2),
+                std::forward<P3>(p3),
+                std::forward<P4>(p4),
+                std::forward<P5>(p5),
+                std::forward<P6>(p6),
+                std::forward<P7>(p7),
+                std::forward<P8>(p8)
+                );
+        }
 };
 
 /**
@@ -452,4 +513,113 @@ private:
     P4 _p4;
     P5 _p5;
     P6 _p6;
+};
+
+
+/**
+* @class CallbackP7
+*
+* Callback with 7 parameters
+*/
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7,
+    typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7>
+class CallbackP7 : public CCallback
+{
+public:
+    typedef void (T::*M)(S1, S2, S3, S4, S5, S6, S7);
+
+    CallbackP7(T *obj,
+        M m,
+        P1 p1,
+        P2 p2,
+        P3 p3,
+        P4 p4,
+        P5 p5,
+        P6 p6,
+        P7 p7)
+        :
+        _obj(obj),
+        _m(m),
+        _p1(std::forward<P1>(p1)),
+        _p2(std::forward<P2>(p2)),
+        _p3(std::forward<P3>(p3)),
+        _p4(std::forward<P4>(p4)),
+        _p5(std::forward<P5>(p5)),
+        _p6(std::forward<P6>(p6)),
+        _p7(std::forward<P7>(p7))
+    {}
+
+public:
+    void Run()
+    {
+        (_obj->*_m)(_p1, _p2, _p3, _p4, _p5, _p6, _p7);
+    }
+
+private:
+    T *_obj;
+    M _m;
+    P1 _p1;
+    P2 _p2;
+    P3 _p3;
+    P4 _p4;
+    P5 _p5;
+    P6 _p6;
+    P7 _p7;
+};
+
+
+/**
+* @class CallbackP8
+*
+* Callback with 8 parameters
+*/
+template<typename T,
+    typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8,
+    typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7, typename S8>
+class CallbackP8 : public CCallback
+{
+public:
+    typedef void (T::*M)(S1, S2, S3, S4, S5, S6, S7, S8);
+
+    CallbackP8(T *obj,
+        M m,
+        P1 p1,
+        P2 p2,
+        P3 p3,
+        P4 p4,
+        P5 p5,
+        P6 p6,
+        P7 p7,
+        P8 p8)
+        :
+        _obj(obj),
+        _m(m),
+        _p1(std::forward<P1>(p1)),
+        _p2(std::forward<P2>(p2)),
+        _p3(std::forward<P3>(p3)),
+        _p4(std::forward<P4>(p4)),
+        _p5(std::forward<P5>(p5)),
+        _p6(std::forward<P6>(p6)),
+        _p7(std::forward<P7>(p7)),
+        _p8(std::forward<P7>(p8))
+    {}
+
+public:
+    void Run()
+    {
+        (_obj->*_m)(_p1, _p2, _p3, _p4, _p5, _p6, _p7, _p8);
+    }
+
+private:
+    T *_obj;
+    M _m;
+    P1 _p1;
+    P2 _p2;
+    P3 _p3;
+    P4 _p4;
+    P5 _p5;
+    P6 _p6;
+    P7 _p7;
+    P8 _p8;
 };

@@ -156,6 +156,7 @@
     <ClInclude Include="..\common\typedefs.h" />
     <ClInclude Include="include\AsyncTask.h" />
     <ClInclude Include="include\AutoDeleter.h" />
+    <ClInclude Include="include\binder.h" />
     <ClInclude Include="include\byteBuffer.h" />
     <ClInclude Include="include\callback.h" />
     <ClInclude Include="include\commandInput.h" />

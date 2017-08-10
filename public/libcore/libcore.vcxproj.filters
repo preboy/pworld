@@ -168,6 +168,9 @@
     <ClInclude Include="include\SignalHander.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="include\binder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\byteBuffer.cpp">

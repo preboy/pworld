@@ -4,6 +4,7 @@
 #include "global_function.h"
 #include "byteBuffer.h"
 #include "poller.h"
+#include "binder.h"
 #include "callback.h"
 #include "idmaker.h"
 #include "json.h"

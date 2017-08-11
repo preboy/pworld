@@ -30,7 +30,7 @@ namespace Net
 
         sockaddr_in listen_addr;
         listen_addr.sin_family = AF_INET;
-        listen_addr.sin_port = ::htons(port);
+        listen_addr.sin_port = htons(port);
         int ret = inet_pton(AF_INET, ip, &listen_addr.sin_addr);
         if (ret != 1)
         {
@@ -245,7 +245,7 @@ namespace Net
 
         sockaddr_in listen_addr;
         listen_addr.sin_family = AF_INET;
-        listen_addr.sin_port = ::htons(port);
+        listen_addr.sin_port = htons(port);
         int ret = inet_pton(AF_INET, ip, &listen_addr.sin_addr);
         if (ret != 1)
         {

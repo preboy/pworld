@@ -198,7 +198,7 @@ namespace Net
         sockaddr_in local_addr;
         local_addr.sin_family = AF_INET;
         local_addr.sin_addr.s_addr = INADDR_ANY;
-        local_addr.sin_port = ::htons(0);
+        local_addr.sin_port = htons(0);
         if (-1 == bind(_socket, (const sockaddr*)&local_addr, sizeof(sockaddr_in)))
         {
             _error = GetSystemError();
@@ -207,7 +207,7 @@ namespace Net
         }
 
         _remote_addr.sin_family = AF_INET;
-        _remote_addr.sin_port = ::htons(port);
+        _remote_addr.sin_port = htons(port);
         int ret = inet_pton(AF_INET, ip, &_remote_addr.sin_addr);
         if (ret != 1)
         {

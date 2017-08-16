@@ -4,7 +4,7 @@ INCLUDES = -Iinclude -I../common -I/usr/include/lua5.3/ -I/usr/include/mariadb/
 
 
 DEBUG ?= y
-ifeq ($(CONF), y)
+ifeq ($(DEBUG), y)
     CFLAGS += -g3 -O0 -D_DEBUG
 else
     CFLAGS += -s  -O3

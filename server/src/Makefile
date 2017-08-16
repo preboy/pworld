@@ -6,7 +6,7 @@ LIBS            = -lcore -lpthread -llua5.3 -lmariadb
 
 
 DEBUG ?= y
-ifeq ($(CONF), y)
+ifeq ($(DEBUG), y)
     CFLAGS += -g3 -O0 -D_DEBUG
 else
     CFLAGS += -s  -O3

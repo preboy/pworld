@@ -231,8 +231,18 @@ namespace Net
     void CListener::__listener_cb__(void* obj, uint32 events)
     {
         CListener* pThis = (CListener*)obj;
-        std::lock_guard<std::mutex> lock(pThis->_mutex);
-        pThis->_events = events;
+        
+        pThis->_accept_pending = false;
+
+        if (events & EPOLLERR)
+        {
+            pThis->_on_accept_error(g_net_socket_error(pThis->_listener));
+            return;
+        }
+        if (events & EPOLLIN)
+        {
+            pThis->_post_accept();
+        }
     }
 
 
@@ -270,49 +280,19 @@ namespace Net
             return false;
         }
 
-        _ac_ready = 1;
-        _pkey = new Poll::CompletionKey{ this, &CListener::__listener_cb__ };
-        if (!sPoller->RegisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT))
-        {
-            _error = ::GetSystemError();
-            g_net_close_socket(_listener);
-            return false;
-        }
-
+        _pkey   = new Poll::CompletionKey{ this, &CListener::__listener_cb__, IO_STATUS::IO_STATUS_COMPLETED };
         _status = LISTENER_STATUS::LS_RUNNING;
-        return true;
+
+        return _post_accept();
     }
 
 
     void CListener::Update()
     {
-        if (!_mutex.try_lock())
-            return;
-
-        if (_events)
-        {
-            if (_events & EPOLLERR)
-            {
-                _on_accept_error(g_net_socket_error(_listener));
-                _mutex.unlock();
-                _events = 0;
-                return;
-            }
-            if (_events & EPOLLIN)
-            {
-                _ac_ready = 1;
-            }
-            _events = 0;
-        }
-       
         switch (_status)
         {
         case LISTENER_STATUS::LS_RUNNING:
         {
-            if (_ac_ready)
-            {
-                _post_accept();
-            }
             break;
         }
 
@@ -330,18 +310,19 @@ namespace Net
 
         case LISTENER_STATUS::LS_PRECLOSED:
         {
-            sPoller->UnregisterHandler(_listener);
-            g_net_close_socket(_listener);
-            on_closed(_error);
-            _status = LISTENER_STATUS::LS_CLOSED;
-            break;
+            if (_pkey->status == IO_STATUS::IO_STATUS_COMPLETED && !_accept_pending)
+            {
+                sPoller->UnregisterHandler(_listener);
+                g_net_close_socket(_listener);
+                on_closed(_error);
+                _status = LISTENER_STATUS::LS_CLOSED;
+                break;
+            }
         }
 
         default:
             break;
         }
-
-        _mutex.unlock();
     }
 
 
@@ -350,15 +331,18 @@ namespace Net
         if (_status == LISTENER_STATUS::LS_RUNNING)
         {
             _status = LISTENER_STATUS::LS_CLOSING;
-            g_net_close_socket(_listener);
         }
     }
 
 
-    void CListener::_post_accept()
+    bool CListener::_post_accept()
     {
         do
         {
+            // ÊÇ·ñÇëÇó¹Ø±Õ
+            if (_status != LISTENER_STATUS::LS_RUNNING)
+                break;
+
             int socket = accept4(_listener, nullptr, nullptr, SOCK_NONBLOCK | SOCK_CLOEXEC);
             if (socket == -1)
             {
@@ -368,21 +352,23 @@ namespace Net
                 }
                 if (errno == EAGAIN || errno == EWOULDBLOCK)
                 {
-                    _ac_ready = 0;
-                    sPoller->ReregisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT);
+                    _accept_pending = true;
+                    sPoller->RegisterHandler(_listener, _pkey, EPOLLIN | EPOLLONESHOT);
                     break;
                 }
                 else
                 {
                     _on_accept_error(errno);
-                    return;
+                    return false;
                 }
             }
             else
             {
                 on_accept(socket);
+                continue;
             }
         } while (true);
+        return true;
     }
 
 

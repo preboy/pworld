@@ -109,7 +109,7 @@ namespace Net
         static void     __listener_cb__(void* obj, uint32 events);
 
     private:
-        void            _post_accept();
+        bool            _post_accept();
         void            _on_accept_error(uint32 err);
 
     private:
@@ -117,10 +117,8 @@ namespace Net
         Poll::CompletionKey*            _pkey       = nullptr;
         uint32                          _error      = 0;
         volatile LISTENER_STATUS        _status     = LISTENER_STATUS::LS_UNINIT;
-        uint8                           _ac_ready   = 1;
-
-        uint32          _events = 0;
-        std::mutex      _mutex;
+        
+        bool _accept_pending = false;
     };
 
 #endif

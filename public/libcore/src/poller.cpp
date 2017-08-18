@@ -139,9 +139,10 @@ namespace Poll
             }
             for (int i = 0; i < counts; i++)
             {
-                struct epoll_event& evt = evts[i];
+                struct epoll_event&  evt = evts[i];
                 Poll::CompletionKey* key = (Poll::CompletionKey*)evt.data.ptr;
                 key->func(key->obj, evt.events);
+                key->status = Net::IO_STATUS::IO_STATUS_COMPLETED;
             }
         }
     }
@@ -182,20 +183,21 @@ namespace Poll
 
     bool CPoller::RegisterHandler(int fd, CompletionKey* key, uint32 events)
     {
+        key->status = Net::IO_STATUS::IO_STATUS_PENDING;
+        
         struct epoll_event evt;
         evt.events = events | EPOLLET;
         evt.data.ptr = (void*)(key);
-        int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &evt);
-        return ret == 0;
-    }
 
-
-    bool CPoller::ReregisterHandler(int fd, CompletionKey* key, uint32 events)
-    {
-        struct epoll_event evt;
-        evt.events = events | EPOLLET;
-        evt.data.ptr = (void*)(key);
         int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_MOD, fd, &evt);
+        if (ret == -1 && errno == ENOENT)
+        {
+            ret = epoll_ctl(_epoll_fd, EPOLL_CTL_ADD, fd, &evt);
+        }
+        if (ret == -1)
+        {
+            sLogger->Error("CPoller::RegisterHandler failed: err=%d, msg='%s'", errno, strerror(errno));
+        }
         return ret == 0;
     }
 

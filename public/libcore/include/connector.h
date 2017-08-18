@@ -105,6 +105,7 @@ namespace Net
 
     private:
         bool            _post_connect();
+        void            _on_connect_error(uint32 err);
 
     private:
 

@@ -43,4 +43,7 @@ private:
     std::list<CClientSocket*>       m_lstClients;
     std::list<CServerSocket*>       m_lstServers;
 
+    std::mutex  _mutex_clients;
+    std::mutex  _mutex_servers;
+
 };

@@ -40,44 +40,57 @@ void CNetMgr::End()
         delete m_connector;
         m_connector = nullptr;
     }
-
-    for (auto& s : m_lstClients)
+    
     {
-        if (s->Active())
+        std::lock_guard<std::mutex> lock(_mutex_clients);
+        for (auto& s : m_lstClients)
         {
-            s->Disconnect();
-        }
-    }
-    for (auto& s : m_lstServers)
-    {
-        if (s->Active())
-        {
-            s->Disconnect();
+            if (s->Active())
+            {
+                s->Disconnect();
+            }
         }
     }
 
-    for (auto& s : m_lstClients)
     {
-        while (!(s->Disposable()))
+        for (auto& s : m_lstServers)
         {
-            Utils::Sleep(10);
-            s->Update();
+            if (s->Active())
+            {
+                s->Disconnect();
+            }
         }
-        delete s;
-    }
-    m_lstClients.clear();
 
-    for (auto& s : m_lstServers)
+    }
+    
     {
-        while (!(s->Disposable()))
+        std::lock_guard<std::mutex> lock(_mutex_clients);
+        for (auto& s : m_lstClients)
         {
-            Utils::Sleep(10);
-            s->Update();
+            while (!(s->Disposable()))
+            {
+                Utils::Sleep(10);
+                s->Update();
+            }
+            delete s;
         }
-        delete s;
+        m_lstClients.clear();
     }
 
-    m_lstServers.clear();
+    {
+        for (auto& s : m_lstServers)
+        {
+            while (!(s->Disposable()))
+            {
+                Utils::Sleep(10);
+                s->Update();
+            }
+            delete s;
+        }
+
+        m_lstServers.clear();
+    }
+    
 }
 
 
@@ -89,6 +102,7 @@ void CNetMgr::OnAccepted(SOCKET_HANDER sock)
     /*std::string text("this is server said");
     s->Send(text.c_str(), (uint16)text.length());
 */
+    std::lock_guard<std::mutex> lock(_mutex_clients);
     m_lstClients.push_back(s);
 }
 
@@ -137,6 +151,7 @@ void CNetMgr::Update()
     }
 
     {
+        std::lock_guard<std::mutex> lock(_mutex_clients);
         auto it = m_lstClients.begin();
         auto end = m_lstClients.end();
         while (it != end)

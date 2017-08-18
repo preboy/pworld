@@ -24,7 +24,14 @@ namespace Net
     const uint32 MAX_BUFFER_SIZE = 0x1000;      // 4k
     const uint32 MAX_PACKET_SIZE = 0x4000;      // 16k
 
-    
+
+    enum class IO_STATUS : uint32
+    {
+        IO_STATUS_IDLE,             // idle
+        IO_STATUS_ERROR,            // error
+        IO_STATUS_PENDING,          // pending
+        IO_STATUS_COMPLETED,        // CALLBACK completed
+    };
 
 
 #ifdef PLAT_WIN32
@@ -39,14 +46,6 @@ namespace Net
         IO_TYPE_Recv,
         IO_TYPE_Post,
         IO_TYPE_Disconnect,
-    };
-
-    enum class IO_STATUS : uint32
-    {
-        IO_STATUS_IDLE,             // idle
-        IO_STATUS_ERROR,            // error
-        IO_STATUS_PENDING,          // pending
-        IO_STATUS_COMPLETED,        // CALLBACK completed
     };
 
 

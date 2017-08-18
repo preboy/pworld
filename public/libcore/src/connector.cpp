@@ -216,7 +216,7 @@ namespace Net
             return false;
         }
 
-        _key = new Poll::CompletionKey{ this, &__connector_cb__ };
+        _key = new Poll::CompletionKey{ this, &__connector_cb__, IO_STATUS::IO_STATUS_COMPLETED };
         _status = CONNECTOR_STATUS::CS_CONNECTING;
 
         return _post_connect();
@@ -227,18 +227,16 @@ namespace Net
     {
         do
         {
+            if(_status != CONNECTOR_STATUS::CS_CONNECTING)
+                break;
+
             int ret = connect(_socket, (sockaddr*)(&_remote_addr), sizeof(_remote_addr));
             if (ret == -1)
             {
                 if (errno == EINPROGRESS || errno == EWOULDBLOCK)
                 {
-                    if (!sPoller->RegisterHandler(_socket, _key, EPOLLOUT | EPOLLONESHOT))
-                    {
-                        _error = GetSystemError();
-                        g_net_close_socket(_socket);
-                        return false;
-                    }
-                    return true;
+                    sPoller->RegisterHandler(_socket, _key, EPOLLOUT | EPOLLONESHOT);
+                    break;
                 }
                 else if (errno == EINTR)
                 {
@@ -246,8 +244,7 @@ namespace Net
                 }
                 else
                 {
-                    _error = errno;
-                    _status = CONNECTOR_STATUS::CS_ERROR;
+                    _on_connect_error(errno);
                     return false;
                 }
             }
@@ -255,10 +252,10 @@ namespace Net
             {
                 on_connect(this);
                 _status = CONNECTOR_STATUS::CS_CLOSED;
-                return true;
+                break;
             }
         } while (true);
-        return false;
+        return true;
     }
 
 
@@ -325,8 +322,15 @@ namespace Net
 
 
     void CConnector::on_connect_error(uint32 err)
-    {
+    {    
         sLogger->Error("CConnector::on_connect_error, err = %u", err);
+    }
+
+
+    void CConnector::_on_connect_error(uint32 err)
+    {
+        _error = err;
+        _status = CS_ERROR;
     }
 
 #endif

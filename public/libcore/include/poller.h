@@ -1,4 +1,6 @@
 #pragma once
+#include "netbase.h"
+
 
 namespace Poll
 {
@@ -47,8 +49,9 @@ namespace Poll
 
     struct CompletionKey
     {
-        void* obj;
-        IO_CALLBACK func;
+        void*           obj;
+        IO_CALLBACK     func;
+        Net::IO_STATUS  status;
     };
 
     class CPoller
@@ -61,7 +64,6 @@ namespace Poll
         void     Release();
 
         bool     RegisterHandler(int fd, CompletionKey* key, uint32 events);
-        bool     ReregisterHandler(int fd, CompletionKey* key, uint32 events);
         bool     UnregisterHandler(int fd);
 
     private:

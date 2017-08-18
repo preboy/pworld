@@ -416,14 +416,9 @@ namespace Net
         }
         else
         {
-            _key = new Poll::CompletionKey{ this, &CSession::__session_cb__ };
+            _key = new Poll::CompletionKey{ this, &CSession::__session_cb__, IO_STATUS::IO_STATUS_COMPLETED };
         }
         
-        if (!sPoller->RegisterHandler(_socket, _key, EPOLLIN | EPOLLOUT | EPOLLRDHUP | EPOLLONESHOT))
-        {
-            return;
-        }
-
         _set_socket_status(SOCK_STATUS::SS_RUNNING);
         on_opened();
     }
@@ -504,7 +499,7 @@ namespace Net
         }
         if (events != (EPOLLRDHUP | EPOLLONESHOT))
         {
-            sPoller->ReregisterHandler(_socket, _key, events);
+            sPoller->RegisterHandler(_socket, _key, events);
         }
 
         _mutex.unlock();

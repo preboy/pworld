@@ -202,10 +202,9 @@ namespace Poll
     }
 
 
-    bool  CPoller::UnregisterHandler(int fd)
+    void  CPoller::UnregisterHandler(int fd)
     {
-        int ret = epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
-        return ret == 0;
+        epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
     }
 
 

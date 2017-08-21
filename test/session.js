@@ -64,7 +64,7 @@ class Session {
 			}
 			// dispatcher.dispatch(this, packet);
             if (packet.compare(this._packet) == 0){
-                console.log("recv check: pass");
+                // console.log("recv check: pass");
                 setTimeout(()=>{
                     this.SendPacket();
                     clearTimeout(this._tid);
@@ -114,7 +114,7 @@ class Session {
         this._packet = Buffer.allocUnsafe(len+2);
         packet.copy(this._packet, 0, 4, 4+2+len);
         
-        console.log("send: pid, len = ", pid, len);
+        // console.log("send: pid, len = ", pid, len);
 	}
 
     Close(){

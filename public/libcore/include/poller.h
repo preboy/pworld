@@ -64,7 +64,7 @@ namespace Poll
         void     Release();
 
         bool     RegisterHandler(int fd, CompletionKey* key, uint32 events);
-        bool     UnregisterHandler(int fd);
+        void     UnregisterHandler(int fd);
 
     private:
 

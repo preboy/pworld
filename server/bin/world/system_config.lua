@@ -25,7 +25,7 @@ SystemConfig =
         chat_set = "gbk",
     },
 
-    listen_ip = "127.0.0.1",
+    listen_ip = "0.0.0.0",
     listen_pt = 19850,
 
     connect_ip = "127.0.0.1",

@@ -122,7 +122,6 @@ namespace Net
         bool Active()  { return _status == SOCK_STATUS::SS_RUNNING; }
         bool Disposable() { return _status == SOCK_STATUS::SS_CLOSED; }
 
-
     private:
         static void __session_cb__(void* obj, uint32 events);
 
@@ -140,7 +139,6 @@ namespace Net
 
         void _on_recv_error(uint32 err);
         void _on_send_error(uint32 err);
-
 
     protected:
         virtual void on_opened();

@@ -310,14 +310,14 @@ namespace Net
 
         case LISTENER_STATUS::LS_PRECLOSED:
         {
-            if (_pkey->status == IO_STATUS::IO_STATUS_COMPLETED && !_accept_pending)
-            {
+            // if (_pkey->status == IO_STATUS::IO_STATUS_COMPLETED && !_accept_pending)
+            // {
                 sPoller->UnregisterHandler(_listener);
                 g_net_close_socket(_listener);
                 on_closed(_error);
                 _status = LISTENER_STATUS::LS_CLOSED;
                 break;
-            }
+            // }
         }
 
         default:
@@ -330,6 +330,7 @@ namespace Net
     {
         if (_status == LISTENER_STATUS::LS_RUNNING)
         {
+            g_net_close_socket(_listener);
             _status = LISTENER_STATUS::LS_CLOSING;
         }
     }

@@ -17,5 +17,6 @@ then
     read
     exit -1
 else
+    cd ~/pworld
     echo -e "\033[0;32mBuild OK !!!  \033[0"
 fi

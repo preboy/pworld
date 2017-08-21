@@ -20,7 +20,7 @@ const common = require('./common.js');
 exports.make_packet = () => {
 
 	var pid = common.getRandomInt(1, 4000);
-	var len = common.getRandomInt(1, 20);
+	var len = common.getRandomInt(1, 100);
 	var buff = Buffer.allocUnsafe(4+2+len);
 	
     buff.writeUInt32LE(2+len, 0);

@@ -7,3 +7,5 @@ Debug/
 __pycache__
 /*.sdf
 /world.opensdf
+public/libcore/build/
+server/src/build/

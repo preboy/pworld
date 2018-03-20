@@ -1,3 +1,5 @@
+pworld = preboy's world
+
 用C++实现的服务端node
 
 数据库：	MYSQL C API

@@ -1,6 +1,6 @@
 CC       = g++
 CFLAGS   = -Wall -std=c++17
-INCLUDES = -Iinclude -I../common -I/usr/include/lua5.3/ -I/usr/include/mysql/
+INCLUDES = -Iinclude -I../common -I../depends/lua/include -I/usr/include/mariadb
 
 
 DEBUG ?= y

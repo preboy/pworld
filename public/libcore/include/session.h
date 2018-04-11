@@ -174,6 +174,8 @@ namespace Net
         bool            _send_over = false;
         bool            _recv_over = false;
         bool            _in_epoll = false;
+        
+        uint64          _last_active_t = 0;
     };
 
 

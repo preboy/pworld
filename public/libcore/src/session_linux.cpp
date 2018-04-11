@@ -3,6 +3,7 @@
 #include "poller.h"
 #include "singleton.h"
 #include "logger.h"
+#include "servertime.h"
 
 
 namespace Net
@@ -100,13 +101,22 @@ namespace Net
             }
             _events = 0;
         }
-
+    
         _post_recv();
         _post_send();
         
         if (should_close)
         {
             _set_socket_status(SOCK_STATUS::SS_ERROR);
+        }
+
+        // active
+        uint64 now = get_current_time();
+        if (now - _last_active_t > 10)
+        {
+            _last_active_t = now;
+            std::string text("this is server said");
+            Send(text.c_str(), (uint16)text.length());
         }
 
         switch (_status)

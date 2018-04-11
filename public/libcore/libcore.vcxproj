@@ -237,6 +237,8 @@
     <ClCompile Include="src\serverframe.cpp" />
     <ClCompile Include="src\servertime.cpp" />
     <ClCompile Include="src\session.cpp" />
+    <ClCompile Include="src\session_linux.cpp" />
+    <ClCompile Include="src\session_win32.cpp" />
     <ClCompile Include="src\SignalHander.cpp" />
     <ClCompile Include="src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

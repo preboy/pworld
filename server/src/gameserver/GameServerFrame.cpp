@@ -49,7 +49,9 @@ void CGameServerFrame::on_start()
 
 void CGameServerFrame::on_stop()
 {
+    INSTANCE(CNetMgr)->End();
     INSTANCE(CDBMgr)->Close();
+    // INSTANCE(CScriptMgr)->End();
 }
 
 

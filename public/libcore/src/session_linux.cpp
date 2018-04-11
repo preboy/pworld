@@ -100,9 +100,6 @@ namespace Net
             _events = 0;
         }
 
-        uint8 rd_ready = _rd_ready;
-        uint8 wr_ready = _wr_ready;
-
         _post_recv();
         _post_send();
         

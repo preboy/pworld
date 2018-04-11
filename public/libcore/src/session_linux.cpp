@@ -69,6 +69,7 @@ namespace Net
             return;
 
         bool should_close = false;
+
         if (_events)
         {
             if (_events & EPOLLERR)
@@ -137,13 +138,19 @@ namespace Net
             break;
         }
 
-        uint32 events = EPOLLRDHUP | EPOLLONESHOT | EPOLLOUT;
-        if (rd_ready == 1 && _rd_ready == 0)
+        if (_status == SOCK_STATUS::SS_RUNNING) 
         {
-            events = events | EPOLLIN;
+            uint32 events = EPOLLRDHUP | EPOLLONESHOT;
+            if (_rd_ready == 0)
+            {
+                events = events | EPOLLIN;
+            }
+            if (_wr_ready == 0)
+            {
+                events = events | EPOLLOUT;
+            }
+            sPoller->RegisterHandler(_socket, _key, events);
         }
-        sPoller->RegisterHandler(_socket, _key, events);
-
         _mutex.unlock();
     }
 

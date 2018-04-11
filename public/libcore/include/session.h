@@ -173,6 +173,7 @@ namespace Net
         bool            _disconnect = false;
         bool            _send_over = false;
         bool            _recv_over = false;
+        bool            _in_epoll = false;
     };
 
 

@@ -15,6 +15,7 @@ namespace Net
         CSession* pThis = (CSession*)obj;
         std::lock_guard<std::mutex> lock(pThis->_mutex);
         pThis->_events = events;
+        pThis->_in_epoll = false;
     }
 
 
@@ -100,9 +101,6 @@ namespace Net
             _events = 0;
         }
 
-        uint8 rd_ready = _rd_ready;
-        uint8 wr_ready = _wr_ready;
-
         _post_recv();
         _post_send();
         
@@ -138,18 +136,11 @@ namespace Net
             break;
         }
 
-        if (_status == SOCK_STATUS::SS_RUNNING) 
+        if (!_in_epoll && _status == SOCK_STATUS::SS_RUNNING) 
         {
-            uint32 events = EPOLLRDHUP | EPOLLONESHOT;
-            if (_rd_ready == 0)
-            {
-                events = events | EPOLLIN;
-            }
-            if (_wr_ready == 0)
-            {
-                events = events | EPOLLOUT;
-            }
+            uint32 events = EPOLLRDHUP | EPOLLONESHOT | EPOLLIN | EPOLLOUT;
             sPoller->RegisterHandler(_socket, _key, events);
+            _in_epoll = true;
         }
         _mutex.unlock();
     }

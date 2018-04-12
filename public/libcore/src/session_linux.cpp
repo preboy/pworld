@@ -116,7 +116,7 @@ namespace Net
         {
             _last_active_t = now;
             std::string text("this is server said");
-            Send(text.c_str(), (uint16)text.length());
+            Send(text.c_str(), (uint32)text.length());
         }
 
         switch (_status)

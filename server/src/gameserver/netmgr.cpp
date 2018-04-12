@@ -36,6 +36,7 @@ void CNetMgr::End()
         while (!m_connector->Disposable())
         {
             Utils::Sleep(10);
+            m_connector->Update();
         }
         delete m_connector;
         m_connector = nullptr;

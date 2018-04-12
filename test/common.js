@@ -1,16 +1,16 @@
-
-// ·µ»ØÒ»¸ö´óÓÚµÈÓÚ0£¬Ğ¡ÓÚ1µÄÎ±Ëæ»úÊı
+// è¿”å›ä¸€ä¸ªå¤§äºç­‰äº0ï¼Œå°äº1çš„ä¼ªéšæœºæ•°
 exports.getRandom = () => {
   return Math.random();
 }
 
 
-// ·µ»ØÒ»¸ö½éÓÚminºÍmaxÖ®¼äµÄËæ»úÊı
+// è¿”å›ä¸€ä¸ªä»‹äºminå’Œmaxä¹‹é—´çš„éšæœºæ•°
 exports.getRandomArbitrary = (min, max) => {
   return Math.random() * (max - min) + min;
 }
 
-// ·µ»ØÒ»¸ö½éÓÚminºÍmaxÖ®¼äµÄÕûĞÍËæ»úÊı
+
+// è¿”å›ä¸€ä¸ªä»‹äºminå’Œmaxä¹‹é—´çš„æ•´å‹éšæœºæ•°
 // Using Math.round() will give you a non-uniform distribution!
 exports.getRandomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1) + min);

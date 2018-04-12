@@ -75,13 +75,8 @@ int main()
     //// start
     INSTANCE(CGameServerInput)->Run();
 
-
-    INSTANCE(CNetMgr)->End();
-
-
     // release all resource
     INSTANCE(CGameServerFrame)->Stop();
-
 
     sPoller->Release();
     Net::g_net_release();

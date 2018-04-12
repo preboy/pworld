@@ -1,22 +1,30 @@
+const net = require('net');
+const ss = require('./session')
 
+const connections = 1111;
 
 let sessions = [];
 let sid = 1;
+var _creator_tid
 
-const net = require('net');
-const ss  = require('./session')
+_creator_tid = setInterval(() => {
 
-let err_cnt = 0;
+    let c = net.createConnection(19850, "118.24.48.149", () => {
+        sessions[sid] = new ss.Session(c);
+    });
 
-for( let i = 0; i < 1111; i++){
+    c.sid = sid
 
-    let c = net.createConnection(19850, "139.162.86.196", () => {
-        sessions[sid] = new ss.Session(c, sid);
+    c.on('error', (err) => {
+        console.log("connection failed: sid = ", c.sid, err);
+    });
+
+    if (sid >= connections) {
+        clearInterval(_creator_tid);
+        _creator_tid = null;
+        console.log("Total", sid, "connection created !");
+    } else {
         sid++;
-    });
+    }
 
-    c.on('error', (err)=>{
-        err_cnt++;
-        console.log("err connect count:", err_cnt, err);
-    });
-}
+}, 30);

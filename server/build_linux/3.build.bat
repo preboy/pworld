@@ -2,4 +2,4 @@
 call 0.env.bat
 
 
-putty %HOST% -l %USER% -pw %PASS% -m cmds.putty
+putty %HOST% -l %USER% -pw %PASS% -m cmds.putty -t

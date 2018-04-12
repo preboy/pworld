@@ -25,6 +25,7 @@ void CNetMgr::End()
         while (!m_listener->Disposable())
         {
             Utils::Sleep(10);
+            m_listener->Update();
         }
         delete m_listener;
         m_listener = nullptr;
@@ -36,6 +37,7 @@ void CNetMgr::End()
         while (!m_connector->Disposable())
         {
             Utils::Sleep(10);
+            m_connector->Update();
         }
         delete m_connector;
         m_connector = nullptr;

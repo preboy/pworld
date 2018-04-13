@@ -119,13 +119,6 @@ namespace Net
             _set_socket_status(SOCK_STATUS::SS_ERROR);
         }
 
-        // active
-        if (get_current_time() - _last_active_t > 30)
-        {
-            Disconnect();
-            sLogger->Error("Disconnected for Response Timeout = %p", this);
-        }
-
         switch (_status)
         {
         case SOCK_STATUS::SS_RUNNING:
@@ -133,6 +126,13 @@ namespace Net
             if (_send_over && _recv_over)
             {
                 _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
+            }
+            // activity check
+            if (get_current_time() - _last_active_t > 30)
+            {
+                Disconnect();
+                _last_active_t = get_current_time();
+                sLogger->Error("Disconnected for Response Timeout = %p", this);
             }
             break;
         }

@@ -13,13 +13,12 @@ class Session {
         c._session = this;
 
         session_cnt++;
-        console.log("NEW SESSION:", session_cnt);
+        console.log("NEW SESSION:", c.sid, session_cnt);
 
         c.on('end', () => {
             this.ending = true;
             session_cnt--;
-            console.log("client disconnected !");
-            console.log("LOST SESSION:", session_cnt);
+            console.log("client disconnected ! SESSION COUNT:", session_cnt);
         });
 
         c.on('data', (data) => {
@@ -95,7 +94,7 @@ class Session {
         c.removeAllListeners('error');
 
         c.on('error', (err) => {
-            console.log("socket errored, sid = ", c.sid, err);
+            console.log("socket error, sid = ", c.sid, err);
             c.end();
         });
 

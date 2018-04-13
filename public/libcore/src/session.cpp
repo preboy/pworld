@@ -3,6 +3,7 @@
 #include "poller.h"
 #include "singleton.h"
 #include "logger.h"
+#include "servertime.h"
 
 
 namespace Net
@@ -78,6 +79,7 @@ namespace Net
                 INSTANCE(CMessageQueue)->PushMessage(_msg_recv);
                 _msg_recv = nullptr;
                 _msg_header.Reset(sizeof(uint32));
+                _last_active_t = get_current_time();
             }
         } while (size);
     }

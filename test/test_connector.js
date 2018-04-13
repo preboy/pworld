@@ -5,12 +5,12 @@ const connections = 999;
 
 let sessions = [];
 let sid = 1;
-var _creator_tid
+let _creator_tid;
 
 _creator_tid = setInterval(() => {
 
     let c = net.createConnection(19850, "118.24.48.149", () => {
-        sessions[sid] = new ss.Session(c);
+        sessions[c.sid] = new ss.Session(c);
     });
 
     c.sid = sid;
@@ -27,4 +27,4 @@ _creator_tid = setInterval(() => {
         sid++;
     }
 
-}, 30);
+}, 50);

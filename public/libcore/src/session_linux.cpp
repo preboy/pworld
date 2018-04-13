@@ -49,14 +49,14 @@ namespace Net
         linger ln = { 1, 0 };
         setsockopt(_socket, SOL_SOCKET, SO_LINGER, (char*)&ln, sizeof(linger));
 
-        int keepalive       = 1;        // 开启keepalive属性  
-        int keepidle        = 60;       // 如该连接在60秒内没有任何数据往来,则进行探测  
-        int keepinterval    = 15;       // 探测时发包的时间间隔为15秒  
-        int keepcount       = 4;        // 探测尝试的次数。如果第1次探测包就收到响应了,则后2次的不再发。  
-        setsockopt(_socket, SOL_SOCKET,  SO_KEEPALIVE,   (void *)&keepalive,     sizeof(int));
+        int keepalive       = 1;        // 开启keepalive属性
+        int keepidle        = 30;       // 如该连接在30秒内没有任何数据往来,则进行探测
+        int keepinterval    = 10;       // 探测时发包的时间间隔为10秒
+        int keepcount       = 3;        // 探测尝试的次数。如果第1次探测包就收到响应了,则后2次的不再发。
+        setsockopt(_socket, SOL_SOCKET,  SO_KEEPALIVE,   (void*)&keepalive,     sizeof(int));
         setsockopt(_socket, IPPROTO_TCP, TCP_KEEPIDLE,   (void*)&keepidle,       sizeof(int));
-        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPINTVL,  (void *)&keepinterval,  sizeof(int));
-        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPCNT,    (void *)&keepcount,     sizeof(int));
+        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPINTVL,  (void*)&keepinterval,  sizeof(int));
+        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPCNT,    (void*)&keepcount,     sizeof(int));
 
         if (key)
         {
@@ -110,22 +110,20 @@ namespace Net
             }
             _events = 0;
         }
-    
+
         _post_recv();
         _post_send();
-        
+
         if (should_close)
         {
             _set_socket_status(SOCK_STATUS::SS_ERROR);
         }
 
         // active
-        uint64 now = get_current_time();
-        if (now - _last_active_t > 10)
+        if (get_current_time() - _last_active_t > 30)
         {
-            _last_active_t = now;
-            std::string text("this is server said");
-            Send(text.c_str(), (uint32)text.length());
+            Disconnect();
+            sLogger->Error("Disconnected for Response Timeout = %p", this);
         }
 
         switch (_status)
@@ -155,7 +153,7 @@ namespace Net
             break;
         }
 
-        if (!_in_epoll && _status == SOCK_STATUS::SS_RUNNING) 
+        if (!_in_epoll && _status == SOCK_STATUS::SS_RUNNING)
         {
             uint32 events = EPOLLRDHUP | EPOLLONESHOT | EPOLLIN | EPOLLOUT;
             sPoller->RegisterHandler(_socket, _key, events);

@@ -30,15 +30,15 @@ namespace XML
     }
 
 
-    // ´ÓpData¿ªÊ¼½âÎöxmlÍ·±êÇ©;
-    // ³É¹¦·µ»Øtrue,ÈôÎ´½âÎö³É¹¦Ôò·µ»Øfalse;
-    // pData, dwLenÔÚ½âÎöÊ±Òª¸üĞÂµ½Ò»ÏÂ´¦´ı½âÎö´¦;
+    // ä»pDataå¼€å§‹è§£æxmlå¤´æ ‡ç­¾;
+    // æˆåŠŸè¿”å›true,è‹¥æœªè§£ææˆåŠŸåˆ™è¿”å›false;
+    // pData, dwLenåœ¨è§£ææ—¶è¦æ›´æ–°åˆ°ä¸€ä¸‹å¤„å¾…è§£æå¤„;
     bool CXmlHead::Parse(char*& pData, size_t& dwLen )
     {
         //  <?xml version="1.0" encoding="gb2312"?>
         if ( g_is_blank(pData) )
         {
-            throw CXmlException("xml½âÎö´íÎó", "xml±êÇ©Ç°²»ÄÜÓĞ¿Õ×Ö·û;");
+            throw CXmlException("xmlè§£æé”™è¯¯", "xmlæ ‡ç­¾å‰ä¸èƒ½æœ‰ç©ºå­—ç¬¦;");
             return false;
         }
 
@@ -46,13 +46,13 @@ namespace XML
 
         if ( 0 != strncmp(pStart, "<?xml", pData - pStart) )
         {
-            throw CXmlException("xml½âÎö´íÎó;", "Î´ÕÒµ½<?xml±êÇ©;");
+            throw CXmlException("xmlè§£æé”™è¯¯;", "æœªæ‰¾åˆ°<?xmlæ ‡ç­¾;");
             return false;
         }
 
         if ( !g_is_blank(pData) )
         {
-            throw CXmlException("½ÚµãÃûÖ®ºóÓ¦ÓĞ¿Õ¸ñ;", pData);
+            throw CXmlException("èŠ‚ç‚¹åä¹‹ååº”æœ‰ç©ºæ ¼;", pData);
             return false;
         }
         g_skip_blank(pData, dwLen);
@@ -63,7 +63,7 @@ namespace XML
 
             if ( pData == pAttribName )
             {
-                throw CXmlException("ÊôĞÔÃû²»ÄÜÎª¿Õ;", pAttribName);
+                throw CXmlException("å±æ€§åä¸èƒ½ä¸ºç©º;", pAttribName);
                 return false;
             }
 
@@ -74,7 +74,7 @@ namespace XML
 
             if ( pData[0] != '=' )
             {
-                throw CXmlException("È±Ê§'='·û;", pData);
+                throw CXmlException("ç¼ºå¤±'='ç¬¦;", pData);
                 return false;
             }
             g_add_pointer(pData, dwLen);
@@ -90,7 +90,7 @@ namespace XML
 
         if( 0 == dwLen || !g_is_head_node_end(pData) )
         {
-            throw CXmlException("È±Ê§headÍ·£¿>±ê¼Ç;", pData);
+            throw CXmlException("ç¼ºå¤±headå¤´ï¼Ÿ>æ ‡è®°;", pData);
             return false;
         }
 

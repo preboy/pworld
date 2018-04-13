@@ -76,7 +76,7 @@ private:
     CScriptTimerGS  _timer;
 
 private:
-    // Î´ÁĞ³öµÄÔÓÏîÊôĞÔ¼¯ºÏ
+    // æœªåˆ—å‡ºçš„æ‚é¡¹å±æ€§é›†åˆ
     std::unordered_map<var_type, CVariant>  _variants;
 
 protected:

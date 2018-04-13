@@ -92,8 +92,10 @@ class Session {
             this.sending = false;
         });
 
+        c.removeAllListeners('error');
+
         c.on('error', (err) => {
-            console.log("socket errored, sid = ", c._session.sid, err);
+            console.log("socket errored, sid = ", c.sid, err);
             c.end();
         });
 

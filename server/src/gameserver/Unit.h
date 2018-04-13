@@ -2,7 +2,7 @@
 #include "SceneObject.h"
 
 /*
-    ÊôÐÔID  ->  ÊôÐÔÀàÐÍ  -> ÊôÐÔÊýÖµ
+    å±žæ€§ID  ->  å±žæ€§ç±»åž‹  -> å±žæ€§æ•°å€¼
 */
 enum class UnitProperty : uint16
 {

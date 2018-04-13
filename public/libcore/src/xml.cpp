@@ -24,7 +24,7 @@ namespace XML
     {
         if (dwLen < 3)
         {
-            throw CXmlException("xmlÎÄ¼þ³¤¶ÈÌ«¶Ì;", pData);
+            throw CXmlException("xmlæ–‡ä»¶é•¿åº¦å¤ªçŸ­;", pData);
             return false;
         }
 
@@ -63,7 +63,7 @@ namespace XML
         {
             if (g_pXMLAlloc)
             {
-                throw CXmlException("xml½âÎö³ö´í;", "È«¾ÖÄÚ´æ±äÁ¿ÕýÔÚÊ¹ÓÃÖÐ;");
+                throw CXmlException("xmlè§£æžå‡ºé”™;", "å…¨å±€å†…å­˜å˜é‡æ­£åœ¨ä½¿ç”¨ä¸­;");
                 return false;
             }
 
@@ -78,7 +78,7 @@ namespace XML
 
             if (dwLen != 0)
             {
-                throw CXmlException("xmlÎÄ¼þ¸ùÄ¿Â¼Ö®ºó»¹ÓÐÆäËü×Ö·û;", pData);
+                throw CXmlException("xmlæ–‡ä»¶æ ¹ç›®å½•ä¹‹åŽè¿˜æœ‰å…¶å®ƒå­—ç¬¦;", pData);
                 return false;
             }
         }

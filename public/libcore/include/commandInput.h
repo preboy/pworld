@@ -4,10 +4,10 @@
 
 enum
 {
-    PARAM_CNT = 10,         // ²ÎÊı×î´óÊıÁ¿
-    PARAM_LEN = 16,         // ÃüÁî×Ö·û´®µÄ³¤¶È
-    HELP_LEN = 64,          // °ïÖúĞÅÏ¢³¤¶È
-    DESC_LEN = 64,          // ÃèÊöĞÅÏ¢µÄ³¤¶È   
+    PARAM_CNT = 10,         // å‚æ•°æœ€å¤§æ•°é‡
+    PARAM_LEN = 16,         // å‘½ä»¤å­—ç¬¦ä¸²çš„é•¿åº¦
+    HELP_LEN = 64,          // å¸®åŠ©ä¿¡æ¯é•¿åº¦
+    DESC_LEN = 64,          // æè¿°ä¿¡æ¯çš„é•¿åº¦   
 };
 
 class CCommandInput;
@@ -41,12 +41,12 @@ public:
     void Update();
 
 protected:
-    // Ìí¼ÓÃüÁîµ½¼¯ºÏ
+    // æ·»åŠ å‘½ä»¤åˆ°é›†åˆ
     void add_command(const char* name, CMD_FUNC func, const char* help, const char* desc);
     void set_prompt(const char* pstr);
   
 private:
-    // ½âÎöÃüÁî
+    // è§£æå‘½ä»¤
     bool _parse_command(char* szCmdLine);
     void _print_prompt();
    

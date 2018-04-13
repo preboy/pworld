@@ -70,7 +70,7 @@ void CSignalHander::Release()
 {
     if (_thread.joinable())
     {
-        // ·¢ËÍÍË³öĞÅºÅ
+        // å‘é€é€€å‡ºä¿¡å·
         pthread_kill(_tid, SIGUSR1);
         _thread.join();
     }

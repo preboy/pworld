@@ -63,7 +63,7 @@ int main()
         return 2;
     }
 
-    // ¼ÓÔØÅäÖÃ
+    // åŠ è½½é…ç½®
 
     if (!INSTANCE(CGameServerFrame)->Start())
     {

@@ -67,11 +67,11 @@ namespace Net
 
         Poll::CompletionKey*        _key = nullptr;
 
-        // ½ÓÊÕÊı¾İ°ü
+        // æ¥æ”¶æ•°æ®åŒ…
         CMessage    _msg_header;
         CMessage*   _msg_recv = nullptr;
 
-        // µÈ´ı·¢ËÍµÄÏûÏ¢
+        // ç­‰å¾…å‘é€çš„æ¶ˆæ¯
         std::queue<CMessage*>       _que_send;
         CMessage*                   _msg_send = nullptr;
         
@@ -151,11 +151,11 @@ namespace Net
 
         Poll::CompletionKey*        _key = nullptr;
 
-        // ½ÓÊÕÊı¾İ°ü
+        // æ¥æ”¶æ•°æ®åŒ…
         CMessage        _msg_header;
         CMessage*       _msg_recv = nullptr;
 
-        // µÈ´ı·¢ËÍµÄÏûÏ¢
+        // ç­‰å¾…å‘é€çš„æ¶ˆæ¯
         std::queue<CMessage*>       _que_send;
         CMessage*                   _msg_send = nullptr;
         size_t                      _send_len = 0;

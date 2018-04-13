@@ -1,6 +1,6 @@
 #pragma once
 
-// Json½âÊÍÆ÷;
+// Jsonè§£é‡Šå™¨;
 
 namespace JSON
 {
@@ -19,7 +19,7 @@ namespace JSON
         IValueBase(){}
        virtual ~IValueBase(){}
 
-        // ½âÎöÓëÊÍ·Å;
+        // è§£æä¸é‡Šæ”¾;
         bool                        Parse(BYTE*& pData, size_t& len);
         bool                        Write(FILE* file);
         void                        Release();
@@ -111,7 +111,7 @@ namespace JSON
         bool                        Load(BYTE* pData, size_t len);
         bool                        LoadFromFile(const char* filename);
         
-        // Ğ´µ½ÎÄ¼şÖ®ÖĞ;
+        // å†™åˆ°æ–‡ä»¶ä¹‹ä¸­;
         bool                        Write(const char* filename);
 
         void                        Release();
@@ -125,14 +125,14 @@ namespace JSON
     };
 
 
-    // ---------------¸¨Öúº¯Êı--------------------------------£»
+    // ---------------è¾…åŠ©å‡½æ•°--------------------------------ï¼›
 
-    // ĞÂ½¨¶ÔÏó;
+    // æ–°å»ºå¯¹è±¡;
     CJsonString*                     JAux_NewCJsonString();
     CJsonArray*                      JAux_NewCJsonArray();
     CJsonObject*                     JAux_NewCJsonObject();
 
-    // Çå¿ÕÊı¾İ(Ïî)
+    // æ¸…ç©ºæ•°æ®(é¡¹)
     void                            JAux_Clear(IValueBase* pPtr);
 }
 

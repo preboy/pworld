@@ -53,10 +53,10 @@ namespace Net
         int keepidle        = 60;       // 如该连接在60秒内没有任何数据往来,则进行探测  
         int keepinterval    = 15;       // 探测时发包的时间间隔为15秒  
         int keepcount       = 4;        // 探测尝试的次数。如果第1次探测包就收到响应了,则后2次的不再发。  
-        setsockopt(_socket, SOL_SOCKET, SO_KEEPALIVE,   (void *)&keepalive,     sizeof(int));
-        setsockopt(_socket, SOL_SOCKET, TCP_KEEPIDLE,   (void*)&keepidle,       sizeof(int));
-        setsockopt(_socket, SOL_SOCKET, TCP_KEEPINTVL,  (void *)&keepinterval,  sizeof(int));
-        setsockopt(_socket, SOL_SOCKET, TCP_KEEPCNT,    (void *)&keepcount,     sizeof(int));
+        setsockopt(_socket, SOL_SOCKET,  SO_KEEPALIVE,   (void *)&keepalive,     sizeof(int));
+        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPIDLE,   (void*)&keepidle,       sizeof(int));
+        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPINTVL,  (void *)&keepinterval,  sizeof(int));
+        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPCNT,    (void *)&keepcount,     sizeof(int));
 
         if (key)
         {

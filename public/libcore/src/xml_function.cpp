@@ -29,7 +29,7 @@ namespace XML
     }
 
 
-    // ÅĞ¶ÏÏÂÒ»¸öÊÇ·ñÊÇ¿Õ¸ñ£¬TAB,»Ø³µ¼ü;
+    // åˆ¤æ–­ä¸‹ä¸€ä¸ªæ˜¯å¦æ˜¯ç©ºæ ¼ï¼ŒTAB,å›è½¦é”®;
     bool g_is_blank( char* pCh )
     {
         if ( pCh[0] == ' ' || pCh[0] == '\t' )
@@ -64,7 +64,7 @@ namespace XML
         return false;
     }
 
-    // ½ÚµãÃûµÄ½áÊø±ê¼Ç(> />);
+    // èŠ‚ç‚¹åçš„ç»“æŸæ ‡è®°(> />);
     bool g_is_node_name_end(char* pch)
     {
         if ( g_is_node_name_end_1(pch) )
@@ -144,21 +144,21 @@ namespace XML
         pData = pTemp;
     }
 
-    // Ö¸ÕëÏòºóÒÆ¶¯;
+    // æŒ‡é’ˆå‘åç§»åŠ¨;
     void g_add_pointer( char*& pData, size_t& dwLen, size_t size )
     {
         if ( !pData || dwLen < size )
         {
-            throw CXmlException("ÒÆ¶¯Ö¸Õë´íÎó;", "xml½âÎö³ö´í;");
+            throw CXmlException("ç§»åŠ¨æŒ‡é’ˆé”™è¯¯;", "xmlè§£æå‡ºé”™;");
             return;
         }
         pData = pData + size;
         dwLen = dwLen - size;
     }
 
-    // pDataÊÇÒÔ"<!-- ¿ª¹ØµÄÒ»¶Î×¢ÊÍ"£¬ÏÖÔÚÒª´Ópdata¿ªÊ¼ÕÒµ½×¢ÊÍ½áÊø·û"-->"
-    // ·µ»Øtrue,±íÊ¾ÕÒµ½×¢ÊÍ£¬
-    // ·µ»Øfalse±íÊ¾Î´ÕÒµ½×¢ÊÍ;
+    // pDataæ˜¯ä»¥"<!-- å¼€å…³çš„ä¸€æ®µæ³¨é‡Š"ï¼Œç°åœ¨è¦ä»pdataå¼€å§‹æ‰¾åˆ°æ³¨é‡Šç»“æŸç¬¦"-->"
+    // è¿”å›true,è¡¨ç¤ºæ‰¾åˆ°æ³¨é‡Šï¼Œ
+    // è¿”å›falseè¡¨ç¤ºæœªæ‰¾åˆ°æ³¨é‡Š;
     bool g_skip_comment( char*& pData, size_t& dwLen )
     {
         if ( !dwLen )
@@ -188,7 +188,7 @@ namespace XML
             }
             if ( !bfind )
             {
-                throw CXmlException("xml½âÎö´íÎó;", "xml×¢ÊÍÎ´ÕıÈ·½áÊø;");
+                throw CXmlException("xmlè§£æé”™è¯¯;", "xmlæ³¨é‡Šæœªæ­£ç¡®ç»“æŸ;");
                 return false;
             }
         }
@@ -196,7 +196,7 @@ namespace XML
     }
 
 
-    // È¡½ÚµãµÄ½áÊø±ê¼Ç(</node > </node> );
+    // å–èŠ‚ç‚¹çš„ç»“æŸæ ‡è®°(</node > </node> );
     char*   g_get_node_end_name(char*& pData, size_t& dwLen)
     {
         if ( !dwLen )
@@ -224,7 +224,7 @@ namespace XML
 
 
 
-    // È¡ÒÔ'»ò"ÖĞ¼äµÄÄÚÈİ ;
+    // å–ä»¥'æˆ–"ä¸­é—´çš„å†…å®¹ ;
     char* g_get_attrib_value(char*& pData, size_t& dwLen)
     {
         if ( dwLen == 0 )
@@ -237,7 +237,7 @@ namespace XML
         char ch = pStart[0];
         if ( ch != '\'' && ch != '\"' )
         {
-            throw CXmlException("ÊôĞÔÖµ±ØĞëÒÔÒıºÅ¿ªÊ¼;", pStart );
+            throw CXmlException("å±æ€§å€¼å¿…é¡»ä»¥å¼•å·å¼€å§‹;", pStart );
             return nullptr;
         }
 
@@ -249,12 +249,12 @@ namespace XML
         {// a= "sdfasfa"
             if ( pData[0] == '<' )
             {
-                throw CXmlException("ÊôĞÔ·Ç·¨×Ö·û;", pData);
+                throw CXmlException("å±æ€§éæ³•å­—ç¬¦;", pData);
                 return nullptr;
             }
             if ( pData[0] == '&' )
             {
-                throw CXmlException("±¾°æ±¾Ôİ²»Ö§³ÖÊµÌå·û&;", pData);
+                throw CXmlException("æœ¬ç‰ˆæœ¬æš‚ä¸æ”¯æŒå®ä½“ç¬¦&;", pData);
                 return nullptr;
             }
             if ( pData[0] == ch )
@@ -279,7 +279,7 @@ namespace XML
         {
             if ( strcmp( (*itor)->GetName(), pAttrib->GetName() ) == 0 )
             {
-                throw CXmlException("ÊôĞÔÃûÖØ¸´;", pAttrib->GetName());
+                throw CXmlException("å±æ€§åé‡å¤;", pAttrib->GetName());
                 return false;
             }
             itor++;
@@ -298,7 +298,7 @@ namespace XML
         return true;
     }
 
-    // ÅĞ¶ÏÒ»¸ö×ÖÌõÊÇ·ñÊÇ×ÖÄ¸;
+    // åˆ¤æ–­ä¸€ä¸ªå­—æ¡æ˜¯å¦æ˜¯å­—æ¯;
     bool g_is_char(unsigned char ch)
     {
         if ( ch >= 65 && ch <= 90  ) // A~Z
@@ -321,7 +321,7 @@ namespace XML
         return false;
     }
 
-    // ÅĞ¶Ï×ÖÄ¸ÊÇ·ñÊÇÁ¬½Ó·û(:.-_);
+    // åˆ¤æ–­å­—æ¯æ˜¯å¦æ˜¯è¿æ¥ç¬¦(:.-_);
     bool g_is_connect(unsigned char ch)
     {
         if ( ch == '-' || ch == '_' || ch == ':'|| ch == '.' )
@@ -330,7 +330,7 @@ namespace XML
         return false;
     }
 
-    // ²»¿ÉÏÔÊ¾µÄascii×Ö·û;
+    // ä¸å¯æ˜¾ç¤ºçš„asciiå­—ç¬¦;
     bool g_is_ascii_valid(unsigned char ch)
     {
         return false;

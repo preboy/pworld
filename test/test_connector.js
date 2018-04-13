@@ -1,7 +1,7 @@
 const net = require('net');
 const ss = require('./session')
 
-const connections = 1111;
+const connections = 999;
 
 let sessions = [];
 let sid = 1;
@@ -13,7 +13,7 @@ _creator_tid = setInterval(() => {
         sessions[sid] = new ss.Session(c);
     });
 
-    c.sid = sid
+    c.sid = sid;
 
     c.on('error', (err) => {
         console.log("connection failed: sid = ", c.sid, err);

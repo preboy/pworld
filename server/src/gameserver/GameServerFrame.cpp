@@ -26,10 +26,10 @@ void CGameServerFrame::on_start()
     INSTANCE(CLuaEngine)->Init();
 
 
-    // 加载参数
+    // 鍔犺浇鍙傛暟
     LoadSystemConfig();
 
-    // 加载配置文件
+    // 鍔犺浇閰嶇疆鏂囦欢
 
     // exec all lua script.
     INSTANCE(CScriptResource)->LoadScripts();

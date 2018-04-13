@@ -38,12 +38,12 @@ static void serialize_table  (lua_State* L, int idx , LuaValueType type,  CByteB
 static void deserialize_table(lua_State* L, LuaValueType type, CByteBuffer& bb);
 
 
-// ¼ì²âÕ»¶¥tableµÄÀàĞÍ
+// æ£€æµ‹æ ˆé¡¶tableçš„ç±»å‹
 static LuaValueType get_lua_type_table(lua_State* L, int idx)
 {
-    // ÓĞ_lenÔª±íµÄÎÒÃÇÈÏÎªËûÊÇarr
-    // ÓĞ_pairsÎÒÃÇÈÏÎªËûÊÇhash
-    // ÅĞ¶Ï next lenµÄ²îÖµ
+    // æœ‰_lenå…ƒè¡¨çš„æˆ‘ä»¬è®¤ä¸ºä»–æ˜¯arr
+    // æœ‰_pairsæˆ‘ä»¬è®¤ä¸ºä»–æ˜¯hash
+    // åˆ¤æ–­ next lençš„å·®å€¼
     int tp = luaL_getmetafield(L, idx, "__len");
     if (tp == LUA_TNIL)
     {
@@ -102,7 +102,7 @@ static LuaValueType get_lua_type(lua_State*L, int idx)
                 uint64 u = (uint64)v;
                 if ((double)u == v)
                 {
-                    // ÕûÊı
+                    // æ•´æ•°
                     if ( u <= 0xFF )
                     {
                         return LVT_u8;
@@ -130,7 +130,7 @@ static LuaValueType get_lua_type(lua_State*L, int idx)
                 int64 u = (int64)v;
                 if ((double)u == v)
                 {
-                    // ÕûÊı
+                    // æ•´æ•°
                     if (u >= -0x7F - 1)
                     {
                         return LVT_i8;
@@ -306,7 +306,7 @@ static void serialize_table(lua_State* L, int idx, LuaValueType type, CByteBuffe
 }
 
 
-// ½«Õ»¶¥µÄ±íĞòÁĞ»¯µ½CByteBufferÖĞÈ¥   // ²»¸Ä±äÕ»
+// å°†æ ˆé¡¶çš„è¡¨åºåˆ—åŒ–åˆ°CByteBufferä¸­å»   // ä¸æ”¹å˜æ ˆ
 bool CLuaTable::Serialize(lua_State* L, CByteBuffer& bb)
 {
     lua_checkstack(L, MAX_DEPTH * 2 + 1);
@@ -439,7 +439,7 @@ static void deserialize_table(lua_State* L, LuaValueType type, CByteBuffer& bb)
 }
 
 
-// ½«CByteBufferÖĞµÄlua±í·´ÁĞ»¯µ½Õ»¶¥ // ĞÂ±íĞòÁĞ»¯µ½Õ»¶¥
+// å°†CByteBufferä¸­çš„luaè¡¨ååˆ—åŒ–åˆ°æ ˆé¡¶ // æ–°è¡¨åºåˆ—åŒ–åˆ°æ ˆé¡¶
 bool CLuaTable::Deserialize(lua_State* L, CByteBuffer& bb)
 {
     lua_checkstack(L, MAX_DEPTH * 2 + 1);

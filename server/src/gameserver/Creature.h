@@ -15,5 +15,5 @@ protected:
     void on_ai_update() override;
 
 private:
-    uint8   _curr_type; //  怪物当前类别      NPC  
+    uint8   _curr_type; //  鎬墿褰撳墠绫诲埆      NPC  
 };

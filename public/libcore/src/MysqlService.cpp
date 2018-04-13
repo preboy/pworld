@@ -492,7 +492,7 @@ bool CMysqlHandler::Connect(
     uint16 port, 
     const char* char_set)
 {
-    // ×¢ÊÍµôÏÂÁ½ÐÐ£¬µ¼ÖÂstmt·µ»Ø¼¯NextRowµ½30ÐÐÊ±·µ»ØMYSQL_DATA_TRUNCATED
+    // æ³¨é‡ŠæŽ‰ä¸‹ä¸¤è¡Œï¼Œå¯¼è‡´stmtè¿”å›žé›†NextRowåˆ°30è¡Œæ—¶è¿”å›žMYSQL_DATA_TRUNCATED
     my_bool b(0);
     mysql_options(_mysql, MYSQL_REPORT_DATA_TRUNCATION, &b);
 

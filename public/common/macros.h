@@ -13,7 +13,7 @@
 #endif
 
 
-// °²È«É¾³ıÖ¸Õë;
+// å®‰å…¨åˆ é™¤æŒ‡é’ˆ;
 #define SAFE_FREE( p )              \
 if( (p) )                           \
 {                                   \
@@ -44,7 +44,7 @@ public:                             \
     }
 
         
-// Ìõ¼ş·µ»Ø;
+// æ¡ä»¶è¿”å›;
 #define RETURN_IF_TRUE(b)       if((b))  return true;
 #define RETURN_IF_FALSE(b)      if(!(b)) return false;
 
@@ -71,7 +71,7 @@ public:                             \
 
 #ifdef PLAT_WIN32
     
-#define CORE_STDCALL __stdcall // WINAPI  64Î»¹¹¼ÜÏÂ(win32/linux)Ö»ÓĞÒ»ÖÖµ÷ÓÃ·½Ê½
+#define CORE_STDCALL __stdcall // WINAPI  64ä½æ„æ¶ä¸‹(win32/linux)åªæœ‰ä¸€ç§è°ƒç”¨æ–¹å¼
 
 #else
 

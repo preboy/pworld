@@ -5,7 +5,7 @@
 
 namespace Net
 {
-    // ÓÃÓÚÊÕ¼¯Êı¾İ
+    // ç”¨äºæ”¶é›†æ•°æ®
     class CMessage
     {
 
@@ -70,10 +70,10 @@ namespace Net
         
         void FreeMessage(CMessage* msg);
 
-        // °ÑÌî³äºÃÖ®ºóµÄÏûÏ¢·Åµ½ÏûÏ¢¶ÓÁĞÖĞ
+        // æŠŠå¡«å……å¥½ä¹‹åçš„æ¶ˆæ¯æ”¾åˆ°æ¶ˆæ¯é˜Ÿåˆ—ä¸­
         void PushMessage(CMessage* msg);
 
-        // ´ÓÏûÏ¢¶ÓÁĞÖĞÈ¡³öÒ»¿éÏûÏ¢ÓÃÓÚ´¦Àí
+        // ä»æ¶ˆæ¯é˜Ÿåˆ—ä¸­å–å‡ºä¸€å—æ¶ˆæ¯ç”¨äºå¤„ç†
         CMessage* PopMessage();
 
     private:

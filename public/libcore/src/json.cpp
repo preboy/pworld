@@ -75,7 +75,7 @@ static bool Skip_Comment(BYTE*& pString, size_t& nLen)
     }
 
     if(pString[0] == '/' && pString[1] == '/')
-    {   // Ìøµ½ÏÂÒ»ĞĞ;
+    {   // è·³åˆ°ä¸‹ä¸€è¡Œ;
         pString += 2; nLen +=2;
 
         while (nLen)
@@ -104,7 +104,7 @@ static bool Skip_Comment(BYTE*& pString, size_t& nLen)
         }
     }
     else if(pString[0] == '/' && pString[1] == '*')
-    {   /*Ìø¹ı;*/
+    {   /*è·³è¿‡;*/
         pString += 2;
         nLen +=2;
 
@@ -121,7 +121,7 @@ static bool Skip_Comment(BYTE*& pString, size_t& nLen)
 
         if(nLen == 0)
         {
-            return false; // ×¢ÊÍÎ´ÕıÈ·½áÊø;
+            return false; // æ³¨é‡Šæœªæ­£ç¡®ç»“æŸ;
         }
         else if(nLen == 1)
         {
@@ -190,7 +190,7 @@ static bool Skip_keyName(BYTE*& pString, size_t& nLen, std::string& strkeyName)
 
     if(nLen == 0)
     {
-        throw JSON::CJsonException(pString, "Î´ÕÒµ½¼üÃû½áÊø·û;");
+        throw JSON::CJsonException(pString, "æœªæ‰¾åˆ°é”®åç»“æŸç¬¦;");
         return false;
     }
 
@@ -199,7 +199,7 @@ static bool Skip_keyName(BYTE*& pString, size_t& nLen, std::string& strkeyName)
     std::string strTemp((char*)pTemp, pString - pTemp - 1);
     if(strTemp.length() == 0)
     {
-        throw JSON::CJsonException(pString, "¼üÃûÎª¿Õ;");
+        throw JSON::CJsonException(pString, "é”®åä¸ºç©º;");
         return false;
     }
 
@@ -231,7 +231,7 @@ namespace JSON
 
     bool CJsonObject::on_parse(BYTE*& pData, size_t& len)
     {
-        // ¶ÁÈ¡{}Ö®¼äµÄÊı¾İ£¬·Ö½â³É²»Í¬µÄÀàĞÍ£¬·ÅÈëµ½m_subObjÖ®ÖĞ;
+        // è¯»å–{}ä¹‹é—´çš„æ•°æ®ï¼Œåˆ†è§£æˆä¸åŒçš„ç±»å‹ï¼Œæ”¾å…¥åˆ°m_subObjä¹‹ä¸­;
 
         size_t  nLen = len;  
         BYTE* pString = pData;
@@ -246,7 +246,7 @@ namespace JSON
 
         if(!nLen || pString[0] != '{')
         {
-            throw CJsonException("È±ÉÙ{", "fun err: CJsonObject::Parse");
+            throw CJsonException("ç¼ºå°‘{", "fun err: CJsonObject::Parse");
             return false;
         }
 
@@ -271,13 +271,13 @@ namespace JSON
 
             if(pString[0] != '\"')
             {
-                throw CJsonException(pString, "fun err: CJsonObject::Parse ¼üÃûÓ¦¸ÃÒÔÒıºÅ¿ªÍ·;");
+                throw CJsonException(pString, "fun err: CJsonObject::Parse é”®ååº”è¯¥ä»¥å¼•å·å¼€å¤´;");
                 return false;
             }
 
             if(!Skip_keyName(pString, nLen, strpKeyName))
             {
-                throw CJsonException(strpKeyName.c_str(), "fun err: CJsonObject::Parse ²éÕÒ¼üÃûÊ±ºò³ö´í;");
+                throw CJsonException(strpKeyName.c_str(), "fun err: CJsonObject::Parse æŸ¥æ‰¾é”®åæ—¶å€™å‡ºé”™;");
                 return false;
             }
 
@@ -290,7 +290,7 @@ namespace JSON
 
             if(pString[0] != ':')
             {
-                throw CJsonException(pString, "fun err: CJsonObject::Parse, ¼üÃûÖ®ºóÓ¦¸ÃÊÇ Ã°ºÅ");
+                throw CJsonException(pString, "fun err: CJsonObject::Parse, é”®åä¹‹ååº”è¯¥æ˜¯ å†’å·");
                 return false;
             }
             pString++; nLen--;
@@ -302,7 +302,7 @@ namespace JSON
                 return false;
             }
 
-            // ½âÎö¼üÖµ;
+            // è§£æé”®å€¼;
             if(pString[0] == '\"')
             {
                 CJsonString* pJsonStr =  new CJsonString;
@@ -334,7 +334,7 @@ namespace JSON
             }
             else
             {
-                throw CJsonException(pString, "fun err: CJsonObject::Parse, ²»ÕıÈ·µÄ¼üÖµÀàĞÍ;");
+                throw CJsonException(pString, "fun err: CJsonObject::Parse, ä¸æ­£ç¡®çš„é”®å€¼ç±»å‹;");
                 return false;
             }
 
@@ -359,7 +359,7 @@ namespace JSON
             }
             else
             {
-                throw CJsonException(pString, "²»ÕıÈ·µÄ¼ü/Öµ½áÊø·û;");
+                throw CJsonException(pString, "ä¸æ­£ç¡®çš„é”®/å€¼ç»“æŸç¬¦;");
                 return false;
             }
 
@@ -387,7 +387,7 @@ namespace JSON
     {
         if(m_subObj.find(strKeyname) != m_subObj.end())
         {
-            throw CJsonException(strKeyname.c_str(), "CJsonObject::_AddValueÊ±¼üÃûÖØ¸´;");
+            throw CJsonException(strKeyname.c_str(), "CJsonObject::_AddValueæ—¶é”®åé‡å¤;");
             return;
         }
 
@@ -475,7 +475,7 @@ namespace JSON
     }
 
     bool CJsonArray::on_parse(BYTE*& pData, size_t& len)
-    {   // [Ö®¼äµÄÄÚÈİ];
+    {   // [ä¹‹é—´çš„å†…å®¹];
         size_t  nLen = len;  
         BYTE* pString = pData;
 
@@ -488,7 +488,7 @@ namespace JSON
 
         if(pString[0] != '[')
         {
-            throw CJsonException(pString, "CJsonArray::Parse È±ÉÙ[");
+            throw CJsonException(pString, "CJsonArray::Parse ç¼ºå°‘[");
             return false;
         }
 
@@ -496,7 +496,7 @@ namespace JSON
 
         if(!nLen)
         {
-            throw CJsonException("Î´½âÎöÍê³É£¬¶øÎÄ¼şÒÑ¾­½áÊø;", "CJsonArray::Parsen Len = 0");
+            throw CJsonException("æœªè§£æå®Œæˆï¼Œè€Œæ–‡ä»¶å·²ç»ç»“æŸ;", "CJsonArray::Parsen Len = 0");
             return false;
         }
         // ["sd", {}, [] ]
@@ -505,7 +505,7 @@ namespace JSON
             Skip(pString, nLen);
             if(!nLen)
             {
-                throw CJsonException(pString, "CJsonArray::Parsen [Ö®ºóÎÄ¼ş½áÊø;");
+                throw CJsonException(pString, "CJsonArray::Parsen [ä¹‹åæ–‡ä»¶ç»“æŸ;");
                 return false;
             }
 
@@ -548,7 +548,7 @@ namespace JSON
             }
             else
             {
-                throw CJsonException(pString, "CJsonArray::Parsen ²»ÕıÈ·µÄÔªËØÀàĞÍ;");
+                throw CJsonException(pString, "CJsonArray::Parsen ä¸æ­£ç¡®çš„å…ƒç´ ç±»å‹;");
                 return false;
             }
 
@@ -624,7 +624,7 @@ namespace JSON
 
         if(!nLen)
         {
-            throw CJsonException(pString, "CJsonString::Parse Î´ÕÒµ½½áÊø·û;");
+            throw CJsonException(pString, "CJsonString::Parse æœªæ‰¾åˆ°ç»“æŸç¬¦;");
             return false;
         }
 
@@ -690,7 +690,7 @@ namespace JSON
 #endif
         {
 #ifdef PLAT_WIN32
-            MessageBoxA(NULL, filename, "´ò¿ªÎÄ¼şÊ§°Ü;", MB_OK);
+            MessageBoxA(NULL, filename, "æ‰“å¼€æ–‡ä»¶å¤±è´¥;", MB_OK);
 #endif
             return false;
         }
@@ -707,7 +707,7 @@ namespace JSON
         if((long)readLen != fileSize)
         {
 #ifdef PLAT_WIN32
-            MessageBoxA(NULL, filename, "Î´ÄÜÍêÈ«¶ÁÈ¡Õæ¸öÎÄ¼ş;", MB_OK);
+            MessageBoxA(NULL, filename, "æœªèƒ½å®Œå…¨è¯»å–çœŸä¸ªæ–‡ä»¶;", MB_OK);
 #endif
             return false;
         }
@@ -744,7 +744,7 @@ namespace JSON
 
         {
 #ifdef PLAT_WIN32
-            MessageBoxA(NULL, filename, "´´½¨ÎÄ¼şÊ§°Ü;", MB_OK);
+            MessageBoxA(NULL, filename, "åˆ›å»ºæ–‡ä»¶å¤±è´¥;", MB_OK);
 #endif
             return false;
         }
@@ -759,7 +759,7 @@ namespace JSON
         return true;
     }
 
-    //////////¸¨Öúº¯Êı////////////////////////////////////////////////
+    //////////è¾…åŠ©å‡½æ•°////////////////////////////////////////////////
     CJsonString* JAux_NewCJsonString()
     {
         return new CJsonString;

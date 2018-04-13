@@ -24,7 +24,7 @@ namespace XML
     };
 
 
-    // ´ú±íÒ»¸öchar*×Ö·û´®ÎÄ±¾;
+    // ä»£è¡¨ä¸€ä¸ªchar*å­—ç¬¦ä¸²æ–‡æœ¬;
     class CXmlString
     {
     public:
@@ -41,7 +41,7 @@ namespace XML
     };
 
 
-    // xmlÎÄ¼şÖĞµÄÊôĞÔ;
+    // xmlæ–‡ä»¶ä¸­çš„å±æ€§;
     class CXmlAttrib
     {
     public:
@@ -76,8 +76,8 @@ namespace XML
     };
 
 
-    // xml ÎÄ¼şÖĞµÄ½Úµã;
-    // Âß¼­ÉÏvalue Óë m_lstSonNodeÖ»ÓĞÒ»¸ö´æÔÚ;
+    // xml æ–‡ä»¶ä¸­çš„èŠ‚ç‚¹;
+    // é€»è¾‘ä¸Švalue ä¸ m_lstSonNodeåªæœ‰ä¸€ä¸ªå­˜åœ¨;
     class CXmlElement : public CXmlAttrib
     {
     public:
@@ -94,27 +94,27 @@ namespace XML
         const std::list<CXmlAttrib*>&     GetAttribList()  { return m_lstAttrib; }
         const std::list<CXmlElement*>&    GetElementList() { return m_lstChildElement; }
 
-        // ¸ù¾İÊôĞÔÃûÈ¡ÆäÖµ;
+        // æ ¹æ®å±æ€§åå–å…¶å€¼;
         char*                       GetAttribValue(const char* pAttrName);
         void                        GetAttribValue(const char* pAttrName, int& nValue);
 
-        // ¸ù¾İ½ÚµãÃûÆä×Ó½Úµã;
+        // æ ¹æ®èŠ‚ç‚¹åå…¶å­èŠ‚ç‚¹;
         CXmlElement*                GetElement(const char* pName);
 
     private:
 
-        // ÅĞ¶Ï½ÚµãµÄ½áÊø±ê¼ÇÊÇ·ñÕıÈ·;
+        // åˆ¤æ–­èŠ‚ç‚¹çš„ç»“æŸæ ‡è®°æ˜¯å¦æ­£ç¡®;
         bool                        _verify_node_end_tag(char*& pData, size_t& dwLen);
 
-        // ¼ì²âÊôĞÔÃûÊÇ·ñºÏ·¨;
+        // æ£€æµ‹å±æ€§åæ˜¯å¦åˆæ³•;
         bool                        _verify_attrib_name(char* pName, size_t dwLen);
 
-        // ¼ì²âÊôĞÔÖµÊÇ·ñºÏ·¨;
+        // æ£€æµ‹å±æ€§å€¼æ˜¯å¦åˆæ³•;
         bool                        _verify_attrib_value(char* pValue, size_t dwLen);
 
     private:
-        CXmlElement*                m_pParentElement;    // ¸¸½Úµã;
-        std::list<CXmlElement*>     m_lstChildElement;   // ×Ó½Úµã;
+        CXmlElement*                m_pParentElement;    // çˆ¶èŠ‚ç‚¹;
+        std::list<CXmlElement*>     m_lstChildElement;   // å­èŠ‚ç‚¹;
         std::list<CXmlAttrib*>      m_lstAttrib;
     };
 
@@ -126,10 +126,10 @@ namespace XML
         ~CXml();
 
     public:
-        // Ö±½Ó½âÎöxmlÎÄ¼ş;
+        // ç›´æ¥è§£æxmlæ–‡ä»¶;
         bool                        ParseFromFile(const char* szName);
 
-        // ½âÎöÄÚ´æxmlÊı¾İ;
+        // è§£æå†…å­˜xmlæ•°æ®;
         bool                        ParseFromStream(char* szName, size_t dwLen );
 
         inline CXmlHead*            GetHead() { return &m_Head; }
@@ -141,8 +141,8 @@ namespace XML
         bool                        _skip_utf8_head(char*& pData, size_t& dwLen);
 
     private:
-        CXmlHead                    m_Head;    // Í·½Úµã; 
-        CXmlElement                 m_Root;    // ¸ù½Úµã;
+        CXmlHead                    m_Head;    // å¤´èŠ‚ç‚¹; 
+        CXmlElement                 m_Root;    // æ ¹èŠ‚ç‚¹;
         CXmlAlloc                   m_memAlloc;
     };
 

@@ -340,7 +340,7 @@ namespace Net
     {
         do
         {
-            // ÊÇ·ñÇëÇó¹Ø±Õ
+            // æ˜¯å¦è¯·æ±‚å…³é—­
             if (_status != LISTENER_STATUS::LS_RUNNING)
                 break;
 

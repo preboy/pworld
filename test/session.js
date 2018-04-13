@@ -75,14 +75,9 @@ class Session {
                     this._tid = null;
                 }, 3000);
             } else {
-                var str = "" + packet
-                if (str == "this is server said") {
-                    // console.log(str);
-                } else {
-                    console.log("收到了与发送的不一致的数据包");
-                    console.log("recv:", packet);
-                    console.log("send:", this._packet);
-                }
+                console.log("收到了与发送的不一致的数据包");
+                console.log("recv:", packet);
+                console.log("send:", this._packet);
             }
 
         });

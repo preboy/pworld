@@ -21,7 +21,8 @@ namespace Net
 
 
     CSession::CSession() :
-        _msg_header(sizeof(uint32))
+        _msg_header(sizeof(uint32)),
+        _last_active_t(get_current_time())
     {
     }
 
@@ -128,7 +129,7 @@ namespace Net
                 _set_socket_status(SOCK_STATUS::SS_PRECLOSED);
             }
             // activity check
-            if (get_current_time() - _last_active_t > 30)
+            if (get_current_time() - _last_active_t > 60)
             {
                 Disconnect();
                 _last_active_t = get_current_time();

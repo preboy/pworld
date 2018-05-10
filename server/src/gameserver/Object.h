@@ -20,6 +20,28 @@ const uint16 OBJECT_TYPE_ItemObject     = OBJECT_TYPE_SceneObject | OBJECT_FLAG_
 
 class CSceneObjectAI;
 
+#ifdef PLAT_LINUX
+// Only necessary for CENTOS7(4.8.5)
+#define GCC_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#if GCC_VERSION <= 40805
+namespace std
+{
+    template<>
+        struct hash<var_type>
+        {
+            typedef var_type argument_type;
+            typedef size_t  result_type;
+
+            result_type operator()(const argument_type& x)const
+            {
+                using type=typename std::underlying_type<argument_type>::type;
+                return std::hash<type>()(static_cast<type>(x));
+            }
+        };
+}
+#endif
+#endif
+
 class CObject
 {
 public:

@@ -1,8 +1,8 @@
 CC		= g++
-CFLAGS		= -Wall -std=c++17
-INCLUDES        = -I../../public/common -I../../public/libcore/include -I../../public/depends/lua/include/ -I/usr/include/mariadb
-LIB_INCLUDES    = -L../../public/libcore/lib/   -L../../public/depends/lub/lib -L/usr/lib/x86_64-linux-gnu/
-LIBS            = -lcore -lpthread -llua -lmariadbclient -ldl
+CFLAGS		= -Wall -std=c++11
+INCLUDES        = -I../../public/common -I../../public/libcore/include -I../../public/depends/lua/include/ -I/usr/include/mysql
+LIB_INCLUDES    = -L../../public/libcore/lib/   -L../../public/depends/lua/lib -L/usr/lib64/mysql
+LIBS            = -lcore -lpthread -llua -lmysqlclient -ldl
 
 
 DEBUG ?= y

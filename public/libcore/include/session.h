@@ -67,11 +67,11 @@ namespace Net
 
         Poll::CompletionKey*        _key = nullptr;
 
-        // 接收数据包
+        // about recving
         CMessage    _msg_header;
         CMessage*   _msg_recv = nullptr;
 
-        // 等待发送的消息
+        // about sending
         std::queue<CMessage*>       _que_send;
         CMessage*                   _msg_send = nullptr;
         
@@ -84,6 +84,8 @@ namespace Net
         bool    _disconnect = false;
         bool    _send_over  = false;
         bool    _recv_over  = false;
+
+        uint64  _last_active_t = 0;
     };
 
 
@@ -151,11 +153,11 @@ namespace Net
 
         Poll::CompletionKey*        _key = nullptr;
 
-        // 接收数据包
+        // about recving
         CMessage        _msg_header;
         CMessage*       _msg_recv = nullptr;
 
-        // 等待发送的消息
+        // about sending
         std::queue<CMessage*>       _que_send;
         CMessage*                   _msg_send = nullptr;
         size_t                      _send_len = 0;

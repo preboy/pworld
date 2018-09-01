@@ -50,10 +50,10 @@ namespace Net
         linger ln = { 1, 0 };
         setsockopt(_socket, SOL_SOCKET, SO_LINGER, (char*)&ln, sizeof(linger));
 
-        int keepalive       = 1;        // 开启keepalive属性
-        int keepidle        = 30;       // 如该连接在30秒内没有任何数据往来,则进行探测
-        int keepinterval    = 10;       // 探测时发包的时间间隔为10秒
-        int keepcount       = 3;        // 探测尝试的次数。如果第1次探测包就收到响应了,则后2次的不再发。
+        int keepalive       = 1;       
+        int keepidle        = 30;    
+        int keepinterval    = 10;       
+        int keepcount       = 3;       
         setsockopt(_socket, SOL_SOCKET,  SO_KEEPALIVE,   (void*)&keepalive,     sizeof(int));
         setsockopt(_socket, IPPROTO_TCP, TCP_KEEPIDLE,   (void*)&keepidle,       sizeof(int));
         setsockopt(_socket, IPPROTO_TCP, TCP_KEEPINTVL,  (void*)&keepinterval,  sizeof(int));

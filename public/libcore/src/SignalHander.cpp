@@ -70,7 +70,7 @@ void CSignalHander::Release()
 {
     if (_thread.joinable())
     {
-        // 发送退出信号
+        // send quit signal
         pthread_kill(_tid, SIGUSR1);
         _thread.join();
     }

@@ -1,7 +1,7 @@
 #pragma once
 #include "lock.h"
 
-// 后期可继续优化：可以把写文件，屏幕弄到一个后台线程中去
+// later optimize: new thread do writing, outputing
 
 class CLogger
 {

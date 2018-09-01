@@ -5,7 +5,7 @@
 
 namespace Net
 {
-    // 用于收集数据
+
     class CMessage
     {
 
@@ -70,10 +70,10 @@ namespace Net
         
         void FreeMessage(CMessage* msg);
 
-        // 把填充好之后的消息放到消息队列中
+        // push filled message body to dispatcher queue
         void PushMessage(CMessage* msg);
 
-        // 从消息队列中取出一块消息用于处理
+        // pop a message from dispatcher queue to working 
         CMessage* PopMessage();
 
     private:

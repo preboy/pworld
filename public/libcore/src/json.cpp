@@ -75,7 +75,7 @@ static bool Skip_Comment(BYTE*& pString, size_t& nLen)
     }
 
     if(pString[0] == '/' && pString[1] == '/')
-    {   // 跳到下一行;
+    {   // next line;
         pString += 2; nLen +=2;
 
         while (nLen)
@@ -104,7 +104,7 @@ static bool Skip_Comment(BYTE*& pString, size_t& nLen)
         }
     }
     else if(pString[0] == '/' && pString[1] == '*')
-    {   /*跳过;*/
+    {   /*skip;*/
         pString += 2;
         nLen +=2;
 
@@ -121,7 +121,7 @@ static bool Skip_Comment(BYTE*& pString, size_t& nLen)
 
         if(nLen == 0)
         {
-            return false; // 注释未正确结束;
+            return false; // comment ending error;
         }
         else if(nLen == 1)
         {
@@ -190,7 +190,7 @@ static bool Skip_keyName(BYTE*& pString, size_t& nLen, std::string& strkeyName)
 
     if(nLen == 0)
     {
-        throw JSON::CJsonException(pString, "未找到键名结束符;");
+        throw JSON::CJsonException(pString, "key-name ending not found;");
         return false;
     }
 
@@ -199,7 +199,7 @@ static bool Skip_keyName(BYTE*& pString, size_t& nLen, std::string& strkeyName)
     std::string strTemp((char*)pTemp, pString - pTemp - 1);
     if(strTemp.length() == 0)
     {
-        throw JSON::CJsonException(pString, "键名为空;");
+        throw JSON::CJsonException(pString, "emtpy key-name;");
         return false;
     }
 
@@ -231,8 +231,6 @@ namespace JSON
 
     bool CJsonObject::on_parse(BYTE*& pData, size_t& len)
     {
-        // 读取{}之间的数据，分解成不同的类型，放入到m_subObj之中;
-
         size_t  nLen = len;  
         BYTE* pString = pData;
 
@@ -246,7 +244,7 @@ namespace JSON
 
         if(!nLen || pString[0] != '{')
         {
-            throw CJsonException("缺少{", "fun err: CJsonObject::Parse");
+            throw CJsonException("lack {", "fun err: CJsonObject::Parse");
             return false;
         }
 
@@ -271,13 +269,13 @@ namespace JSON
 
             if(pString[0] != '\"')
             {
-                throw CJsonException(pString, "fun err: CJsonObject::Parse 键名应该以引号开头;");
+                throw CJsonException(pString, "fun err: CJsonObject::Parse key-name should start with \";");
                 return false;
             }
 
             if(!Skip_keyName(pString, nLen, strpKeyName))
             {
-                throw CJsonException(strpKeyName.c_str(), "fun err: CJsonObject::Parse 查找键名时候出错;");
+                throw CJsonException(strpKeyName.c_str(), "fun err: CJsonObject::Parse find ekey-name error;");
                 return false;
             }
 
@@ -290,7 +288,7 @@ namespace JSON
 
             if(pString[0] != ':')
             {
-                throw CJsonException(pString, "fun err: CJsonObject::Parse, 键名之后应该是 冒号");
+                throw CJsonException(pString, "fun err: CJsonObject::Parse, : need after key-name");
                 return false;
             }
             pString++; nLen--;
@@ -302,7 +300,6 @@ namespace JSON
                 return false;
             }
 
-            // 解析键值;
             if(pString[0] == '\"')
             {
                 CJsonString* pJsonStr =  new CJsonString;
@@ -334,7 +331,7 @@ namespace JSON
             }
             else
             {
-                throw CJsonException(pString, "fun err: CJsonObject::Parse, 不正确的键值类型;");
+                throw CJsonException(pString, "fun err: CJsonObject::Parse, invalid type for key/value;");
                 return false;
             }
 
@@ -359,7 +356,7 @@ namespace JSON
             }
             else
             {
-                throw CJsonException(pString, "不正确的键/值结束符;");
+                throw CJsonException(pString, "invalid key/value ending;");
                 return false;
             }
 
@@ -387,7 +384,7 @@ namespace JSON
     {
         if(m_subObj.find(strKeyname) != m_subObj.end())
         {
-            throw CJsonException(strKeyname.c_str(), "CJsonObject::_AddValue时键名重复;");
+            throw CJsonException(strKeyname.c_str(), "CJsonObject::_AddValue key-name repeated;");
             return;
         }
 
@@ -475,7 +472,7 @@ namespace JSON
     }
 
     bool CJsonArray::on_parse(BYTE*& pData, size_t& len)
-    {   // [之间的内容];
+    {   // content between [ ];
         size_t  nLen = len;  
         BYTE* pString = pData;
 
@@ -488,7 +485,7 @@ namespace JSON
 
         if(pString[0] != '[')
         {
-            throw CJsonException(pString, "CJsonArray::Parse 缺少[");
+            throw CJsonException(pString, "CJsonArray::Parse absense [");
             return false;
         }
 
@@ -496,7 +493,7 @@ namespace JSON
 
         if(!nLen)
         {
-            throw CJsonException("未解析完成，而文件已经结束;", "CJsonArray::Parsen Len = 0");
+            throw CJsonException("parse abort，file ending;", "CJsonArray::Parsen Len = 0");
             return false;
         }
         // ["sd", {}, [] ]
@@ -505,7 +502,7 @@ namespace JSON
             Skip(pString, nLen);
             if(!nLen)
             {
-                throw CJsonException(pString, "CJsonArray::Parsen [之后文件结束;");
+                throw CJsonException(pString, "CJsonArray::Parsen [ file ending;");
                 return false;
             }
 
@@ -548,7 +545,7 @@ namespace JSON
             }
             else
             {
-                throw CJsonException(pString, "CJsonArray::Parsen 不正确的元素类型;");
+                throw CJsonException(pString, "CJsonArray::Parsen invalid element type;");
                 return false;
             }
 
@@ -624,7 +621,7 @@ namespace JSON
 
         if(!nLen)
         {
-            throw CJsonException(pString, "CJsonString::Parse 未找到结束符;");
+            throw CJsonException(pString, "CJsonString::Parse not found ending;");
             return false;
         }
 
@@ -690,7 +687,7 @@ namespace JSON
 #endif
         {
 #ifdef PLAT_WIN32
-            MessageBoxA(NULL, filename, "打开文件失败;", MB_OK);
+            MessageBoxA(NULL, filename, "open file failed;", MB_OK);
 #endif
             return false;
         }
@@ -707,7 +704,7 @@ namespace JSON
         if((long)readLen != fileSize)
         {
 #ifdef PLAT_WIN32
-            MessageBoxA(NULL, filename, "未能完全读取真个文件;", MB_OK);
+            MessageBoxA(NULL, filename, "read file failed;", MB_OK);
 #endif
             return false;
         }
@@ -744,7 +741,7 @@ namespace JSON
 
         {
 #ifdef PLAT_WIN32
-            MessageBoxA(NULL, filename, "创建文件失败;", MB_OK);
+            MessageBoxA(NULL, filename, "create file failed;", MB_OK);
 #endif
             return false;
         }
@@ -759,7 +756,7 @@ namespace JSON
         return true;
     }
 
-    //////////辅助函数////////////////////////////////////////////////
+    ////////// aux ////////////////////////////////////////////////
     CJsonString* JAux_NewCJsonString()
     {
         return new CJsonString;

@@ -19,7 +19,6 @@ _CrtSetDbgFlag(DbgFlag);
 #endif
 
 
-// 最后的不舍
 void RegisterAbortEvent();
 
 

@@ -1,6 +1,5 @@
 #pragma once
 
-// Json解释器;
 
 namespace JSON
 {
@@ -19,7 +18,6 @@ namespace JSON
         IValueBase(){}
        virtual ~IValueBase(){}
 
-        // 解析与释放;
         bool                        Parse(BYTE*& pData, size_t& len);
         bool                        Write(FILE* file);
         void                        Release();
@@ -55,7 +53,6 @@ namespace JSON
     };
 
 
-    // respect [,,]
     class CJsonArray : public IValueBase
     {
     public:
@@ -78,7 +75,6 @@ namespace JSON
     };
 
 
-    // respect {}
     class CJsonObject : public IValueBase
     {
         friend class Json;
@@ -111,7 +107,6 @@ namespace JSON
         bool                        Load(BYTE* pData, size_t len);
         bool                        LoadFromFile(const char* filename);
         
-        // 写到文件之中;
         bool                        Write(const char* filename);
 
         void                        Release();
@@ -120,19 +115,16 @@ namespace JSON
 
     private:
 
-        CJsonObject                  m_jsonRoot;
+        CJsonObject                 m_jsonRoot;
 
     };
 
 
-    // ---------------辅助函数--------------------------------；
+    // --------------- aux --------------------------------
+    CJsonString*                    JAux_NewCJsonString();
+    CJsonArray*                     JAux_NewCJsonArray();
+    CJsonObject*                    JAux_NewCJsonObject();
 
-    // 新建对象;
-    CJsonString*                     JAux_NewCJsonString();
-    CJsonArray*                      JAux_NewCJsonArray();
-    CJsonObject*                     JAux_NewCJsonObject();
-
-    // 清空数据(项)
     void                            JAux_Clear(IValueBase* pPtr);
 }
 

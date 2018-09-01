@@ -492,7 +492,7 @@ bool CMysqlHandler::Connect(
     uint16 port, 
     const char* char_set)
 {
-    // 注释掉下两行，导致stmt返回集NextRow到30行时返回MYSQL_DATA_TRUNCATED
+    // if absense the follow two lines, the NextRow of stamt will get MYSQL_DATA_TRUNCATED arrival row 30
     my_bool b(0);
     mysql_options(_mysql, MYSQL_REPORT_DATA_TRUNCATION, &b);
 

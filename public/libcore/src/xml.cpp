@@ -24,7 +24,7 @@ namespace XML
     {
         if (dwLen < 3)
         {
-            throw CXmlException("xml文件长度太短;", pData);
+            throw CXmlException("xml file to short;", pData);
             return false;
         }
 
@@ -63,7 +63,7 @@ namespace XML
         {
             if (g_pXMLAlloc)
             {
-                throw CXmlException("xml解析出错;", "全局内存变量正在使用中;");
+                throw CXmlException("xml parse error;", "g_pXMLAlloc in using;");
                 return false;
             }
 
@@ -78,7 +78,7 @@ namespace XML
 
             if (dwLen != 0)
             {
-                throw CXmlException("xml文件根目录之后还有其它字符;", pData);
+                throw CXmlException("verbose content after xml root-ending;", pData);
                 return false;
             }
         }

@@ -38,12 +38,12 @@ static void serialize_table  (lua_State* L, int idx , LuaValueType type,  CByteB
 static void deserialize_table(lua_State* L, LuaValueType type, CByteBuffer& bb);
 
 
-// 检测栈顶table的类型
+// checking type of the top table
 static LuaValueType get_lua_type_table(lua_State* L, int idx)
 {
-    // 有_len元表的我们认为他是arr
-    // 有_pairs我们认为他是hash
-    // 判断 next len的差值
+    // has '_len' consider as 'arr'
+    // has '_pairs' consider as 'hash'
+    // judge next len differ value
     int tp = luaL_getmetafield(L, idx, "__len");
     if (tp == LUA_TNIL)
     {
@@ -130,7 +130,7 @@ static LuaValueType get_lua_type(lua_State*L, int idx)
                 int64 u = (int64)v;
                 if ((double)u == v)
                 {
-                    // 整数
+                    // int
                     if (u >= -0x7F - 1)
                     {
                         return LVT_i8;
@@ -306,7 +306,6 @@ static void serialize_table(lua_State* L, int idx, LuaValueType type, CByteBuffe
 }
 
 
-// 将栈顶的表序列化到CByteBuffer中去   // 不改变栈
 bool CLuaTable::Serialize(lua_State* L, CByteBuffer& bb)
 {
     lua_checkstack(L, MAX_DEPTH * 2 + 1);
@@ -439,7 +438,6 @@ static void deserialize_table(lua_State* L, LuaValueType type, CByteBuffer& bb)
 }
 
 
-// 将CByteBuffer中的lua表反列化到栈顶 // 新表序列化到栈顶
 bool CLuaTable::Deserialize(lua_State* L, CByteBuffer& bb)
 {
     lua_checkstack(L, MAX_DEPTH * 2 + 1);

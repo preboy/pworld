@@ -102,7 +102,7 @@ namespace Poll
                 {
                     if (err == ERROR_ABANDONED_WAIT_0)
                     {
-                        // 完成端口被关闭
+                        // IOCP be closed
                         break;
                     }
                     sLogger->Error("GetQueuedCompletionStatus: err = %u", err);

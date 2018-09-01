@@ -4,10 +4,10 @@
 
 enum
 {
-    PARAM_CNT = 10,         // 参数最大数量
-    PARAM_LEN = 16,         // 命令字符串的长度
-    HELP_LEN = 64,          // 帮助信息长度
-    DESC_LEN = 64,          // 描述信息的长度   
+    PARAM_CNT = 10,         // max count of param
+    PARAM_LEN = 16,         // command string lengths
+    HELP_LEN = 64,          // length of help info 
+    DESC_LEN = 64,          // length of desc info
 };
 
 class CCommandInput;
@@ -41,12 +41,12 @@ public:
     void Update();
 
 protected:
-    // 添加命令到集合
+
     void add_command(const char* name, CMD_FUNC func, const char* help, const char* desc);
     void set_prompt(const char* pstr);
   
 private:
-    // 解析命令
+
     bool _parse_command(char* szCmdLine);
     void _print_prompt();
    

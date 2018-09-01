@@ -29,7 +29,6 @@ void CServerFrame::_run()
         on_update(t1 - _prev_tick);
         _prev_tick = t1;
 
-        // 处理网络消息
         while (true)
         {
             Net::CMessage* msg = INSTANCE(Net::CMessageQueue)->PopMessage();

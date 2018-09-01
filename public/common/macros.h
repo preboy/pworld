@@ -13,7 +13,6 @@
 #endif
 
 
-// 安全删除指针;
 #define SAFE_FREE( p )              \
 if( (p) )                           \
 {                                   \
@@ -44,7 +43,6 @@ public:                             \
     }
 
         
-// 条件返回;
 #define RETURN_IF_TRUE(b)       if((b))  return true;
 #define RETURN_IF_FALSE(b)      if(!(b)) return false;
 
@@ -52,7 +50,7 @@ public:                             \
 #define RETURN_IF_NOT_NULL(b)   if((b))  return (b);
 
 
-// ASSERT
+
 #if defined(PLAT_WIN32)
     #ifdef BUILD_DEBUG
         #define CORE_ASSERT assert
@@ -71,7 +69,7 @@ public:                             \
 
 #ifdef PLAT_WIN32
     
-#define CORE_STDCALL __stdcall // WINAPI  64位构架下(win32/linux)只有一种调用方式
+#define CORE_STDCALL __stdcall // WINAPI  x86_64(win32/linux)
 
 #else
 

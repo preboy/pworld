@@ -22,7 +22,7 @@ namespace XML
 
         if ( pData[0] != '<' )
         {
-            throw CXmlException("未解析到节点的<开始符;", pData);
+            throw CXmlException("absense '<';", pData);
             return false;
         }
 
@@ -30,7 +30,7 @@ namespace XML
 
         if ( g_is_blank(pData) )
         {
-            throw CXmlException("<之后不可以有空格;", pData);
+            throw CXmlException("space present after '<';", pData);
             return false;
         }
 
@@ -44,7 +44,7 @@ namespace XML
 
             if ( pData == pAttribName )
             {
-                throw CXmlException("属性名不能为空;", pAttribName);
+                throw CXmlException("attribute empty;", pAttribName);
                 return false;
             }
 
@@ -53,7 +53,7 @@ namespace XML
 
             if ( !_verify_attrib_name(pAttribName, pData - pAttribName) )
             {
-                throw CXmlException("属性名不合法;", pAttribName);
+                throw CXmlException("invalid attribute;", pAttribName);
                 return false;
             }
             pNewAttrib->SetName(pAttribName, pData - pAttribName);
@@ -62,7 +62,7 @@ namespace XML
 
             if ( pData[0] != '=' )
             {
-                throw CXmlException("缺失'='符;", pData);
+                throw CXmlException("absense '=';", pData);
                 return false;
             }
             g_add_pointer(pData, dwLen);
@@ -72,7 +72,7 @@ namespace XML
 
             if ( !_verify_attrib_value(pAttribValue, pData - pAttribValue) )
             {
-                throw CXmlException("属性值不合法;", pAttribValue);
+                throw CXmlException("value invalid;", pAttribValue);
                 return false;
             }
 
@@ -84,11 +84,10 @@ namespace XML
 
         if( 0 == dwLen || !g_is_node_name_end(pData) )
         {
-            throw CXmlException("缺失节点头>标记符;", pData);
+            throw CXmlException("absense '>';", pData);
             return false;
         }
 
-        // 判断节点是否结束;
         if ( g_is_node_name_end_1(pData) )
         {
             g_add_pointer(pData, dwLen);
@@ -99,17 +98,16 @@ namespace XML
             return true;
         }
 
-        // 引得解析属性或者元素;
         g_skip_comment(pData, dwLen);
 
 
         if ( pData[0] == '<' && pData[1] == '/' )
-        {   // 本节点无内容，直接结束掉;
+        {
             return _verify_node_end_tag(pData, dwLen);
         }
 
         if ( pData[0] == '<' &&pData[1] != '!' )
-        {   // 该节节点的内容是子节点;
+        {
             while(dwLen)
             {
                 if ( pData[0] == '<' && pData[1] == '/' )
@@ -129,7 +127,7 @@ namespace XML
             }
         }
         else
-        {   // 结束内容是数据而非节点;
+        {
             char* pValue = pData;
 
             while( dwLen )
@@ -140,21 +138,20 @@ namespace XML
                 }
                 if ( dwLen > 3 && pData[0] == ']' && pData[1] == ']' && pData[2] == '>' )
                 {
-                    throw CXmlException("不合适宜的]]>;", pData);
+                    throw CXmlException("sudden ]]>;", pData);
                     return false;
                 }
 
                 if ( dwLen > 12 && strncmp("<![CDATA[", pData, 9) == 0 )
                 {
                     g_add_pointer(pData, dwLen, 9);
-                    // 此刻我眼中只有]]>
                     while( dwLen && ( pData[0] != ']' || pData[1] != ']' || pData[2] != '>' ) )
                     {
                         g_add_pointer(pData, dwLen);
                     }
                     if ( !dwLen )
                     {
-                        throw CXmlException("没有找到<![CDATA[对应的结束符]]>", pData);
+                        throw CXmlException("not found ending for <![CDATA[", pData);
                         return false;
                     }
                     g_add_pointer(pData, dwLen, 3);
@@ -165,10 +162,10 @@ namespace XML
             }
             if ( !dwLen )
             {
-                throw CXmlException("未找到节点结束标记</*;", pWord);
+                throw CXmlException("not found ending for </*;", pWord);
                 return false;
             }
-            // 分析节点内容;此处为内容;
+
             SetProp(pValue, pData - pWord);
         }
 
@@ -182,7 +179,7 @@ namespace XML
 
         if ( g_is_blank(pData) )
         {
-            throw CXmlException("节点的结束标记</之后不可以有空格;", GetName());
+            throw CXmlException("space present after </;", GetName());
             return false;
         }
 
@@ -193,14 +190,14 @@ namespace XML
 
         if ( nlenWord != nlenName || strncmp(pWord, GetName(), nlenName) != 0 )
         {
-            throw CXmlException("节点结束标记与节点名不符;", pWord );
+            throw CXmlException("node name and node ending dismatch;", pWord );
             return false;
         }
 
         g_skip_blank(pData, dwLen);
         if ( pData[0] != '>' )
         {
-            throw CXmlException("节点结束标记缺少>符;", pData);
+            throw CXmlException("absendse > on node ending;", pData);
             return false;
         }
         g_add_pointer(pData, dwLen);

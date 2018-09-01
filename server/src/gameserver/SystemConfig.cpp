@@ -33,10 +33,10 @@ void LoadSystemConfig()
         if (r.EnterTable("SystemConfig"))
         {
             sc->listen_ip = r.GetString("listen_ip");
-            sc->listen_pt = r.GetInteger("listen_pt");
+            sc->listen_pt = (uint16)r.GetInteger("listen_pt");
 
             sc->connect_ip = r.GetString("connect_ip");
-            sc->connect_pt = r.GetInteger("connect_pt");
+            sc->connect_pt = (uint16)r.GetInteger("connect_pt");
 
             if (r.EnterTable("db"))
             {
@@ -44,7 +44,7 @@ void LoadSystemConfig()
                 sc->db_user = r.GetString("user");
                 sc->db_pwd = r.GetString("pwd");
                 sc->db_name = r.GetString("name");
-                sc->db_port = r.GetInteger("port");
+                sc->db_port = (uint16)r.GetInteger("port");
                 sc->db_chat_set = r.GetString("chat_set");
                 r.LeaveTable();
             }

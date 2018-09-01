@@ -30,15 +30,12 @@ namespace XML
     }
 
 
-    // 从pData开始解析xml头标签;
-    // 成功返回true,若未解析成功则返回false;
-    // pData, dwLen在解析时要更新到一下处待解析处;
     bool CXmlHead::Parse(char*& pData, size_t& dwLen )
     {
         //  <?xml version="1.0" encoding="gb2312"?>
         if ( g_is_blank(pData) )
         {
-            throw CXmlException("xml解析错误", "xml标签前不能有空字符;");
+            throw CXmlException("xml parse failed", "xml tag exist space;");
             return false;
         }
 
@@ -46,13 +43,13 @@ namespace XML
 
         if ( 0 != strncmp(pStart, "<?xml", pData - pStart) )
         {
-            throw CXmlException("xml解析错误;", "未找到<?xml标签;");
+            throw CXmlException("xml parse failed;", "not found <?xml;");
             return false;
         }
 
         if ( !g_is_blank(pData) )
         {
-            throw CXmlException("节点名之后应有空格;", pData);
+            throw CXmlException("unnecessary space afer node name;", pData);
             return false;
         }
         g_skip_blank(pData, dwLen);
@@ -63,7 +60,7 @@ namespace XML
 
             if ( pData == pAttribName )
             {
-                throw CXmlException("属性名不能为空;", pAttribName);
+                throw CXmlException("empty val-name;", pAttribName);
                 return false;
             }
 
@@ -74,7 +71,7 @@ namespace XML
 
             if ( pData[0] != '=' )
             {
-                throw CXmlException("缺失'='符;", pData);
+                throw CXmlException("absense'=';", pData);
                 return false;
             }
             g_add_pointer(pData, dwLen);
@@ -90,7 +87,7 @@ namespace XML
 
         if( 0 == dwLen || !g_is_head_node_end(pData) )
         {
-            throw CXmlException("缺失head头？>标记;", pData);
+            throw CXmlException("absense ?>;", pData);
             return false;
         }
 

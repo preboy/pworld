@@ -29,7 +29,6 @@ namespace XML
     }
 
 
-    // 判断下一个是否是空格，TAB,回车键;
     bool g_is_blank( char* pCh )
     {
         if ( pCh[0] == ' ' || pCh[0] == '\t' )
@@ -64,7 +63,6 @@ namespace XML
         return false;
     }
 
-    // 节点名的结束标记(> />);
     bool g_is_node_name_end(char* pch)
     {
         if ( g_is_node_name_end_1(pch) )
@@ -144,21 +142,19 @@ namespace XML
         pData = pTemp;
     }
 
-    // 指针向后移动;
+
     void g_add_pointer( char*& pData, size_t& dwLen, size_t size )
     {
         if ( !pData || dwLen < size )
         {
-            throw CXmlException("移动指针错误;", "xml解析出错;");
+            throw CXmlException("move pointer error;", "xml parse failed;");
             return;
         }
         pData = pData + size;
         dwLen = dwLen - size;
     }
 
-    // pData是以"<!-- 开关的一段注释"，现在要从pdata开始找到注释结束符"-->"
-    // 返回true,表示找到注释，
-    // 返回false表示未找到注释;
+    // pData start with "<!--"，ending with "-->"
     bool g_skip_comment( char*& pData, size_t& dwLen )
     {
         if ( !dwLen )
@@ -188,7 +184,7 @@ namespace XML
             }
             if ( !bfind )
             {
-                throw CXmlException("xml解析错误;", "xml注释未正确结束;");
+                throw CXmlException("xml parse failed;", "xml comment not completed;");
                 return false;
             }
         }
@@ -196,7 +192,7 @@ namespace XML
     }
 
 
-    // 取节点的结束标记(</node > </node> );
+    // (</node > </node> );
     char*   g_get_node_end_name(char*& pData, size_t& dwLen)
     {
         if ( !dwLen )
@@ -223,8 +219,6 @@ namespace XML
     }
 
 
-
-    // 取以'或"中间的内容 ;
     char* g_get_attrib_value(char*& pData, size_t& dwLen)
     {
         if ( dwLen == 0 )
@@ -237,7 +231,7 @@ namespace XML
         char ch = pStart[0];
         if ( ch != '\'' && ch != '\"' )
         {
-            throw CXmlException("属性值必须以引号开始;", pStart );
+            throw CXmlException("Must start with ' for value;", pStart );
             return nullptr;
         }
 
@@ -249,12 +243,12 @@ namespace XML
         {// a= "sdfasfa"
             if ( pData[0] == '<' )
             {
-                throw CXmlException("属性非法字符;", pData);
+                throw CXmlException("invalid char;", pData);
                 return nullptr;
             }
             if ( pData[0] == '&' )
             {
-                throw CXmlException("本版本暂不支持实体符&;", pData);
+                throw CXmlException("unspoort &;", pData);
                 return nullptr;
             }
             if ( pData[0] == ch )
@@ -279,7 +273,7 @@ namespace XML
         {
             if ( strcmp( (*itor)->GetName(), pAttrib->GetName() ) == 0 )
             {
-                throw CXmlException("属性名重复;", pAttrib->GetName());
+                throw CXmlException("repeated attr name;", pAttrib->GetName());
                 return false;
             }
             itor++;
@@ -298,7 +292,7 @@ namespace XML
         return true;
     }
 
-    // 判断一个字条是否是字母;
+
     bool g_is_char(unsigned char ch)
     {
         if ( ch >= 65 && ch <= 90  ) // A~Z
@@ -321,7 +315,7 @@ namespace XML
         return false;
     }
 
-    // 判断字母是否是连接符(:.-_);
+
     bool g_is_connect(unsigned char ch)
     {
         if ( ch == '-' || ch == '_' || ch == ':'|| ch == '.' )
@@ -330,7 +324,7 @@ namespace XML
         return false;
     }
 
-    // 不可显示的ascii字符;
+
     bool g_is_ascii_valid(unsigned char ch)
     {
         return false;

@@ -98,7 +98,7 @@ private:
     CScriptTimerGS  _timer;
 
 private:
-    // 未列出的杂项属性集合
+
     std::unordered_map<var_type, CVariant>  _variants;
 
 protected:

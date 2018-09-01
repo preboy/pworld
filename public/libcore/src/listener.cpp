@@ -340,7 +340,6 @@ namespace Net
     {
         do
         {
-            // 是否请求关闭
             if (_status != LISTENER_STATUS::LS_RUNNING)
                 break;
 

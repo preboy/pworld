@@ -1,7 +1,7 @@
 #pragma once
 
 /*
-    系统级别应用的定时器
+   system schedule
 */
 class ScheduleBase
 {

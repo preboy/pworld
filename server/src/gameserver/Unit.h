@@ -2,7 +2,7 @@
 #include "SceneObject.h"
 
 /*
-    属性ID  ->  属性类型  -> 属性数值
+    porp ID  ->  porp type  -> prop val
 */
 enum class UnitProperty : uint16
 {

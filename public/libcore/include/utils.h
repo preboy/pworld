@@ -1,6 +1,6 @@
 #pragma once
 
-// 这里主要放一些public的函数，以及一些跨平台的东西
+// functional refer to differ platform
 namespace Utils
 {
     // for debug

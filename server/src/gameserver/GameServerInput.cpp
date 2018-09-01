@@ -112,7 +112,6 @@ int CGameServerInput::OnTestDB(int argc, char argv[PARAM_CNT][PARAM_LEN])
 }
 
 
-// 在后台线程的跑的东西
 void CGameServerInput::on_thread_proc()
 {
     CDatabase* db = INSTANCE(CDBMgr)->GetFreeConnection();
@@ -127,7 +126,7 @@ void CGameServerInput::on_thread_proc()
             int n = 0;
             while (rs->NextRow())
             {
-                // 常规
+                // general
                 /*int idx = 0;
 
                 uint32 id = 0;
@@ -142,7 +141,7 @@ void CGameServerInput::on_thread_proc()
 
                 std::cout << "one row: " << id << " " << acct << " " << name << " " << create_time << std::endl;*/
 
-                // 读取二进制
+                // binary
 
                 uint32 id = (uint32)rs->GetInt32(0);
 
@@ -176,7 +175,7 @@ void CGameServerInput ::on_thread_proc_stmt()
     if (db)
     {
         CMysqlHandler* h = db->Handler();
-        // CMysqlHanderStmt* hh = h->CreateStmtHander("select id, acct, name, x, y, unix_timestamp(create_t) from player");         // 常规
+        // CMysqlHanderStmt* hh = h->CreateStmtHander("select id, acct, name, x, y, unix_timestamp(create_t) from player");         // general
         // CMysqlHanderStmt* hh = h->CreateStmtHander("select id, bin1, bin2 from player_data where id = '710485708'");         // select bin
         CMysqlHanderStmt* hh = h->CreateStmtHander("update player_data set bin1=?, bin2=? where id = '710485708'");         // update bin
 
@@ -205,7 +204,7 @@ void CGameServerInput ::on_thread_proc_stmt()
                 int n = 0;
                 while (rs->NextRow())
                 {
-                    // 常规
+                    // general
                     int idx = 0;
 
                     /*uint32 id = 0;

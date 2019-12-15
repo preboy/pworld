@@ -22,13 +22,13 @@ inline void Timer::SetInteval(uint32 itv)
 }
 
 
-CTimerMgr::~CTimerMgr()
+TimerMgr::~TimerMgr()
 {
     _release();
 }
 
 
-void CTimerMgr::_release()
+void TimerMgr::_release()
 {
    for (Timer* pTimer : lstTimers)
    {
@@ -43,9 +43,9 @@ void CTimerMgr::_release()
 }
 
 
-uint32 CTimerMgr::CreateTimer(uint32 itv, CCallback* cb, uint32 once)
+uint32 TimerMgr::CreateTimer(uint32 itv, Callback* cb, uint32 once)
 {
-    CTimerMgr* mgr = INSTANCE(CTimerMgr);
+    TimerMgr* mgr = INSTANCE(TimerMgr);
     uint32 tid = mgr->maker.new_id();
     Timer* pTimer = new Timer();
     pTimer->count_time = get_current_tick();
@@ -65,9 +65,9 @@ uint32 CTimerMgr::CreateTimer(uint32 itv, CCallback* cb, uint32 once)
 }
 
 
-uint32 CTimerMgr::CreateTimer(uint32 itv, TIMER_FUNC func, const void* param, uint32 once)
+uint32 TimerMgr::CreateTimer(uint32 itv, TIMER_FUNC func, const void* param, uint32 once)
 {
-    CTimerMgr* mgr = INSTANCE(CTimerMgr);
+    TimerMgr* mgr = INSTANCE(TimerMgr);
     uint32 tid = mgr->maker.new_id();
     Timer* pTimer = new Timer();
     pTimer->count_time = get_current_tick();
@@ -88,9 +88,9 @@ uint32 CTimerMgr::CreateTimer(uint32 itv, TIMER_FUNC func, const void* param, ui
 }
 
 
-Timer* CTimerMgr::GetTimer(uint32 tid)
+Timer* TimerMgr::GetTimer(uint32 tid)
 {
-    CTimerMgr* mgr = INSTANCE(CTimerMgr);
+    TimerMgr* mgr = INSTANCE(TimerMgr);
     for (Timer* pTimer : mgr->lstTimers)
     {
         if (pTimer->tid == tid)
@@ -109,9 +109,9 @@ Timer* CTimerMgr::GetTimer(uint32 tid)
 }
 
 
-void CTimerMgr::CancelTimer(uint32 tid)
+void TimerMgr::CancelTimer(uint32 tid)
 {
-    Timer* pTimer = CTimerMgr::GetTimer(tid);
+    Timer* pTimer = TimerMgr::GetTimer(tid);
     if (pTimer)
     {
         pTimer->SetCancel();
@@ -119,7 +119,7 @@ void CTimerMgr::CancelTimer(uint32 tid)
 }
 
 
-void CTimerMgr::Update()
+void TimerMgr::Update()
 {
     // update timer
     in_process = 1;

@@ -8,23 +8,23 @@
 extern const char* g_str_lua_stack;
 
 
-void CLuaEngine::Init()
+void LuaEngine::Init()
 {
     _L = luaL_newstate();
     luaL_openlibs(_L);
 }
 
 
-void CLuaEngine::Release()
+void LuaEngine::Release()
 {
     lua_close(_L);
 }
 
 
 /// execute a file
-bool CLuaEngine::ExecFile(const char *fn)
+bool LuaEngine::ExecFile(const char *fn)
 {
-    lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
+    lua_pushcfunction(_L, LuaEngine::_on_lua_error);
     if ((luaL_loadfile(_L, fn) || lua_pcall(_L, 0, LUA_MULTRET, -2)) == 0)
     {
         lua_remove(_L, -1);
@@ -41,9 +41,9 @@ bool CLuaEngine::ExecFile(const char *fn)
 
 
 /// execute a string
-bool CLuaEngine::ExecString(const char *str)
+bool LuaEngine::ExecString(const char *str)
 {
-    lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
+    lua_pushcfunction(_L, LuaEngine::_on_lua_error);
     if ((luaL_loadstring(_L, str) || lua_pcall(_L, 0, LUA_MULTRET, -2)) == 0)
     {
         lua_remove(_L, -1);
@@ -59,7 +59,7 @@ bool CLuaEngine::ExecString(const char *str)
 }
 
 
-int CLuaEngine::_on_lua_error(lua_State* L)
+int LuaEngine::_on_lua_error(lua_State* L)
 {
     static char err[1024] = {};
     sprintf(err, "\nerror report:\n\t%s", lua_tostring(L, -1));
@@ -70,7 +70,7 @@ int CLuaEngine::_on_lua_error(lua_State* L)
 }
 
 
-bool CLuaEngine::PushFunction(const char* fn)
+bool LuaEngine::PushFunction(const char* fn)
 {
     // M1: origin err message
     // lua_pushcfunction(_L, CLuaEngine::_on_lua_error);
@@ -92,7 +92,7 @@ bool CLuaEngine::PushFunction(const char* fn)
 }
 
 
-bool CLuaEngine::ExecFunction(int narg, int nresult)
+bool LuaEngine::ExecFunction(int narg, int nresult)
 {
     int r = lua_pcall(_L, narg, nresult, -2 - narg);
     if (r == 0)
@@ -109,7 +109,7 @@ bool CLuaEngine::ExecFunction(int narg, int nresult)
 }
 
 
-void CLuaEngine::_emit_error()
+void LuaEngine::_emit_error()
 {
     const char* err = lua_tostring(_L, -1);
     if (_fn)
@@ -124,13 +124,13 @@ void CLuaEngine::_emit_error()
 }
 
 
-void CLuaEngine::RegisterGlobalApi(const char* name, lua_CFunction func)
+void LuaEngine::RegisterGlobalApi(const char* name, lua_CFunction func)
 {
     lua_register(_L, name, func);
 }
 
 
-void CLuaEngine::RegisterGlobalApi(const GlobalAPIMapping* mapping)
+void LuaEngine::RegisterGlobalApi(const GlobalAPIMapping* mapping)
 {
     for (; mapping->name; mapping++)
     {
@@ -139,7 +139,7 @@ void CLuaEngine::RegisterGlobalApi(const GlobalAPIMapping* mapping)
 }
 
 
-const char* CLuaEngine::Traceback(const char* traceback)
+const char* LuaEngine::Traceback(const char* traceback)
 {
     if (traceback)
     {

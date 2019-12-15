@@ -3,14 +3,14 @@
 #include "byteBuffer.h"
 
 
-class CScriptTable
+class ScriptTable
 {
 public:
-    CScriptTable()
+    ScriptTable()
         : _tab_ref(LUA_NOREF)
     {}
 
-    ~CScriptTable();
+    ~ScriptTable();
 
 public:
     void Create(int stack);
@@ -21,8 +21,8 @@ public:
     void GetTable();
 
     /// serialization
-    void Serialize(CByteBuffer &bb);
-    void Deserialize(CByteBuffer &bb);
+    void Serialize(ByteBuffer &bb);
+    void Deserialize(ByteBuffer &bb);
 
 private:
     int _tab_ref;

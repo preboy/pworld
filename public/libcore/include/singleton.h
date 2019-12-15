@@ -1,14 +1,14 @@
 #pragma once
 
 template<typename T, uint32 _type = 1>
-class CSingleton
+class Singleton
 {
 public:
-    CSingleton()
+    Singleton()
     {
     }
 
-    ~CSingleton()
+    ~Singleton()
     {
     }
 
@@ -38,7 +38,7 @@ private:
     static T* _ptr;
 };
 
-template<typename T, uint32 _type> T* CSingleton<T, _type>::_ptr = nullptr;
+template<typename T, uint32 _type> T* Singleton<T, _type>::_ptr = nullptr;
 
 
 

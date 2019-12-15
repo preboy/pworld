@@ -43,11 +43,11 @@ public:                             \
     }
 
         
-#define RETURN_IF_TRUE(b)       if((b))  return true;
-#define RETURN_IF_FALSE(b)      if(!(b)) return false;
+#define RETURN_IF_TRUE(b)       if((b))  return true
+#define RETURN_IF_FALSE(b)      if(!(b)) return false
 
-#define RETURN_IF_NULL(b)       if(!(b)) return nullptr;
-#define RETURN_IF_NOT_NULL(b)   if((b))  return (b);
+#define RETURN_IF_NULL(b)       if(!(b)) return nullptr
+#define RETURN_IF_NOT_NULL(b)   if((b))  return (b)
 
 
 
@@ -68,24 +68,20 @@ public:                             \
 
 
 #ifdef PLAT_WIN32
-    
-#define CORE_STDCALL __stdcall // WINAPI  x86_64(win32/linux)
-
+    #define CORE_STDCALL __stdcall // WINAPI  x86_64(win32/linux)
 #else
+    #define BYTE unsigned char
+    #define CORE_STDCALL // __attribute__((__stdcall__))
 
-#define BYTE unsigned char
-#define CORE_STDCALL // __attribute__((__stdcall__))
+    #define stricmp     strcasecmp
+    #define strnicmp    strncasecmp
 
-#define stricmp     strcasecmp
-#define strnicmp    strncasecmp
+    #define _stricmp    strcasecmp
+    #define _strdup     strdup
 
-#define _stricmp    strcasecmp
-#define _strdup     strdup
-
-#define sprintf_s   sprintf
-#define strcpy_s    strcpy
-#define strtok_s    strtok_r
-
+    #define sprintf_s   sprintf
+    #define strcpy_s    strcpy
+    #define strtok_s    strtok_r
 #endif
 
 

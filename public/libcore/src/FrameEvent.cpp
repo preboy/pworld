@@ -2,13 +2,13 @@
 #include "FrameEvent.h"
 
 
-void CFrameEvent::EmitBegin(CCallback* c)
+void FrameEvent::EmitBegin(Callback* c)
 {
     _lst_cb_begin.push_back(c);
 }
 
 
-void CFrameEvent::UpdateBegin()
+void FrameEvent::UpdateBegin()
 {
     if (!_lst_cb_begin.empty())
     {
@@ -22,13 +22,13 @@ void CFrameEvent::UpdateBegin()
 }
 
 
-void CFrameEvent::EmitEnd(CCallback* c)
+void FrameEvent::EmitEnd(Callback* c)
 {
     _lst_cb_end.push_back(c);
 }
 
 
-void CFrameEvent::UpdateEnd()
+void FrameEvent::UpdateEnd()
 {
     if (!_lst_cb_end.empty())
     {
@@ -42,13 +42,13 @@ void CFrameEvent::UpdateEnd()
 }
 
 
-void CFrameEvent::EmitMsgEnd(CCallback* c)
+void FrameEvent::EmitMsgEnd(Callback* c)
 {
     _lst_cb_msg_end.push_back(c);
 }
 
 
-void CFrameEvent::UpdateMsgEnd()
+void FrameEvent::UpdateMsgEnd()
 {
     if (!_lst_cb_msg_end.empty())
     {

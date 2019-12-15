@@ -5,11 +5,11 @@
 typedef luaL_Reg GlobalAPIMapping;
 
 
-class CLuaEngine
+class LuaEngine
 {
 public:
-    CLuaEngine() {}
-   ~CLuaEngine() {};
+    LuaEngine() {}
+   ~LuaEngine() {};
 
 public:
     void Init();

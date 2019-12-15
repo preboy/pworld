@@ -5,19 +5,19 @@
 #include "logger.h"
 
 
-CCommandInput::CCommandInput(void)
+CommandInput::CommandInput(void)
 {
-    add_command("quit", &CCommandInput::OnQuit, "quit", "quit this program.");
-    add_command("help", &CCommandInput::OnHelp, "help <cmd>", "detail info of command.");
-    add_command("list", &CCommandInput::OnList, "list", "show commands list.");
-    add_command("?",    &CCommandInput::OnList, "list", "show commands list.");
+    add_command("quit", &CommandInput::OnQuit, "quit", "quit this program.");
+    add_command("help", &CommandInput::OnHelp, "help <cmd>", "detail info of command.");
+    add_command("list", &CommandInput::OnList, "list", "show commands list.");
+    add_command("?",    &CommandInput::OnList, "list", "show commands list.");
 }
 
-CCommandInput::~CCommandInput(void)
+CommandInput::~CommandInput(void)
 {
 }
 
-void CCommandInput::Run()
+void CommandInput::Run()
 {
     const int CMD_MAX_CHAR = 128;
     char szBuff[CMD_MAX_CHAR] = { 0 };
@@ -39,7 +39,7 @@ void CCommandInput::Run()
 }
 
 
-void CCommandInput::Update()
+void CommandInput::Update()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -54,7 +54,7 @@ void CCommandInput::Update()
 }
 
 
-bool CCommandInput::_parse_command(char* szCmdLine)
+bool CommandInput::_parse_command(char* szCmdLine)
 {
     size_t len = strlen(szCmdLine);
     if (!len)
@@ -124,13 +124,13 @@ bool CCommandInput::_parse_command(char* szCmdLine)
 }
 
 
-void CCommandInput::_print_prompt()
+void CommandInput::_print_prompt()
 {
     std::cout << m_strPrompt;
 }
 
 
-void CCommandInput::add_command(const char* name, CMD_FUNC func, const char* help, const char* desc)
+void CommandInput::add_command(const char* name, CMD_FUNC func, const char* help, const char* desc)
 {
     cmd_config  conf;
     conf.func = func;
@@ -141,7 +141,7 @@ void CCommandInput::add_command(const char* name, CMD_FUNC func, const char* hel
 }
 
 
-int CCommandInput::OnQuit(int argc, char argv[PARAM_CNT][PARAM_LEN])
+int CommandInput::OnQuit(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     m_bRunning = false;
     on_quit();
@@ -149,7 +149,7 @@ int CCommandInput::OnQuit(int argc, char argv[PARAM_CNT][PARAM_LEN])
 }
 
 
-int CCommandInput::OnHelp(int argc, char argv[PARAM_CNT][PARAM_LEN])
+int CommandInput::OnHelp(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     if (argc < 2)
     {
@@ -170,7 +170,7 @@ int CCommandInput::OnHelp(int argc, char argv[PARAM_CNT][PARAM_LEN])
 }
 
 
-int CCommandInput::OnList(int argc, char argv[PARAM_CNT][PARAM_LEN])
+int CommandInput::OnList(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     sLogger->SetColor(1);
     for (auto & cc : m_vecCmdConfig)
@@ -182,7 +182,7 @@ int CCommandInput::OnList(int argc, char argv[PARAM_CNT][PARAM_LEN])
 }
 
 
-void CCommandInput::set_prompt(const char* pstr)
+void CommandInput::set_prompt(const char* pstr)
 {
     m_strPrompt = pstr;
 }

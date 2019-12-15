@@ -4,27 +4,27 @@
 
 struct Task
 {
-    CCallback*  _cb_task;
-    CCallback*  _cb_over;
+    Callback*  _cb_task = nullptr;
+    Callback*  _cb_over = nullptr;
     
-    Task(CCallback* cb_task, CCallback* cb_over) :
+    Task(Callback* cb_task, Callback* cb_over) :
         _cb_task(cb_task),
         _cb_over(cb_over)
     {}
 
     ~Task()
     {
-        if (_cb_task) delete _cb_task;
-        if (_cb_over) delete _cb_over;
+        SAFE_DELETE(_cb_task);
+        SAFE_DELETE(_cb_over);
     }
 };
 
 
-class CAsyncTask
+class AsyncTask
 {
 public:
-    CAsyncTask(){}
-    ~CAsyncTask();
+    AsyncTask(){}
+    ~AsyncTask();
 
 private:
     friend void __async_task_thread_proc(void* p);
@@ -35,7 +35,7 @@ public:
 
     void Update();
 
-    void PushTask(CCallback *cb_task, CCallback *cb_over = nullptr);
+    void PushTask(Callback *cb_task, Callback *cb_over = nullptr);
 
 private:
     std::mutex  _mutex_task;

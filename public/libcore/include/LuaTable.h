@@ -2,16 +2,16 @@
 #include "lua.hpp"
 
 
-class CByteBuffer;
+class ByteBuffer;
 
 
-class CLuaTable
+class LuaTable
 {
 public:
-    CLuaTable() {}
-   ~CLuaTable() {}
+    LuaTable() {}
+   ~LuaTable() {}
 
 public:
-    static bool Serialize  (lua_State* L, CByteBuffer& bb);
-    static bool Deserialize(lua_State* L, CByteBuffer& bb);
+    static bool Serialize  (lua_State* L, ByteBuffer& bb);
+    static bool Deserialize(lua_State* L, ByteBuffer& bb);
 };

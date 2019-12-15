@@ -6,7 +6,7 @@
 #include "utils.h"
 
 
-void CServerFrame::_run()
+void ServerFrame::_run()
 {
     time_init();
 
@@ -23,7 +23,7 @@ void CServerFrame::_run()
         update_frame_tick();
 
         on_frame_begin();
-        INSTANCE(CFrameEvent)->UpdateBegin();
+        INSTANCE(FrameEvent)->UpdateBegin();
 
         uint64 t1 = get_current_tick();
         on_update(t1 - _prev_tick);
@@ -31,12 +31,12 @@ void CServerFrame::_run()
 
         while (true)
         {
-            Net::CMessage* msg = INSTANCE(Net::CMessageQueue)->PopMessage();
+            Net::Message* msg = INSTANCE(Net::CMessageQueue)->PopMessage();
             if (msg)
             {
                 on_msg(msg);
-                INSTANCE(CFrameEvent)->UpdateMsgEnd();
-                INSTANCE(Net::CMessageQueue)->FreeMessage(msg);
+                INSTANCE(FrameEvent)->UpdateMsgEnd();
+                INSTANCE(Net::MessageQueue)->FreeMessage(msg);
                 if (get_current_tick() - t1 >= m_interval)
                     break;
             }
@@ -62,7 +62,7 @@ void CServerFrame::_run()
             on_update_busy();
         }
 
-        INSTANCE(CFrameEvent)->UpdateEnd();
+        INSTANCE(FrameEvent)->UpdateEnd();
         on_frame_end();
     }
 
@@ -71,23 +71,23 @@ void CServerFrame::_run()
 }
 
 
-uint32 CServerFrame::_logic_thread_proc(void* lparam)
+uint32 ServerFrame::_logic_thread_proc(void* lparam)
 {
-    CServerFrame* pThis = reinterpret_cast<CServerFrame*>(lparam);
+    ServerFrame* pThis = reinterpret_cast<ServerFrame*>(lparam);
     pThis->_run();
     return 0;
 }
 
 
-bool CServerFrame::Start()
+bool ServerFrame::Start()
 {
     m_bRunning = true;
-    m_thread = std::thread(&CServerFrame::_logic_thread_proc, this);
+    m_thread = std::thread(&ServerFrame::_logic_thread_proc, this);
     return true;
 }
 
 
-void CServerFrame::Stop()
+void ServerFrame::Stop()
 {
     m_bRunning = false;
     if (m_thread.joinable())

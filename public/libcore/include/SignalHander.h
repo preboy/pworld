@@ -3,11 +3,11 @@
 
 #ifdef PLAT_WIN32
 
-class CSignalHander
+class SignalHander
 {
 public:
-    CSignalHander();
-    ~CSignalHander();
+    SignalHander();
+    ~SignalHander();
 };
 
 #endif
@@ -17,11 +17,11 @@ public:
 
 #include <signal.h>
 
-class CSignalHander
+class SignalHander
 {
 public:
-    CSignalHander() {}
-   ~CSignalHander() {}
+    SignalHander() {}
+   ~SignalHander() {}
 
 public:
 

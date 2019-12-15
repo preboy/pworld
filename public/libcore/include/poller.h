@@ -14,11 +14,11 @@ namespace Poll
         IO_CALLBACK func;
     };
 
-    class CPoller
+    class Poller
     {
     public:
-        CPoller() {}
-        ~CPoller() {}
+        Poller() {}
+        ~Poller() {}
 
         bool    Init(uint32 thread_count = 0);
         void    Release();
@@ -54,11 +54,11 @@ namespace Poll
         Net::IO_STATUS  status;
     };
 
-    class CPoller
+    class Poller
     {
     public:
-        CPoller() {}
-        ~CPoller() {}
+        Poller() {}
+        ~Poller() {}
 
         bool     Init(uint32 thread_count = 0);
         void     Release();

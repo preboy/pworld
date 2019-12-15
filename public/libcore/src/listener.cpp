@@ -11,14 +11,14 @@ namespace Net
 
 #ifdef PLAT_WIN32
 
-    void CListener::__listener_cb__(void* obj, OVERLAPPED* overlapped)
+    void Listener::__listener_cb__(void* obj, OVERLAPPED* overlapped)
     {
-        CListener* pThis = reinterpret_cast<CListener*>(obj);
+        Listener* pThis = reinterpret_cast<Listener*>(obj);
         PerIoData* pData = (PerIoData*)overlapped;
     }
 
 
-    bool CListener::Init(const char* ip, uint16 port)
+    bool Listener::Init(const char* ip, uint16 port)
     {
         _status = LISTENER_STATUS::LS_CLOSED;
         m_sockListener = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
@@ -68,7 +68,7 @@ namespace Net
             return false;
         }
 
-        _pkey = new Poll::CompletionKey{ this, &CListener::__listener_cb__ };
+        _pkey = new Poll::CompletionKey{ this, &Listener::__listener_cb__ };
 
         if (!sPoller->RegisterHandler((HANDLE)m_sockListener, _pkey))
         {
@@ -82,7 +82,7 @@ namespace Net
     }
 
 
-    void CListener::Update()
+    void Listener::Update()
     {
         switch (_status)
         {
@@ -141,7 +141,7 @@ namespace Net
     }
 
 
-    bool CListener::_post_accept()
+    bool Listener::_post_accept()
     {
         m_sockAcceptor = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
         if (m_sockAcceptor == INVALID_SOCKET)
@@ -168,7 +168,7 @@ namespace Net
     }
 
 
-    void CListener::Close()
+    void Listener::Close()
     {
         if (_status == LISTENER_STATUS::LS_RUNNING)
         {
@@ -181,7 +181,7 @@ namespace Net
     }
 
 
-    void CListener::_on_accept()
+    void Listener::_on_accept()
     {
         ::setsockopt(m_sockAcceptor, SOL_SOCKET, SO_UPDATE_ACCEPT_CONTEXT,
             (char *)&(m_sockListener),
@@ -192,19 +192,19 @@ namespace Net
     }
 
 
-    void CListener::_on_accept_error(uint32 err)
+    void Listener::_on_accept_error(uint32 err)
     {
         _error = err;
         _status = LISTENER_STATUS::LS_ERROR;
     }
 
 
-    void CListener::on_accept(SOCKET_HANDER sock)
+    void Listener::on_accept(SOCKET_HANDER sock)
     {
     }
 
 
-    void CListener::on_closed(uint32 err)
+    void Listener::on_closed(uint32 err)
     {
         sLogger->Error("CListener::on_closed err=%u", err);
     }
@@ -217,20 +217,20 @@ namespace Net
 
 
 
-    CListener::CListener()
+    Listener::Listener()
     {
     }
 
 
-    CListener::~CListener()
+    Listener::~Listener()
     {
         SAFE_DELETE(_pkey);
     }
 
 
-    void CListener::__listener_cb__(void* obj, uint32 events)
+    void Listener::__listener_cb__(void* obj, uint32 events)
     {
-        CListener* pThis = (CListener*)obj;
+        Listener* pThis = (Listener*)obj;
         
         pThis->_accept_pending = false;
 
@@ -246,7 +246,7 @@ namespace Net
     }
 
 
-    bool CListener::Init(const char* ip, uint16 port)
+    bool Listener::Init(const char* ip, uint16 port)
     {
         _status = LISTENER_STATUS::LS_CLOSED;
         _listener = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
@@ -280,14 +280,14 @@ namespace Net
             return false;
         }
 
-        _pkey   = new Poll::CompletionKey{ this, &CListener::__listener_cb__, IO_STATUS::IO_STATUS_COMPLETED };
+        _pkey   = new Poll::CompletionKey{ this, &Listener::__listener_cb__, IO_STATUS::IO_STATUS_COMPLETED };
         _status = LISTENER_STATUS::LS_RUNNING;
 
         return _post_accept();
     }
 
 
-    void CListener::Update()
+    void Listener::Update()
     {
         switch (_status)
         {
@@ -326,7 +326,7 @@ namespace Net
     }
 
 
-    void CListener::Close()
+    void Listener::Close()
     {
         if (_status == LISTENER_STATUS::LS_RUNNING)
         {
@@ -336,7 +336,7 @@ namespace Net
     }
 
 
-    bool CListener::_post_accept()
+    bool Listener::_post_accept()
     {
         do
         {
@@ -372,19 +372,19 @@ namespace Net
     }
 
 
-    void CListener::_on_accept_error(uint32 err)
+    void Listener::_on_accept_error(uint32 err)
     {
         _error = err;
         _status = LISTENER_STATUS::LS_ERROR;
     }
 
 
-    void CListener::on_accept(SOCKET_HANDER sock)
+    void Listener::on_accept(SOCKET_HANDER sock)
     {
     }
 
 
-    void CListener::on_closed(uint32 err)
+    void Listener::on_closed(uint32 err)
     {
         sLogger->Error("CListener::on_closed err=%u", err);
     }

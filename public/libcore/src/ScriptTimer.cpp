@@ -7,22 +7,22 @@
 #include "LuaHelper.h"
 
 
-CScriptTimer::CScriptTimer()
+ScriptTimer::ScriptTimer()
 {
 }
 
 
-CScriptTimer::~CScriptTimer()
+ScriptTimer::~ScriptTimer()
 {
     this->CancelAll();
 }
 
 
-uint64 CScriptTimer::Create(uint32 itv, const char *cb, CScriptParam &sp, uint32 loop)
+uint64 ScriptTimer::Create(uint32 itv, const char *cb, ScriptParam &sp, uint32 loop)
 {   
-    uint32 tid = INSTANCE(CTimerMgr)->CreateTimer(
+    uint32 tid = INSTANCE(TimerMgr)->CreateTimer(
         itv, 
-        CCallback::Bind(this, &CScriptTimer::cb_script_timer, std::string(cb), std::move(sp), loop),
+        Callback::Bind(this, &ScriptTimer::cb_script_timer, std::string(cb), std::move(sp), loop),
         loop);
     
     _script_timers.insert(tid);
@@ -31,28 +31,28 @@ uint64 CScriptTimer::Create(uint32 itv, const char *cb, CScriptParam &sp, uint32
 }
 
 
-void CScriptTimer::Cancel(uint32 tid)
+void ScriptTimer::Cancel(uint32 tid)
 {
-    INSTANCE(CTimerMgr)->CancelTimer(tid);
+    INSTANCE(TimerMgr)->CancelTimer(tid);
     _script_timers.erase(tid);
 }
 
 
-void CScriptTimer::CancelAll()
+void ScriptTimer::CancelAll()
 {
     for (auto it = _script_timers.begin();
     it != _script_timers.end();
         ++it)
     {
-        INSTANCE(CTimerMgr)->CancelTimer(*it);
+        INSTANCE(TimerMgr)->CancelTimer(*it);
     }
     _script_timers.clear();
 }
 
 
-void CScriptTimer::cb_script_timer(std::string &cb, CScriptParam &sp, uint32 loop)
+void ScriptTimer::cb_script_timer(std::string &cb, ScriptParam &sp, uint32 loop)
 {
-    CLuaEngine *lua = INSTANCE(CLuaEngine);
+    LuaEngine *lua = INSTANCE(LuaEngine);
     
     lua->PushFunction(cb.c_str());
 

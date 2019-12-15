@@ -6,13 +6,12 @@
 namespace Net
 {
 
-    class CMessage
+    class Message
     {
-
     private:
         enum { MEMORY_UNIT_SIZE = MAX_BUFFER_SIZE, };
 
-    protected:
+    protected
         uint32  _size;
         char*   _data;
         uint32  _curr_len;
@@ -23,8 +22,8 @@ namespace Net
         void*       _ptr;
 
     public:
-        CMessage(uint32 size = MEMORY_UNIT_SIZE);
-       ~CMessage();
+        Message(uint32 size = MEMORY_UNIT_SIZE);
+       ~Message();
 
     public:
         void            Reset(uint32 size);
@@ -36,11 +35,11 @@ namespace Net
     };
     
 
-    class CPacket : public CMessage
+    class Packet : public Message
     {
     public:
-        CPacket() {}
-        ~CPacket() {}
+        Packet() {}
+        ~Packet() {}
 
     public:
         uint16  Opcode() { return *(uint16*)_data; }
@@ -58,31 +57,31 @@ namespace Net
 
 
 
-    class CMessageQueue
+    class MessageQueue
     {
     public:
-        CMessageQueue() {}
-       ~CMessageQueue() { _clean_up(); }
+        MessageQueue() {}
+       ~MessageQueue() { _clean_up(); }
 
     public:
         
-        CMessage* ApplyMessage();
+        Message* ApplyMessage();
         
-        void FreeMessage(CMessage* msg);
+        void FreeMessage(Message* msg);
 
         // push filled message body to dispatcher queue
-        void PushMessage(CMessage* msg);
+        void PushMessage(Message* msg);
 
         // pop a message from dispatcher queue to working 
-        CMessage* PopMessage();
+        Message* PopMessage();
 
     private:
         void _clean_up();
 
     private:
 
-        std::queue<CMessage*>   _msg_waiting;
-        std::queue<CMessage*>   _msg_recycle;
+        std::queue<Message*>   _msg_waiting;
+        std::queue<Message*>   _msg_recycle;
 
         // lock for sync
         std::mutex              _mutex_waiting;

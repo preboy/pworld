@@ -10,14 +10,14 @@ namespace Net
 
 #ifdef PLAT_WIN32
 
-    void CSession::__session_cb__(void* obj, OVERLAPPED* overlapped)
+    void Session::__session_cb__(void* obj, OVERLAPPED* overlapped)
     {
-        CSession*  pThis = reinterpret_cast<CSession*>(obj);
+        Session*  pThis = reinterpret_cast<Session*>(obj);
         PerIoData* pData = reinterpret_cast<PerIoData*>(overlapped);
     }
 
 
-    CSession::CSession() :
+    Session::Session() :
         _io_send(IO_TYPE::IO_TYPE_Send, 0),
         _io_recv(IO_TYPE::IO_TYPE_Recv, MAX_BUFFER_SIZE),
         _msg_header(sizeof(uint32))
@@ -25,13 +25,13 @@ namespace Net
     }
 
 
-    CSession::~CSession()
+    Session::~Session()
     {
         SAFE_DELETE(_msg_recv);
 
         if (_msg_send)
         {
-            INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+            INSTANCE_2(MessageQueue)->FreeMessage(_msg_send);
             _msg_send = nullptr;
         }
 
@@ -40,7 +40,7 @@ namespace Net
     }
 
 
-    void CSession::Attach(SOCKET_HANDER socket, void* key)
+    void Session::Attach(SOCKET_HANDER socket, void* key)
     {
         _msg_header.Reset(sizeof(uint32));
 
@@ -55,11 +55,11 @@ namespace Net
         {
             _key = (Poll::CompletionKey*)key;
             _key->obj = this;
-            _key->func = &CSession::__session_cb__;
+            _key->func = &Session::__session_cb__;
         }
         else
         {
-            _key = new Poll::CompletionKey{ this, &CSession::__session_cb__ };
+            _key = new Poll::CompletionKey{ this, &Session::__session_cb__ };
             if (!sPoller->RegisterHandler((HANDLE)_socket, _key))
             {
                 return;
@@ -73,7 +73,7 @@ namespace Net
     }
 
 
-    void CSession::_dispose_recv()
+    void Session::_dispose_recv()
     {
         if (_status != SOCK_STATUS::SS_RUNNING || _recv_over)
         {
@@ -105,7 +105,7 @@ namespace Net
     }
 
 
-    void CSession::_dispose_send()
+    void Session::_dispose_send()
     {
         if (_status != SOCK_STATUS::SS_RUNNING || _send_over)
         {
@@ -122,7 +122,7 @@ namespace Net
             if (_io_send._succ)
             {
                 _on_send((char*)_msg_send->Data(), _io_send._bytes);
-                INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+                INSTANCE_2(MessageQueue)->FreeMessage(_msg_send);
                 _msg_send = nullptr;
             }
             else
@@ -134,7 +134,7 @@ namespace Net
     }
 
 
-    void CSession::Update()
+    void Session::Update()
     {
         _dispose_recv();
         _dispose_send();
@@ -172,7 +172,7 @@ namespace Net
     }
 
 
-    void CSession::_post_send()
+    void Session::_post_send()
     {
         if (_io_send._status != IO_STATUS::IO_STATUS_IDLE)
             return;
@@ -215,7 +215,7 @@ namespace Net
     }
 
 
-    bool CSession::_post_recv()
+    bool Session::_post_recv()
     {
         if (_io_recv._status != IO_STATUS::IO_STATUS_IDLE)
             return false;

@@ -2,11 +2,11 @@
 #include "lua.hpp"
 
 
-class CLuaReader
+class LuaReader
 {
 public:
-    CLuaReader();
-   ~CLuaReader();
+    LuaReader();
+   ~LuaReader();
 
 public:
     void Create();

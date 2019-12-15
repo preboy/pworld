@@ -8,11 +8,11 @@ namespace Net
 {
 #ifdef PLAT_WIN32
 
-    class CSession
+    class Session
     {
     public:
-        CSession();
-        virtual ~CSession();
+        Session();
+        virtual ~Session();
 
     private:
         enum class SOCK_STATUS
@@ -68,12 +68,12 @@ namespace Net
         Poll::CompletionKey*        _key = nullptr;
 
         // about recving
-        CMessage    _msg_header;
-        CMessage*   _msg_recv = nullptr;
+        Message    _msg_header;
+        Message*   _msg_recv = nullptr;
 
         // about sending
-        std::queue<CMessage*>       _que_send;
-        CMessage*                   _msg_send = nullptr;
+        std::queue<Message*>       _que_send;
+        Message*                   _msg_send = nullptr;
         
         PerIoData _io_send;
         PerIoData _io_recv;
@@ -96,11 +96,11 @@ namespace Net
 
 
 
-    class CSession
+    class Session
     {
     public:
-        CSession();
-        virtual ~CSession();
+        Session();
+        virtual ~Session();
 
     private:
         enum SOCK_STATUS
@@ -154,12 +154,12 @@ namespace Net
         Poll::CompletionKey*        _key = nullptr;
 
         // about recving
-        CMessage        _msg_header;
-        CMessage*       _msg_recv = nullptr;
+        Message        _msg_header;
+        Message*       _msg_recv = nullptr;
 
         // about sending
-        std::queue<CMessage*>       _que_send;
-        CMessage*                   _msg_send = nullptr;
+        std::queue<Message*>       _que_send;
+        Message*                   _msg_send = nullptr;
         size_t                      _send_len = 0;
 
         uint32          _send_error = 0;

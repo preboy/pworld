@@ -22,7 +22,7 @@
     <ProjectGuid>{B29EBC43-7B4C-4E69-A757-2F3931E7C679}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>libcore</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -166,7 +166,6 @@
     <ClInclude Include="include\FrameEvent.h" />
     <ClInclude Include="include\global_function.h" />
     <ClInclude Include="include\idmaker.h" />
-    <ClInclude Include="include\json.h" />
     <ClInclude Include="include\libcore.hpp" />
     <ClInclude Include="include\listener.h" />
     <ClInclude Include="include\lock.h" />
@@ -194,9 +193,6 @@
     <ClInclude Include="include\timer.h" />
     <ClInclude Include="include\utils.h" />
     <ClInclude Include="include\variant.h" />
-    <ClInclude Include="include\xml.h" />
-    <ClInclude Include="include\xml_alloc.h" />
-    <ClInclude Include="src\JsonException.h" />
     <ClCompile Include="src\Database.cpp" />
     <ClCompile Include="src\DebugHelper.cpp" />
     <ClCompile Include="src\global_function.cpp" />
@@ -205,8 +201,6 @@
     </ClCompile>
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\targetver.h" />
-    <ClInclude Include="src\xml_exception.h" />
-    <ClInclude Include="src\xml_function.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AsyncTask.cpp" />
@@ -215,8 +209,6 @@
     <ClCompile Include="src\connector.cpp" />
     <ClCompile Include="src\FrameEvent.cpp" />
     <ClCompile Include="src\idmaker.cpp" />
-    <ClCompile Include="src\json.cpp" />
-    <ClCompile Include="src\JsonException.cpp" />
     <ClCompile Include="src\listener.cpp" />
     <ClCompile Include="src\lock.cpp" />
     <ClCompile Include="src\logger.cpp" />
@@ -246,14 +238,6 @@
     </ClCompile>
     <ClCompile Include="src\timer.cpp" />
     <ClCompile Include="src\utils.cpp" />
-    <ClCompile Include="src\xml.cpp" />
-    <ClCompile Include="src\xml_alloc.cpp" />
-    <ClCompile Include="src\xml_element.cpp" />
-    <ClCompile Include="src\xml_exception.cpp" />
-    <ClCompile Include="src\xml_file.cpp" />
-    <ClCompile Include="src\xml_function.cpp" />
-    <ClCompile Include="src\xml_head.cpp" />
-    <ClCompile Include="src\xml_string.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\common\make.bat" />

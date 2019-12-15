@@ -4,7 +4,7 @@
 #include "logger.h"
 
 
-CByteBuffer::CByteBuffer(uint32 size) : 
+ByteBuffer::ByteBuffer(uint32 size) : 
     _rd_ptr(0),
     _wr_ptr(0),
     _buffer(nullptr),
@@ -19,13 +19,13 @@ CByteBuffer::CByteBuffer(uint32 size) :
 }
 
 
-CByteBuffer::CByteBuffer() :
-    CByteBuffer(0)
+ByteBuffer::ByteBuffer() :
+    ByteBuffer(0)
 {
 }
 
 
-CByteBuffer::~CByteBuffer()
+ByteBuffer::~ByteBuffer()
 {
     if (!_attach)
     {
@@ -34,7 +34,7 @@ CByteBuffer::~CByteBuffer()
 }
 
 
-bool CByteBuffer::Attach(Net::CPacket* packet)
+bool ByteBuffer::Attach(Net::Packet* packet)
 {
     if (_size || _attach)
     {
@@ -51,7 +51,7 @@ bool CByteBuffer::Attach(Net::CPacket* packet)
 }
 
 
-void CByteBuffer::Detach()
+void ByteBuffer::Detach()
 {
     _attach = false;
     _buffer = nullptr;
@@ -60,13 +60,13 @@ void CByteBuffer::Detach()
 }
 
 
-CByteBuffer::CByteBuffer(CByteBuffer&& rval)
+ByteBuffer::ByteBuffer(ByteBuffer&& rval)
 {
-    CByteBuffer::operator=(std::move(rval));
+    ByteBuffer::operator=(std::move(rval));
 }
 
 
-CByteBuffer& CByteBuffer::operator = (CByteBuffer&& rval)
+ByteBuffer& ByteBuffer::operator = (ByteBuffer&& rval)
 {
     this->_rd_ptr   = rval._rd_ptr;
     this->_wr_ptr   = rval._wr_ptr;
@@ -78,7 +78,7 @@ CByteBuffer& CByteBuffer::operator = (CByteBuffer&& rval)
 }
 
 
-bool CByteBuffer::Out(void* data, uint32 size)
+bool ByteBuffer::Out(void* data, uint32 size)
 {
     if (Avail() >= size)
     {
@@ -91,7 +91,7 @@ bool CByteBuffer::Out(void* data, uint32 size)
 }
 
 
-bool CByteBuffer::In(const void* data, uint32 size)
+bool ByteBuffer::In(const void* data, uint32 size)
 {
     if (Free() >= size)
     {
@@ -104,21 +104,21 @@ bool CByteBuffer::In(const void* data, uint32 size)
 }
 
 
-CByteBuffer& CByteBuffer::operator << (const std::string& str)
+ByteBuffer& ByteBuffer::operator << (const std::string& str)
 {
     this->operator << (str.c_str());
     return *this;
 }
 
 
-CByteBuffer& CByteBuffer::operator << (const char* str)
+ByteBuffer& ByteBuffer::operator << (const char* str)
 {
     this->In(str, static_cast<uint32>(strlen(str)+1));
     return *this;
 }
 
 
-CByteBuffer& CByteBuffer::operator >> (std::string& str)
+ByteBuffer& ByteBuffer::operator >> (std::string& str)
 {
     std::string src = (char*)(_buffer + _rd_ptr);
     uint32 len = (uint32)src.length() + 1;
@@ -136,7 +136,7 @@ CByteBuffer& CByteBuffer::operator >> (std::string& str)
 }
 
 
-void CByteBuffer::ReadOffset(int32 offset)
+void ByteBuffer::ReadOffset(int32 offset)
 {
     if (offset > 0)
     {
@@ -156,7 +156,7 @@ void CByteBuffer::ReadOffset(int32 offset)
 }
 
 
-void CByteBuffer::WriteOffset(int32 offset)
+void ByteBuffer::WriteOffset(int32 offset)
 {
     if (offset > 0)
     {
@@ -176,7 +176,7 @@ void CByteBuffer::WriteOffset(int32 offset)
 }
 
 
-void CByteBuffer::Resize(uint32 size)
+void ByteBuffer::Resize(uint32 size)
 {
     if (_attach || size <= _size)
         return;

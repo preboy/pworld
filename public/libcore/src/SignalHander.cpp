@@ -6,11 +6,11 @@
 
 #ifdef PLAT_WIN32
 
-CSignalHander::CSignalHander()
+SignalHander::SignalHander()
 {
 }
 
-CSignalHander::~CSignalHander()
+SignalHander::~SignalHander()
 {
 }
 
@@ -20,7 +20,7 @@ CSignalHander::~CSignalHander()
 
 #ifdef PLAT_LINUX
 
-void CSignalHander::_signal_thread_func()
+void SignalHander::_signal_thread_func()
 {
     _tid = pthread_self();
     while (true)
@@ -42,7 +42,7 @@ void CSignalHander::_signal_thread_func()
 }
 
 
-bool CSignalHander::Init()
+bool SignalHander::Init()
 {
     sigemptyset(&_set);
         
@@ -60,13 +60,13 @@ bool CSignalHander::Init()
         return false;
     }
 
-    _thread = std::thread(&CSignalHander::_signal_thread_func, this);
+    _thread = std::thread(&SignalHander::_signal_thread_func, this);
 
     return true;
 }
 
 
-void CSignalHander::Release()
+void SignalHander::Release()
 {
     if (_thread.joinable())
     {
@@ -77,7 +77,7 @@ void CSignalHander::Release()
 }
 
 
-void CSignalHander::signal_handler(int sig)
+void SignalHander::signal_handler(int sig)
 {
     sLogger->Debug("new signal come in sig = %d", sig);
 }

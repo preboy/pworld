@@ -5,7 +5,7 @@
 
 
 //////////////////////////////////////////////////////////////////////////
-static void MysqlErrorReport(MYSQL* mysql, CMysqlHandler* handler)
+static void MysqlErrorReport(MYSQL* mysql, MysqlHandler* handler)
 {
     const char* err_stage = mysql_sqlstate(mysql);
     unsigned int err_no = mysql_errno(mysql);
@@ -14,7 +14,7 @@ static void MysqlErrorReport(MYSQL* mysql, CMysqlHandler* handler)
 }
 
 
-static void MysqlErrorReportStmt(MYSQL_STMT* stmt, CMysqlHanderStmt* handler)
+static void MysqlErrorReportStmt(MYSQL_STMT* stmt, MySQLHanderStmt* handler)
 {
     const char* err_stage = mysql_stmt_sqlstate(stmt);
     unsigned int err_no = mysql_stmt_errno(stmt);
@@ -24,7 +24,7 @@ static void MysqlErrorReportStmt(MYSQL_STMT* stmt, CMysqlHanderStmt* handler)
 
 
 //////////////////////////////////////////////////////////////////////////
-CMysqlQueryResultStmt::CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, CMysqlHanderStmt* handler) :
+MysqlQueryResultStmt::MysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, MySQLHanderStmt* handler) :
     _mysql_stmt(mysql_stmt),
     _result(meta_result),
     _handler(handler)
@@ -67,7 +67,7 @@ CMysqlQueryResultStmt::CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* 
 }
 
 
-CMysqlQueryResultStmt::~CMysqlQueryResultStmt()
+MysqlQueryResultStmt::~MysqlQueryResultStmt()
 {
     for (unsigned int i = 0; i < _num_fields; i++)
     {
@@ -80,13 +80,13 @@ CMysqlQueryResultStmt::~CMysqlQueryResultStmt()
 }
 
 
-void  CMysqlQueryResultStmt::_stored()
+void  MysqlQueryResultStmt::_stored()
 {
     _num_rows = mysql_stmt_num_rows(_mysql_stmt);
 }
 
 
-bool CMysqlQueryResultStmt::NextRow()
+bool MysqlQueryResultStmt::NextRow()
 {
     int ret = mysql_stmt_fetch(_mysql_stmt);
     if (ret == 0)
@@ -111,7 +111,7 @@ bool CMysqlQueryResultStmt::NextRow()
 }
 
 
-const char* CMysqlQueryResultStmt::GetValue(uint32 idx)
+const char* MysqlQueryResultStmt::GetValue(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields)
     {
@@ -122,7 +122,7 @@ const char* CMysqlQueryResultStmt::GetValue(uint32 idx)
 }
 
 
-unsigned long CMysqlQueryResultStmt::GetLength(uint32 idx)
+unsigned long MysqlQueryResultStmt::GetLength(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields)
     {
@@ -132,7 +132,7 @@ unsigned long CMysqlQueryResultStmt::GetLength(uint32 idx)
 }
 
 
-int32 CMysqlQueryResultStmt::GetInt32(uint32 idx)
+int32 MysqlQueryResultStmt::GetInt32(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null) )
     {
@@ -141,7 +141,7 @@ int32 CMysqlQueryResultStmt::GetInt32(uint32 idx)
     return *(int32*)(_result_bind[idx].buffer);
 }
 
-int64 CMysqlQueryResultStmt::GetInt64(uint32 idx)
+int64 MysqlQueryResultStmt::GetInt64(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
     {
@@ -151,7 +151,7 @@ int64 CMysqlQueryResultStmt::GetInt64(uint32 idx)
 }
 
 
-float CMysqlQueryResultStmt::GetFloat(uint32 idx)
+float MysqlQueryResultStmt::GetFloat(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
     {
@@ -161,7 +161,7 @@ float CMysqlQueryResultStmt::GetFloat(uint32 idx)
 }
 
 
-double CMysqlQueryResultStmt::GetDouble(uint32 idx)
+double MysqlQueryResultStmt::GetDouble(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
     {
@@ -171,7 +171,7 @@ double CMysqlQueryResultStmt::GetDouble(uint32 idx)
 }
 
 
-const char* CMysqlQueryResultStmt::GetString(uint32 idx)
+const char* MysqlQueryResultStmt::GetString(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
     {
@@ -181,7 +181,7 @@ const char* CMysqlQueryResultStmt::GetString(uint32 idx)
 }
 
 
-const char* CMysqlQueryResultStmt::GetBinary(uint32 idx, char* data, unsigned long size)
+const char* MysqlQueryResultStmt::GetBinary(uint32 idx, char* data, unsigned long size)
 {
     if ((unsigned int)idx >= _num_fields || (*_result_bind[idx].is_null))
     {
@@ -198,7 +198,7 @@ const char* CMysqlQueryResultStmt::GetBinary(uint32 idx, char* data, unsigned lo
 
 
 //////////////////////////////////////////////////////////////////////////
-CMysqlHanderStmt::CMysqlHanderStmt(MYSQL* mysql, CMysqlHandler* handler) :
+MySQLHanderStmt::MySQLHanderStmt(MYSQL* mysql, MysqlHandler* handler) :
     _mysql(mysql),
     _mysql_stmt(nullptr),
     _meta_result(nullptr),
@@ -209,13 +209,13 @@ CMysqlHanderStmt::CMysqlHanderStmt(MYSQL* mysql, CMysqlHandler* handler) :
 }
 
 
-CMysqlHanderStmt::~CMysqlHanderStmt()
+MySQLHanderStmt::~MySQLHanderStmt()
 {
     _release();
 }
 
 
-void CMysqlHanderStmt::_release()
+void MySQLHanderStmt::_release()
 {
     SAFE_DELETE(_query_result);
 
@@ -232,7 +232,7 @@ void CMysqlHanderStmt::_release()
 }
 
 
-bool CMysqlHanderStmt::_init(const char* sql)
+bool MySQLHanderStmt::_init(const char* sql)
 {
     bool ret = false;
     do
@@ -252,7 +252,7 @@ bool CMysqlHanderStmt::_init(const char* sql)
         _meta_result = mysql_stmt_result_metadata(_mysql_stmt);
         if (_meta_result)
         {
-            _query_result = new CMysqlQueryResultStmt(_mysql_stmt, _meta_result, this);
+            _query_result = new MysqlQueryResultStmt(_mysql_stmt, _meta_result, this);
         }
         ret = true;
     } while (0);
@@ -266,7 +266,7 @@ bool CMysqlHanderStmt::_init(const char* sql)
 }
 
 
-CMysqlQueryResultStmt* CMysqlHanderStmt::Execute(MysqlBindParam* params)
+MysqlQueryResultStmt* MySQLHanderStmt::Execute(MysqlBindParam* params)
 {
     MYSQL_BIND* bind = nullptr;
     if (_param_count)
@@ -333,14 +333,14 @@ CMysqlQueryResultStmt* CMysqlHanderStmt::Execute(MysqlBindParam* params)
 }
 
 
-void CMysqlHanderStmt::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
+void MySQLHanderStmt::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
 {
     _handler->OnError(err_no, err_msg, err_stage);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
-CMysqlQueryResult::CMysqlQueryResult(MYSQL_RES* result, CMysqlHandler* handler) :
+MysqlQueryResult::MysqlQueryResult(MYSQL_RES* result, CMysqlHandler* handler) :
     _result(result),
     _row(nullptr),
     _handler(handler)
@@ -351,7 +351,7 @@ CMysqlQueryResult::CMysqlQueryResult(MYSQL_RES* result, CMysqlHandler* handler) 
 }
 
 
-CMysqlQueryResult::~CMysqlQueryResult()
+MysqlQueryResult::~MysqlQueryResult()
 {
     if (_result)
     {
@@ -361,7 +361,7 @@ CMysqlQueryResult::~CMysqlQueryResult()
 }
 
 
-bool CMysqlQueryResult::NextRow()
+bool MysqlQueryResult::NextRow()
 {
     _row = mysql_fetch_row(_result);
     if (_row)
@@ -373,7 +373,7 @@ bool CMysqlQueryResult::NextRow()
 }
 
 
-const char* CMysqlQueryResult::GetValue(uint32 idx)
+const char* MysqlQueryResult::GetValue(uint32 idx)
 {
     if (!_row || idx >= _num_fields)
     {
@@ -383,7 +383,7 @@ const char* CMysqlQueryResult::GetValue(uint32 idx)
 }
 
 
-unsigned long CMysqlQueryResult::GetLength(uint32 idx)
+unsigned long MysqlQueryResult::GetLength(uint32 idx)
 {
     if (!_row || idx >= _num_fields)
     {
@@ -393,7 +393,7 @@ unsigned long CMysqlQueryResult::GetLength(uint32 idx)
 }
 
 
-int32 CMysqlQueryResult::GetInt32(uint32 idx)
+int32 MysqlQueryResult::GetInt32(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields)
     {
@@ -403,7 +403,7 @@ int32 CMysqlQueryResult::GetInt32(uint32 idx)
 }
 
 
-int64 CMysqlQueryResult::GetInt64(uint32 idx)
+int64 MysqlQueryResult::GetInt64(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields)
     {
@@ -413,7 +413,7 @@ int64 CMysqlQueryResult::GetInt64(uint32 idx)
 }
 
 
-float CMysqlQueryResult::GetFloat(uint32 idx)
+float MysqlQueryResult::GetFloat(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields)
     {
@@ -423,7 +423,7 @@ float CMysqlQueryResult::GetFloat(uint32 idx)
 }
 
 
-double CMysqlQueryResult::GetDouble(uint32 idx)
+double MysqlQueryResult::GetDouble(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields)
     {
@@ -433,7 +433,7 @@ double CMysqlQueryResult::GetDouble(uint32 idx)
 }
 
 
-const char* CMysqlQueryResult::GetString(uint32 idx)
+const char* MysqlQueryResult::GetString(uint32 idx)
 {
     if ((unsigned int)idx >= _num_fields)
     {
@@ -443,7 +443,7 @@ const char* CMysqlQueryResult::GetString(uint32 idx)
 }
 
 
-const char* CMysqlQueryResult::GetBinary(uint32 idx, char* data, unsigned long size)
+const char* MysqlQueryResult::GetBinary(uint32 idx, char* data, unsigned long size)
 {
     //  assert (IS_BLOB(_fields[idx]->flags))   IS_NOT_NULL(flags)
     if (!_row) return nullptr;
@@ -455,26 +455,26 @@ const char* CMysqlQueryResult::GetBinary(uint32 idx, char* data, unsigned long s
 
 
 //////////////////////////////////////////////////////////////////////////
-CMysqlHandler::CMysqlHandler() :
+MysqlHandler::MysqlHandler() :
     _mysql(nullptr),
     _alive(false)
 {
 }
 
 
-CMysqlHandler::~CMysqlHandler()
+MysqlHandler::~MysqlHandler()
 {
     Release();
 }
 
 
-void CMysqlHandler::Init()
+void MysqlHandler::Init()
 {
     _mysql = mysql_init(nullptr);
 }
 
 
-void CMysqlHandler::Release()
+void MysqlHandler::Release()
 {
     if (_mysql)
     {
@@ -484,7 +484,7 @@ void CMysqlHandler::Release()
 }
 
 
-bool CMysqlHandler::Connect(
+bool MysqlHandler::Connect(
     const char* host,
     const char* user,
     const char* passwd,
@@ -516,7 +516,7 @@ bool CMysqlHandler::Connect(
 }
 
 
-CMysqlQueryResult* CMysqlHandler::ExecuteSql(const char* sql)
+MysqlQueryResult* MysqlHandler::ExecuteSql(const char* sql)
 {
     int ret = mysql_real_query(_mysql, sql, (unsigned long)strlen(sql));
     if (ret)
@@ -528,7 +528,7 @@ CMysqlQueryResult* CMysqlHandler::ExecuteSql(const char* sql)
     MYSQL_RES *result = mysql_store_result(_mysql);
     if (result)  // there are rows
     {
-        return (new CMysqlQueryResult(result, this));
+        return (new MysqlQueryResult(result, this));
     }
     else  // mysql_store_result() returned nothing; should it have?
     {
@@ -551,7 +551,7 @@ CMysqlQueryResult* CMysqlHandler::ExecuteSql(const char* sql)
 }
 
 
-CMysqlHanderStmt* CMysqlHandler::CreateStmtHander(const char* sql)
+MySQLHanderStmt* MysqlHandler::CreateStmtHander(const char* sql)
 {
     if (!_mysql) return nullptr;
 	CMysqlHanderStmt* handle_stmt = new CMysqlHanderStmt(_mysql, this);
@@ -563,7 +563,7 @@ CMysqlHanderStmt* CMysqlHandler::CreateStmtHander(const char* sql)
 }
 
 
-void CMysqlHandler::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
+void MysqlHandler::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
 {
     sLogger->Error("mysql state:%s", err_stage);
     sLogger->Error("mysql error:[%d]%s", err_no, err_msg);
@@ -577,7 +577,7 @@ void CMysqlHandler::OnError(unsigned int err_no, const char* err_msg, const char
 
 
 //////////////////////////////////////////////////////////////////////////
-void CMysqlService::Init()
+void MysqlService::Init()
 {
     if (mysql_library_init(0, nullptr, nullptr))
     {
@@ -586,7 +586,7 @@ void CMysqlService::Init()
 }
 
 
-void CMysqlService::Release()
+void MysqlService::Release()
 {
     mysql_library_end();
 }

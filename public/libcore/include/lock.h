@@ -1,11 +1,11 @@
 #pragma once
 
 #ifdef PLAT_WIN32
-class CCriticalSection
+class CriticalSection
 {
 public:
-    CCriticalSection();
-    ~CCriticalSection();
+    CriticalSection();
+    ~CriticalSection();
 
 public:
     void Enter();
@@ -17,33 +17,33 @@ private:
 };
 
 
-class  CLock
+class  Lock
 {
 public:
-    CLock(CCriticalSection& lck);
-    ~CLock();
+    Lock(CriticalSection& lck);
+    ~Lock();
 
-    CLock(const CLock&) = delete;
-    void operator = (const CLock&) = delete;
+    Lock(const Lock&) = delete;
+    void operator = (const Lock&) = delete;
 
 private:
-    CCriticalSection& m_lock;
+    CriticalSection& m_lock;
 };
 
 
-class  CTryLock
+class  TryLock
 {
 public:
-    CTryLock(CCriticalSection& lck);
-    ~CTryLock();
+    TryLock(CriticalSection& lck);
+    ~TryLock();
 
     bool TryEnter();
 
-    CTryLock(const CTryLock&) = delete;
-    void operator = (const CTryLock&) = delete;
+    TryLock(const TryLock&) = delete;
+    void operator = (const TryLock&) = delete;
 
 private:
-    CCriticalSection& m_lock;
+    CriticalSection& m_lock;
     bool _is_get = false;
 };
 #endif

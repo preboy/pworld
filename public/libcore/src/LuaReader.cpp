@@ -4,18 +4,18 @@
 #include "logger.h"
 
 
-CLuaReader::CLuaReader()
+LuaReader::LuaReader()
 {
 }
 
 
-CLuaReader::~CLuaReader()
+LuaReader::~LuaReader()
 {
     this->Close();
 }
 
 
-void CLuaReader::Create()
+void LuaReader::Create()
 {
     _L = luaL_newstate();
     assert(_L);
@@ -23,7 +23,7 @@ void CLuaReader::Create()
 }
 
 
-void CLuaReader::Attach(lua_State* l) 
+void LuaReader::Attach(lua_State* l) 
 {
     assert(l);
     _L = l;
@@ -31,7 +31,7 @@ void CLuaReader::Attach(lua_State* l)
 }
 
 
-void CLuaReader::Close()
+void LuaReader::Close()
 {
     if (!_attach)
     {
@@ -40,7 +40,7 @@ void CLuaReader::Close()
 }
 
 
-bool CLuaReader::DoFile(const char* filename)
+bool LuaReader::DoFile(const char* filename)
 {
     int ret = luaL_dofile(_L, filename);
     if (ret)
@@ -55,7 +55,7 @@ bool CLuaReader::DoFile(const char* filename)
 }
 
 
-bool CLuaReader::EnterTable(int idx)
+bool LuaReader::EnterTable(int idx)
 {
     int type = lua_rawgeti(_L, -1, idx);
     if (type != LUA_TTABLE)
@@ -67,7 +67,7 @@ bool CLuaReader::EnterTable(int idx)
 }
 
 
-bool CLuaReader::EnterTable(const char* key)
+bool LuaReader::EnterTable(const char* key)
 {
     lua_pushstring(_L, key);
     int type = lua_rawget(_L, -2);
@@ -80,20 +80,20 @@ bool CLuaReader::EnterTable(const char* key)
 }
 
 
-bool CLuaReader::EnterGlobalTable()
+bool LuaReader::EnterGlobalTable()
 {
     lua_pushglobaltable(_L);
     return true;
 }
 
 
-void CLuaReader::LeaveTable()
+void LuaReader::LeaveTable()
 {
     lua_pop(_L, 1);
 }
 
 
-lua_Number CLuaReader::GetNumber(int idx, int* isnum)
+lua_Number LuaReader::GetNumber(int idx, int* isnum)
 {
     lua_rawgeti(_L, -1, idx);
     lua_Number ret = lua_tonumberx(_L, -1, isnum);
@@ -102,7 +102,7 @@ lua_Number CLuaReader::GetNumber(int idx, int* isnum)
 }
 
 
-lua_Number CLuaReader::GetNumber(const char* key, int* isnum)
+lua_Number LuaReader::GetNumber(const char* key, int* isnum)
 {
     lua_pushstring(_L, key);
     lua_rawget(_L, -2);
@@ -112,7 +112,7 @@ lua_Number CLuaReader::GetNumber(const char* key, int* isnum)
 }
 
 
-int CLuaReader::GetBoolean(int idx)
+int LuaReader::GetBoolean(int idx)
 {
     lua_rawgeti(_L, -1, idx);
     int ret = lua_toboolean(_L, -1);
@@ -121,7 +121,7 @@ int CLuaReader::GetBoolean(int idx)
 }
 
 
-int CLuaReader::GetBoolean(const char* key)
+int LuaReader::GetBoolean(const char* key)
 {
     lua_pushstring(_L, key);
     lua_rawget(_L, -2);
@@ -131,7 +131,7 @@ int CLuaReader::GetBoolean(const char* key)
 }
 
 
-lua_Integer CLuaReader::GetInteger(int idx, int* isnum)
+lua_Integer LuaReader::GetInteger(int idx, int* isnum)
 {
     lua_rawgeti(_L, -1, idx);
     lua_Integer ret = lua_tointegerx(_L, -1, isnum);
@@ -140,7 +140,7 @@ lua_Integer CLuaReader::GetInteger(int idx, int* isnum)
 }
 
 
-lua_Integer CLuaReader::GetInteger(const char* key, int* isnum)
+lua_Integer LuaReader::GetInteger(const char* key, int* isnum)
 {
     lua_pushstring(_L, key);
     lua_rawget(_L, -2);
@@ -150,7 +150,7 @@ lua_Integer CLuaReader::GetInteger(const char* key, int* isnum)
 }
 
 
-std::string CLuaReader::GetString(int idx)
+std::string LuaReader::GetString(int idx)
 {
     lua_rawgeti(_L, -1, idx);
     std::string str = lua_tostring(_L, -1);
@@ -159,7 +159,7 @@ std::string CLuaReader::GetString(int idx)
 }
 
 
-std::string CLuaReader::GetString(const char* key)
+std::string LuaReader::GetString(const char* key)
 {
     lua_pushstring(_L, key);
     lua_rawget(_L, -2);
@@ -169,7 +169,7 @@ std::string CLuaReader::GetString(const char* key)
 }
 
 
-lua_Number CLuaReader::GetNumberDeep(const char* expr)
+lua_Number LuaReader::GetNumberDeep(const char* expr)
 {
     assert(expr);
     char* str = _strdup(expr);
@@ -227,7 +227,7 @@ lua_Number CLuaReader::GetNumberDeep(const char* expr)
 }
 
 
-std::string CLuaReader::GetStringDeep(const char* expr)
+std::string LuaReader::GetStringDeep(const char* expr)
 {
     assert(expr);
     char* str = _strdup(expr);

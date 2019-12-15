@@ -48,13 +48,13 @@ class CallbackP8;
 *
 * this is Callback base class
 */
-class CCallback
+class Callback
 {
 protected:
-    CCallback() {}
+    Callback() {}
 
 public:
-    virtual ~CCallback() {}
+    virtual ~Callback() {}
 
 public:
     virtual void Run() = 0;
@@ -62,7 +62,7 @@ public:
     /// static bind methods
 public:
     template<typename T>
-    inline static CCallback *Bind(T *obj,
+    inline static Callback *Bind(T *obj,
         void (T::*m)())
     {
         return new CallbackP0<T>(obj, m);
@@ -71,7 +71,7 @@ public:
     template<typename T,
         typename P1,
         typename S1>
-        inline static CCallback *Bind(T *obj,
+        inline static Callback *Bind(T *obj,
             void (T::*m)(S1),
             P1 p1)
     {
@@ -85,7 +85,7 @@ public:
     template<typename T,
         typename P1, typename P2,
         typename S1, typename S2>
-        inline static CCallback *Bind(T *obj,
+        inline static Callback *Bind(T *obj,
             void (T::*m)(S1, S2),
             P1 p1,
             P2 p2)
@@ -101,7 +101,7 @@ public:
     template<typename T,
         typename P1, typename P2, typename P3,
         typename S1, typename S2, typename S3>
-        inline static CCallback *Bind(T *obj,
+        inline static Callback *Bind(T *obj,
             void (T::*m)(S1, S2, S3),
             P1 p1,
             P2 p2,
@@ -119,7 +119,7 @@ public:
     template<typename T,
         typename P1, typename P2, typename P3, typename P4,
         typename S1, typename S2, typename S3, typename S4>
-        inline static CCallback *Bind(T *obj,
+        inline static Callback *Bind(T *obj,
             void (T::*m)(S1, S2, S3, S4),
             P1 p1,
             P2 p2,
@@ -139,7 +139,7 @@ public:
     template<typename T,
         typename P1, typename P2, typename P3, typename P4, typename P5,
         typename S1, typename S2, typename S3, typename S4, typename S5>
-        inline static CCallback *Bind(T *obj,
+        inline static Callback *Bind(T *obj,
             void (T::*m)(S1, S2, S3, S4, S5),
             P1 p1,
             P2 p2,
@@ -161,7 +161,7 @@ public:
     template<typename T,
         typename P1, typename P2, typename P3, typename P4, typename P5, typename P6,
         typename S1, typename S2, typename S3, typename S4, typename S5, typename S6>
-        inline static CCallback *Bind(T *obj,
+        inline static Callback *Bind(T *obj,
             void (T::*m)(S1, S2, S3, S4, S5, S6),
             P1 p1,
             P2 p2,
@@ -184,7 +184,7 @@ public:
     template<typename T,
         typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7,
         typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7>
-        inline static CCallback *Bind(T *obj,
+        inline static Callback *Bind(T *obj,
         void (T::*m)(S1, S2, S3, S4, S5, S6, S7),
         P1 p1,
         P2 p2,
@@ -210,7 +210,7 @@ public:
     template<typename T,
         typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8,
         typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7, typename S8>
-        inline static CCallback *Bind(T *obj,
+        inline static Callback *Bind(T *obj,
         void (T::*m)(S1, S2, S3, S4, S5, S6, S7, S8),
         P1 p1,
         P2 p2,
@@ -242,7 +242,7 @@ public:
 * Callback with 0 parameter
 */
 template<typename T>
-class CallbackP0 : public CCallback
+class CallbackP0 : public Callback
 {
 public:
     typedef void (T::*M)();
@@ -273,7 +273,7 @@ private:
 template<typename T,
     typename P1,
     typename S1>
-class CallbackP1 : public CCallback
+class CallbackP1 : public Callback
 {
 public:
     typedef void (T::*M)(S1);
@@ -307,7 +307,7 @@ private:
 template<typename T,
     typename P1, typename P2,
     typename S1, typename S2>
-class CallbackP2 : public CCallback
+class CallbackP2 : public Callback
 {
 public:
     typedef void (T::*M)(S1, S2);
@@ -344,7 +344,7 @@ private:
 template<typename T,
     typename P1, typename P2, typename P3,
     typename S1, typename S2, typename S3>
-class CallbackP3 : public CCallback
+class CallbackP3 : public Callback
 {
 public:
     typedef void (T::*M)(S1, S2, S3);
@@ -384,7 +384,7 @@ private:
 template<typename T,
     typename P1, typename P2, typename P3, typename P4,
     typename S1, typename S2, typename S3, typename S4>
-class CallbackP4 : public CCallback
+class CallbackP4 : public Callback
 {
 public:
     typedef void (T::*M)(S1, S2, S3, S4);
@@ -427,7 +427,7 @@ private:
 template<typename T,
     typename P1, typename P2, typename P3, typename P4, typename P5,
     typename S1, typename S2, typename S3, typename S4, typename S5>
-class CallbackP5 : public CCallback
+class CallbackP5 : public Callback
 {
 public:
     typedef void (T::*M)(S1, S2, S3, S4, S5);
@@ -474,7 +474,7 @@ private:
 template<typename T,
     typename P1, typename P2, typename P3, typename P4, typename P5, typename P6,
     typename S1, typename S2, typename S3, typename S4, typename S5, typename S6>
-class CallbackP6 : public CCallback
+class CallbackP6 : public Callback
 {
 public:
     typedef void (T::*M)(S1, S2, S3, S4, S5, S6);
@@ -524,7 +524,7 @@ private:
 template<typename T,
     typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7,
     typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7>
-class CallbackP7 : public CCallback
+class CallbackP7 : public Callback
 {
 public:
     typedef void (T::*M)(S1, S2, S3, S4, S5, S6, S7);
@@ -577,7 +577,7 @@ private:
 template<typename T,
     typename P1, typename P2, typename P3, typename P4, typename P5, typename P6, typename P7, typename P8,
     typename S1, typename S2, typename S3, typename S4, typename S5, typename S6, typename S7, typename S8>
-class CallbackP8 : public CCallback
+class CallbackP8 : public Callback
 {
 public:
     typedef void (T::*M)(S1, S2, S3, S4, S5, S6, S7, S8);

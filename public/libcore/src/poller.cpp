@@ -10,7 +10,7 @@ namespace Poll
 
 #ifdef PLAT_WIN32
 
-    bool CPoller::Init(uint32 threadCount)
+    bool Poller::Init(uint32 threadCount)
     {
         if (threadCount == 0)
         {
@@ -27,7 +27,7 @@ namespace Poll
         m_threadCount = threadCount;
         for (uint32 i = 0; i < threadCount; i++)
         {
-            m_pthreads[i] = ::CreateThread(nullptr, 0, &CPoller::__poller_thread_func__, this, 0, nullptr);
+            m_pthreads[i] = ::CreateThread(nullptr, 0, &Poller::__poller_thread_func__, this, 0, nullptr);
             if (m_pthreads[i] == nullptr)
             {
                 return false;
@@ -37,7 +37,7 @@ namespace Poll
     }
 
 
-    void CPoller::Release()
+    void Poller::Release()
     {
         if (m_hIOCP)
         {
@@ -54,21 +54,21 @@ namespace Poll
     }
 
 
-    bool CPoller::RegisterHandler(HANDLE handle, const CompletionKey* key)
+    bool Poller::RegisterHandler(HANDLE handle, const CompletionKey* key)
     {
         return nullptr != ::CreateIoCompletionPort(handle, m_hIOCP, (ULONG_PTR)key, 0);
     }
 
 
-    bool CPoller::PostCompletion(const CompletionKey* key, OVERLAPPED* overlapped, DWORD bytes)
+    bool Poller::PostCompletion(const CompletionKey* key, OVERLAPPED* overlapped, DWORD bytes)
     {
         return 0 != ::PostQueuedCompletionStatus(m_hIOCP, (DWORD)bytes, (ULONG_PTR)key, overlapped);
     }
 
 
-    DWORD CPoller::__poller_thread_func__(LPVOID lpParam)
+    DWORD Poller::__poller_thread_func__(LPVOID lpParam)
     {
-        CPoller* pThis = static_cast<CPoller*>(lpParam);
+        Poller* pThis = static_cast<Poller*>(lpParam);
         while (true)
         {
             DWORD           bytes;
@@ -121,7 +121,7 @@ namespace Poll
 
 
 
-    void CPoller::__poller_thread_func__()
+    void Poller::__poller_thread_func__()
     {
         const int MAX_EVENT_COUNT = 128;
         struct epoll_event  evts[MAX_EVENT_COUNT];
@@ -148,7 +148,7 @@ namespace Poll
     }
 
 
-    bool CPoller::Init(uint32 thread_count)
+    bool Poller::Init(uint32 thread_count)
     {
         CORE_UNUSED(thread_count);
 
@@ -159,13 +159,13 @@ namespace Poll
             return false;
         }
 
-        _thread = std::thread(&CPoller::__poller_thread_func__, this);
+        _thread = std::thread(&Poller::__poller_thread_func__, this);
 
         return true;
     }
 
 
-    void CPoller::Release()
+    void Poller::Release()
     {
         _running = false;
         if (_epoll_fd != -1)
@@ -181,7 +181,7 @@ namespace Poll
     }
 
 
-    bool CPoller::RegisterHandler(int fd, CompletionKey* key, uint32 events)
+    bool Poller::RegisterHandler(int fd, CompletionKey* key, uint32 events)
     {
         key->status = Net::IO_STATUS::IO_STATUS_PENDING;
         
@@ -202,7 +202,7 @@ namespace Poll
     }
 
 
-    void  CPoller::UnregisterHandler(int fd)
+    void  Poller::UnregisterHandler(int fd)
     {
         epoll_ctl(_epoll_fd, EPOLL_CTL_DEL, fd, nullptr);
     }

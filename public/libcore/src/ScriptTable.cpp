@@ -5,15 +5,15 @@
 #include "singleton.h"
 
 
-CScriptTable::~CScriptTable()
+ScriptTable::~ScriptTable()
 {
     this->Destroy();
 }
 
 
-void CScriptTable::Create(int stack)
+void ScriptTable::Create(int stack)
 {
-    lua_State *L = INSTANCE(CLuaEngine)->GetLuaState();
+    lua_State *L = INSTANCE(LuaEngine)->GetLuaState();
     if (!lua_istable(L, stack)) return;
 
     this->Destroy();
@@ -23,20 +23,20 @@ void CScriptTable::Create(int stack)
 }
 
 
-void CScriptTable::Destroy()
+void ScriptTable::Destroy()
 {
     if (_tab_ref == LUA_NOREF) return;
 
-    lua_State *L = INSTANCE(CLuaEngine)->GetLuaState();
+    lua_State *L = INSTANCE(LuaEngine)->GetLuaState();
 
     luaL_unref(L, LUA_REGISTRYINDEX, _tab_ref);
     _tab_ref = LUA_NOREF;
 }
 
 
-void CScriptTable::GetTable()
+void ScriptTable::GetTable()
 {
-    lua_State *L = INSTANCE(CLuaEngine)->GetLuaState();
+    lua_State *L = INSTANCE(LuaEngine)->GetLuaState();
 
     if (_tab_ref == LUA_NOREF)
     {
@@ -50,7 +50,7 @@ void CScriptTable::GetTable()
 }
 
 
-void CScriptTable::Serialize(CByteBuffer &bb)
+void ScriptTable::Serialize(ByteBuffer &bb)
 {
     if (_tab_ref == LUA_NOREF)
     {
@@ -60,24 +60,24 @@ void CScriptTable::Serialize(CByteBuffer &bb)
     {
         bb << uint8(1);
 
-        lua_State *L = INSTANCE(CLuaEngine)->GetLuaState();
+        lua_State *L = INSTANCE(LuaEngine)->GetLuaState();
 
         lua_rawgeti(L, LUA_REGISTRYINDEX, _tab_ref);
-        CLuaTable::Serialize(L, bb);
+        LuaTable::Serialize(L, bb);
         lua_pop(L, 1);
     }
 }
 
 
-void CScriptTable::Deserialize(CByteBuffer &bb)
+void ScriptTable::Deserialize(ByteBuffer &bb)
 {
     uint8 flag;
     bb >> flag;
     if (!flag) return;
 
-    lua_State *L = INSTANCE(CLuaEngine)->GetLuaState();
+    lua_State *L = INSTANCE(LuaEngine)->GetLuaState();
 
-    CLuaTable::Deserialize(L, bb);
+    LuaTable::Deserialize(L, bb);
     
     this->Create(-1);
 

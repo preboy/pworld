@@ -33,9 +33,6 @@
     <ClInclude Include="include\idmaker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\json.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\listener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -69,25 +66,10 @@
     <ClInclude Include="include\timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\xml.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\xml_alloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\JsonException.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\stdafx.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="src\targetver.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\xml_exception.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\xml_function.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="include\libcore.hpp">
@@ -185,12 +167,6 @@
     <ClCompile Include="src\idmaker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\json.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\JsonException.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\listener.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -222,30 +198,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\timer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xml_alloc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xml_element.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xml_exception.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xml_file.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xml_function.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xml_head.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\xml_string.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\FrameEvent.cpp">

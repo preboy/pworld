@@ -3,18 +3,18 @@
 #include "messagequeue.h"
 
 
-class CByteBuffer
+class ByteBuffer
 {
 public:
-    CByteBuffer();
-    CByteBuffer(uint32 size);
-   ~CByteBuffer();
+    ByteBuffer();
+    ByteBuffer(uint32 size);
+   ~ByteBuffer();
 
-    CByteBuffer(const CByteBuffer&) = delete;
-    CByteBuffer& operator = (const CByteBuffer&) = delete;
+    ByteBuffer(const ByteBuffer&) = delete;
+    ByteBuffer& operator = (const ByteBuffer&) = delete;
 
-    CByteBuffer(CByteBuffer&& rval);
-    CByteBuffer& operator = (CByteBuffer&& rval);
+    ByteBuffer(ByteBuffer&& rval);
+    ByteBuffer& operator = (ByteBuffer&& rval);
 
 
 #define BYTEBUFFER_READ_OPERATOR(type)          \
@@ -62,10 +62,10 @@ public:
 #undef BYTEBUFFER_READ_OPERATOR
 #undef BYTEBUFFER_WRITE_OPERATOR
 
-        CByteBuffer& operator << (const std::string& str);
-        CByteBuffer& operator << (const char* str);
+        ByteBuffer& operator << (const std::string& str);
+        ByteBuffer& operator << (const char* str);
 
-        CByteBuffer& operator >> (std::string& str);
+        ByteBuffer& operator >> (std::string& str);
 
 public:
 
@@ -91,7 +91,7 @@ public:
     bool            Out(void* data, uint32 size);
 
 public:
-    bool            Attach(Net::CPacket* packet);
+    bool            Attach(Net::Packet* packet);
     void            Detach();
 
 protected:

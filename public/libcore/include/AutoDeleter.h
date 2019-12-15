@@ -2,25 +2,25 @@
 
 
 template<typename T>
-class CAutoDeleter
+class AutoDeleter
 {
 public:
-    explicit CAutoDeleter(T* ptr) :
+    explicit AutoDeleter(T* ptr) :
         _ptr(ptr)
     {
     }
 
-    ~CAutoDeleter()
+    ~AutoDeleter()
     {
         SAFE_DELETE(_ptr);
     }
 
 public:
-    CAutoDeleter(const CAutoDeleter&) = delete;
-    CAutoDeleter& operator = (const CAutoDeleter&) = delete;
+    AutoDeleter(const AutoDeleter&) = delete;
+    AutoDeleter& operator = (const AutoDeleter&) = delete;
     
-    CAutoDeleter(CAutoDeleter&&) = delete;
-    CAutoDeleter& operator = (CAutoDeleter&&) = delete;
+    AutoDeleter(AutoDeleter&&) = delete;
+    AutoDeleter& operator = (AutoDeleter&&) = delete;
 
 public:
     T* operator -> () const
@@ -35,24 +35,24 @@ private:
 
 
 template<typename T>
-class CAutoReleaser
+class AutoReleaser
 {
-    explicit CAutoReleaser(T& obj) :
+    explicit AutoReleaser(T& obj) :
         _ref(obj)
     {
     }
 
-    ~CAutoReleaser()
+    ~AutoReleaser()
     {
         _ref.Release();
     }
 
 public:
-    CAutoReleaser(const CAutoReleaser&) = delete;
-    CAutoReleaser& operator = (const CAutoReleaser&) = delete;
+    AutoReleaser(const AutoReleaser&) = delete;
+    AutoReleaser& operator = (const AutoReleaser&) = delete;
 
-    CAutoReleaser(CAutoReleaser&&) = delete;
-    CAutoReleaser& operator = (CAutoReleaser&&) = delete;
+    AutoReleaser(AutoReleaser&&) = delete;
+    AutoReleaser& operator = (AutoReleaser&&) = delete;
 
 private:
     T& _ref;

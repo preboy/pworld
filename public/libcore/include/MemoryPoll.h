@@ -2,13 +2,13 @@
 
 
 template<std::size_t BLOCK_SIZE>
-class CMemoryPoll
+class MemoryPoll
 {
 public:
-    CMemoryPoll()
+    MemoryPoll()
     {}
 
-   ~CMemoryPoll()
+   ~MemoryPoll()
     {
         if (!_free.empty())
         {

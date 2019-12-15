@@ -11,21 +11,21 @@ namespace Net
 #ifdef PLAT_WIN32
 
 
-    void CConnector::__connector_cb__(void* obj, OVERLAPPED* overlapped)
+    void Connector::__connector_cb__(void* obj, OVERLAPPED* overlapped)
     {
-        CConnector* pThis = reinterpret_cast<CConnector*>(obj);
+        Connector* pThis = reinterpret_cast<Connector*>(obj);
         PerIoData*  pData = reinterpret_cast<PerIoData*>(overlapped);
     }
 
 
-    CConnector::~CConnector()
+    Connector::~Connector()
     {
         SAFE_DELETE(_key);
         g_net_close_socket(_socket);
     }
 
 
-    bool CConnector::Connect(const char* ip, uint16 port)
+    bool Connector::Connect(const char* ip, uint16 port)
     {
         _status = CONNECTOR_STATUS::CS_CLOSED;
         _socket = ::WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
@@ -70,7 +70,7 @@ namespace Net
             return false;
         }
 
-        _key = new Poll::CompletionKey{ this, &CConnector::__connector_cb__ };
+        _key = new Poll::CompletionKey{ this, &Connector::__connector_cb__ };
         if (sPoller->RegisterHandler((HANDLE)_socket, _key))
         {
             _error = WSAGetLastError();
@@ -97,7 +97,7 @@ namespace Net
     }
 
 
-    void CConnector::Abort()
+    void Connector::Abort()
     {
         if (_io_connect._status == IO_STATUS::IO_STATUS_PENDING)
         {
@@ -106,7 +106,7 @@ namespace Net
     }
 
 
-    void CConnector::Update()
+    void Connector::Update()
     {
         switch (_status)
         {
@@ -146,7 +146,7 @@ namespace Net
     }
 
 
-    void CConnector::_on_connect_error(uint32 err)
+    void Connector::_on_connect_error(uint32 err)
     {
         _error = err;
         _status = CONNECTOR_STATUS::CS_ERROR;
@@ -154,13 +154,13 @@ namespace Net
 
 
 
-    void CConnector::on_connect(CConnector* sock)
+    void Connector::on_connect(Connector* sock)
     {
         sLogger->Info("CConnector::on_connect");
     }
 
 
-    void CConnector::on_connect_error(uint32 err)
+    void Connector::on_connect_error(uint32 err)
     {
         sLogger->Error("CConnector::on_connect_error, err = %u", err);
     }
@@ -173,22 +173,22 @@ namespace Net
 
 
 
-    CConnector::~CConnector()
+    Connector::~Connector()
     {
         SAFE_DELETE(_key);
         g_net_close_socket(_socket);
     }
 
 
-    void CConnector::__connector_cb__(void* obj, uint32 events)
+    void Connector::__connector_cb__(void* obj, uint32 events)
     {
-        Net::CConnector* pThis = (Net::CConnector*)obj;
+        Net::Connector* pThis = (Net::Connector*)obj;
         std::lock_guard<std::mutex> lock(pThis->_mutex);
         pThis->_events = events;
     }
 
 
-    bool CConnector::Connect(const char* ip, uint16 port)
+    bool Connector::Connect(const char* ip, uint16 port)
     {
         _status = CONNECTOR_STATUS::CS_CLOSED;
         _socket = socket(AF_INET, SOCK_STREAM | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
@@ -223,7 +223,7 @@ namespace Net
     }
 
     
-    bool CConnector::_post_connect()
+    bool Connector::_post_connect()
     {
         do
         {
@@ -259,7 +259,7 @@ namespace Net
     }
 
 
-    void CConnector::Update()
+    void Connector::Update()
     {
         if (!_mutex.try_lock())
             return;
@@ -306,7 +306,7 @@ namespace Net
     }
 
 
-    void CConnector::Abort()
+    void Connector::Abort()
     {
         if (_status == CONNECTOR_STATUS::CS_CONNECTING)
         {
@@ -315,19 +315,19 @@ namespace Net
     }
 
 
-    void CConnector::on_connect(CConnector* sock)
+    void Connector::on_connect(Connector* sock)
     {
         sLogger->Info("CConnector::on_connect");
     }
 
 
-    void CConnector::on_connect_error(uint32 err)
+    void Connector::on_connect_error(uint32 err)
     {    
         sLogger->Error("CConnector::on_connect_error, err = %u", err);
     }
 
 
-    void CConnector::_on_connect_error(uint32 err)
+    void Connector::_on_connect_error(uint32 err)
     {
         _error = err;
         _status = CS_ERROR;

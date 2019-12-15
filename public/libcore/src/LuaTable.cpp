@@ -34,8 +34,8 @@ enum LuaValueType : uint8
 const int MAX_DEPTH = 16;
 
 
-static void serialize_table  (lua_State* L, int idx , LuaValueType type,  CByteBuffer& bb, uint8 depth);
-static void deserialize_table(lua_State* L, LuaValueType type, CByteBuffer& bb);
+static void serialize_table  (lua_State* L, int idx , LuaValueType type,  ByteBuffer& bb, uint8 depth);
+static void deserialize_table(lua_State* L, LuaValueType type, ByteBuffer& bb);
 
 
 // checking type of the top table
@@ -173,7 +173,7 @@ static LuaValueType get_lua_type(lua_State*L, int idx)
 }
 
 
-static void serialize_entity(lua_State* L, LuaValueType type, int idx, CByteBuffer& bb, uint8 depth)
+static void serialize_entity(lua_State* L, LuaValueType type, int idx, ByteBuffer& bb, uint8 depth)
 {
     switch (type)
     {
@@ -236,7 +236,7 @@ static void serialize_entity(lua_State* L, LuaValueType type, int idx, CByteBuff
 }
 
 
-static void serialize_val(lua_State* L, LuaValueType ty_val, int idx_val, CByteBuffer& bb, uint8 depth)
+static void serialize_val(lua_State* L, LuaValueType ty_val, int idx_val, ByteBuffer& bb, uint8 depth)
 {
     if (ty_val < LVT_i8 || ty_val > LVT_Hash)
     {
@@ -248,7 +248,7 @@ static void serialize_val(lua_State* L, LuaValueType ty_val, int idx_val, CByteB
 }
 
 
-static void serialize_key_val(lua_State* L, LuaValueType ty_key, int idx_key, LuaValueType ty_val, int idx_val, CByteBuffer& bb, uint8 depth)
+static void serialize_key_val(lua_State* L, LuaValueType ty_key, int idx_key, LuaValueType ty_val, int idx_val, ByteBuffer& bb, uint8 depth)
 {
     if (ty_key < LVT_i8 || ty_key > LVT_str)
     {
@@ -269,7 +269,7 @@ static void serialize_key_val(lua_State* L, LuaValueType ty_key, int idx_key, Lu
 }
 
 
-static void serialize_table(lua_State* L, int idx, LuaValueType type, CByteBuffer& bb, uint8 depth)
+static void serialize_table(lua_State* L, int idx, LuaValueType type, ByteBuffer& bb, uint8 depth)
 {
     if (depth < MAX_DEPTH)
     {
@@ -306,7 +306,7 @@ static void serialize_table(lua_State* L, int idx, LuaValueType type, CByteBuffe
 }
 
 
-bool CLuaTable::Serialize(lua_State* L, CByteBuffer& bb)
+bool LuaTable::Serialize(lua_State* L, ByteBuffer& bb)
 {
     lua_checkstack(L, MAX_DEPTH * 2 + 1);
 
@@ -327,7 +327,7 @@ bool CLuaTable::Serialize(lua_State* L, CByteBuffer& bb)
 //////////////////////////////////////////////////////////////////////////
 
 
-static void deserialize_entity(lua_State* L, LuaValueType type, CByteBuffer& bb)
+static void deserialize_entity(lua_State* L, LuaValueType type, ByteBuffer& bb)
 {
     int8  i8;
     int16 i16;
@@ -404,7 +404,7 @@ static void deserialize_entity(lua_State* L, LuaValueType type, CByteBuffer& bb)
 }
 
 
-static void deserialize_table(lua_State* L, LuaValueType type, CByteBuffer& bb)
+static void deserialize_table(lua_State* L, LuaValueType type, ByteBuffer& bb)
 {
     if (type == LVT_Arr)
     {
@@ -438,7 +438,7 @@ static void deserialize_table(lua_State* L, LuaValueType type, CByteBuffer& bb)
 }
 
 
-bool CLuaTable::Deserialize(lua_State* L, CByteBuffer& bb)
+bool LuaTable::Deserialize(lua_State* L, ByteBuffer& bb)
 {
     lua_checkstack(L, MAX_DEPTH * 2 + 1);
 

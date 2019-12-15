@@ -2,25 +2,25 @@
 #include "callback.h"
 
 
-class CFrameEvent
+class FrameEvent
 {
 public:
-    CFrameEvent(){}
-   ~CFrameEvent(){}   
+    FrameEvent(){}
+   ~FrameEvent(){}   
 
 public:
-    void EmitBegin(CCallback* c);
+    void EmitBegin(Callback* c);
     void UpdateBegin();
     
-    void EmitEnd(CCallback* c);
+    void EmitEnd(Callback* c);
     void UpdateEnd();
 
-    void EmitMsgEnd(CCallback* c);
+    void EmitMsgEnd(Callback* c);
     void UpdateMsgEnd();
 
 public:
-    std::list<CCallback*> _lst_cb_begin;
-    std::list<CCallback*> _lst_cb_end;
-    std::list<CCallback*> _lst_cb_msg_end;
+    std::list<Callback*> _lst_cb_begin;
+    std::list<Callback*> _lst_cb_end;
+    std::list<Callback*> _lst_cb_msg_end;
 
 };

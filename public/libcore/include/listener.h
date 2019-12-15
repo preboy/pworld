@@ -6,7 +6,7 @@ namespace Net
 {
 #ifdef PLAT_WIN32
 
-    class CListener
+    class Listener
     {
     private:
         enum class LISTENER_STATUS
@@ -25,11 +25,11 @@ namespace Net
         };
 
     public:
-        CListener() :
+        Listener() :
             _io_accept(IO_TYPE::IO_TYPE_Accept, ADDRESS_BUFFER_SIZE * 2)
         {}
 
-        virtual ~CListener()
+        virtual ~Listener()
         {
             SAFE_DELETE(_pkey); 
         }
@@ -76,11 +76,11 @@ namespace Net
 
 
 
-    class CListener
+    class Listener
     {
     public:
-        CListener();
-        virtual ~CListener();
+        Listener();
+        virtual ~Listener();
 
     private:
         enum class LISTENER_STATUS

@@ -3,33 +3,33 @@
 #include "LuaTable.h"
 
 
-bool CScriptParam::Init(lua_State *L, int stack)
+bool ScriptParam::Init(lua_State *L, int stack)
 {
     if (!_params.Size())
         _params.Resize(16*1024);
     _params.Reset();
 
-    return CLuaTable::Serialize(L, _params);
+    return LuaTable::Serialize(L, _params);
 }
 
 
-void CScriptParam::Push(lua_State *L)
+void ScriptParam::Push(lua_State *L)
 {
-    if (!_params.Avail() || !CLuaTable::Deserialize(L, _params))
+    if (!_params.Avail() || !LuaTable::Deserialize(L, _params))
     {
         lua_newtable(L);
     }
 }
 
 
-void CScriptParam::Serialize(CByteBuffer &bb)
+void ScriptParam::Serialize(ByteBuffer &bb)
 {
     bb << _params.Avail();
     bb.In(_params.ReadPtr(), _params.Avail());
 }
 
 
-void CScriptParam::Deserialize(CByteBuffer &bb)
+void ScriptParam::Deserialize(ByteBuffer &bb)
 {
     if (!_params.Size())
         _params.Resize(16 * 1024);

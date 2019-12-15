@@ -5,7 +5,7 @@
 #include "servertime.h"
 
 
-CDatabase::~CDatabase()
+Database::~Database()
 {
     while (!_free)
     {
@@ -15,7 +15,7 @@ CDatabase::~CDatabase()
 }
 
 
-bool CDatabase::Occupy()
+bool Database::Occupy()
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
@@ -28,7 +28,7 @@ bool CDatabase::Occupy()
 }
 
 
-void CDatabase::Release()
+void Database::Release()
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
@@ -37,7 +37,7 @@ void CDatabase::Release()
 }
 
 
-bool CDatabase::Connect()
+bool Database::Connect()
 {
     bool ret = _db_handler.Connect(
         _host.c_str(),
@@ -59,7 +59,7 @@ bool CDatabase::Connect()
 }
 
 
-void CDatabase::Update()
+void Database::Update()
 {
     if (!_free)
     {

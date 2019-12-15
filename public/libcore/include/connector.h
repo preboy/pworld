@@ -8,13 +8,13 @@ namespace Net
 
 #ifdef PLAT_WIN32
 
-    class CConnector
+    class Connector
     {
     public:
-        CConnector() : _io_connect(IO_TYPE::IO_TYPE_Connect, 0)
+        Connector() : _io_connect(IO_TYPE::IO_TYPE_Connect, 0)
         {};
 
-        virtual ~CConnector();
+        virtual ~Connector();
 
     private:
         enum CONNECTOR_STATUS
@@ -43,15 +43,15 @@ namespace Net
         void            _on_connect_error(uint32 err);
 
     protected:
-        virtual void    on_connect(CConnector* sock);
+        virtual void    on_connect(Connector* sock);
         virtual void    on_connect_error(uint32 err);
 
     private:
         SOCKET                      _socket = INVALID_SOCKET;
         LPFN_CONNECTEX              lpfnConnectEx = nullptr;
-        
+
         Poll::CompletionKey*        _key = nullptr;
-        
+
         uint32                      _error = 0;
         PerIoData                   _io_connect;
 
@@ -65,14 +65,13 @@ namespace Net
 
 
 
-
-    class CConnector
+    class Connector
     {
     public:
-        CConnector()
+        Connector()
         {};
 
-        virtual ~CConnector();
+        virtual ~Connector();
 
     private:
 
@@ -92,12 +91,12 @@ namespace Net
         void*           GetKey() { return _key; }
         SOCKET_HANDER   GetSocket() { return _socket; }
         void            DetachSocket() { _socket = -1; _key = nullptr; }
-        
+
         bool            Disposable() { return _status == CONNECTOR_STATUS::CS_CLOSED || _status == CONNECTOR_STATUS::CS_UNINIT; }
 
 
     protected:
-        virtual void    on_connect(CConnector* sock);
+        virtual void    on_connect(Connector* sock);
         virtual void    on_connect_error(uint32 err);
 
     private:
@@ -123,5 +122,4 @@ namespace Net
     };
 
 #endif
-
 }

@@ -2,17 +2,17 @@
 #include "messagequeue.h"
 
 
-class CServerFrame
+class ServerFrame
 {
 public:
-    CServerFrame() {}
-    virtual ~CServerFrame() {}
+    ServerFrame() {}
+    virtual ~ServerFrame() {}
 
 protected:
     virtual void on_start() = 0;
     virtual void on_stop()  = 0;
     virtual void on_update(uint64 dt) = 0;
-    virtual void on_msg(Net::CMessage* msg) = 0;
+    virtual void on_msg(Net::Message* msg) = 0;
 
     virtual void on_update_idle() {}
     virtual void on_update_busy() {}

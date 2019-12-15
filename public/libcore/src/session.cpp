@@ -12,14 +12,14 @@ namespace Net
     // platform general
     //////////////////////////////////////////////////////////////////////////
 
-    void CSession::_send(const char* data, uint32 size)
+    void Session::_send(const char* data, uint32 size)
     {
         while (size)
         {
-            CMessage* msg_writer = nullptr;
+            Message* msg_writer = nullptr;
             if (_que_send.empty() || _que_send.back()->Full())
             {
-                CMessage* msg = INSTANCE_2(CMessageQueue)->ApplyMessage();
+                Message* msg = INSTANCE_2(MessageQueue)->ApplyMessage();
                 msg->Reset(MAX_BUFFER_SIZE);
                 _que_send.push(msg);
             }
@@ -30,7 +30,7 @@ namespace Net
     }
 
 
-    void CSession::Send(const char* data, uint32 size)
+    void Session::Send(const char* data, uint32 size)
     {
         if (!Active())
             return;
@@ -42,7 +42,7 @@ namespace Net
     }
 
 
-    void CSession::_on_recv(char* pdata, uint32 size)
+    void Session::_on_recv(char* pdata, uint32 size)
     {
         do
         {
@@ -63,7 +63,7 @@ namespace Net
                     Disconnect();
                     return;
                 }
-                _msg_recv = INSTANCE(CMessageQueue)->ApplyMessage();
+                _msg_recv = INSTANCE(MessageQueue)->ApplyMessage();
                 _msg_recv->Reset(data_len);
             }
 
@@ -76,7 +76,7 @@ namespace Net
             {
                 _msg_recv->_param = 0;
                 _msg_recv->_ptr = this;
-                INSTANCE(CMessageQueue)->PushMessage(_msg_recv);
+                INSTANCE(MessageQueue)->PushMessage(_msg_recv);
                 _msg_recv = nullptr;
                 _msg_header.Reset(sizeof(uint32));
                 _last_active_t = get_current_time();
@@ -85,41 +85,41 @@ namespace Net
     }
 
 
-    void CSession::_on_send(char* pdata, uint32 size)
+    void Session::_on_send(char* pdata, uint32 size)
     {
     }
 
 
-    void CSession::on_opened()
+    void Session::on_opened()
     {
     }
 
 
-    void CSession::on_closed()
+    void Session::on_closed()
     {
         sLogger->Info("CSession::on_closed send_err=%u, recv_err=%u", _send_error, _recv_error);
     }
 
-    void CSession::_set_socket_status(SOCK_STATUS s)
+    void Session::_set_socket_status(SOCK_STATUS s)
     {
         sLogger->Info("CSession::_status changed! this = %p, prev = %d, curr = %d", this, (uint32)_status, (uint32)s);
         _status = s;
     }
 
 
-    void CSession::_on_recv_error(uint32 err)
+    void Session::_on_recv_error(uint32 err)
     {
         _recv_error = err;
     }
 
 
-    void CSession::_on_send_error(uint32 err)
+    void Session::_on_send_error(uint32 err)
     {
         _send_error = err;
     }
 
 
-    void CSession::Disconnect()
+    void Session::Disconnect()
     {
         if (!_disconnect)
         {

@@ -5,10 +5,10 @@
 #include "callback.h"
 #include "utils.h"
 
-class CDatabase
+class Database
 {
 public:
-    CDatabase(std::string& host, std::string& user, std::string& pwd, std::string& db_name, std::string& char_set, uint16 port) :
+    Database(std::string& host, std::string& user, std::string& pwd, std::string& db_name, std::string& char_set, uint16 port) :
         _free(true),
         _last_travel_time(0),
         _host(host),
@@ -21,7 +21,7 @@ public:
         _db_handler.Init();
     }
 
-    ~CDatabase();
+    ~Database();
     
 public:
     bool Occupy();
@@ -30,13 +30,13 @@ public:
     bool Connect();
 
 public:
-    CMysqlHandler* Handler() { return &_db_handler; }
+    MysqlHandler* Handler() { return &_db_handler; }
 
 public:
     void Update();
 
 private:
-    CMysqlHandler           _db_handler;
+    MysqlHandler           _db_handler;
     std::mutex              _mutex;
     bool                    _free;
     int64                   _last_travel_time;

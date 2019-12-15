@@ -1,11 +1,11 @@
 #pragma once
 
 
-class CRandom
+class Random
 {
 public:
-    CRandom();
-   ~CRandom();
+    Random();
+   ~Random();
 
 public:
 

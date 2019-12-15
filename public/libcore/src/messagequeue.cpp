@@ -5,7 +5,7 @@
 namespace Net
 {
 
-    CMessage::CMessage(uint32 size) : 
+    Message::Message(uint32 size) : 
         _size(size),
         _data(nullptr),
         _curr_len(0),
@@ -21,13 +21,13 @@ namespace Net
     }
 
 
-    CMessage::~CMessage() 
+    Message::~Message() 
     {
         SAFE_FREE(_data);
     }
 
 
-    void CMessage::Reset(uint32 size)
+    void Message::Reset(uint32 size)
     {
         if (size > _size)
         {
@@ -42,13 +42,13 @@ namespace Net
     }
 
 
-    bool CMessage::Full()
+    bool Message::Full()
     {
         return _data_len == _curr_len;
     }
 
 
-    void CMessage::Fill(char*& data, uint32& size)
+    void Message::Fill(char*& data, uint32& size)
     {
         if (!_data_len)
             return;
@@ -69,11 +69,11 @@ namespace Net
 
     //////////////////////////////////////////////////////////////////////////
 
-    CMessage* CMessageQueue::ApplyMessage()
+    Message* MessageQueue::ApplyMessage()
     {
         std::lock_guard<std::mutex> lock(_mutex_recycle);
 
-        CMessage* msg = nullptr;
+        Message* msg = nullptr;
         if (!_msg_recycle.empty())
         {
             msg = _msg_recycle.front();
@@ -81,13 +81,13 @@ namespace Net
         }
         else
         {
-            msg = new CMessage();
+            msg = new Message();
         }
         return msg;
     }
 
 
-    void CMessageQueue::FreeMessage(CMessage* msg)
+    void MessageQueue::FreeMessage(Message* msg)
     {
         std::lock_guard<std::mutex> lock(_mutex_recycle);
 
@@ -95,7 +95,7 @@ namespace Net
     }
 
 
-    void CMessageQueue::PushMessage(CMessage* msg)
+    void MessageQueue::PushMessage(Message* msg)
     {
         std::lock_guard<std::mutex> lock(_mutex_waiting);
 
@@ -103,11 +103,11 @@ namespace Net
     }
 
 
-    CMessage* CMessageQueue::PopMessage()
+    Message* MessageQueue::PopMessage()
     {
         std::lock_guard<std::mutex> lock(_mutex_waiting);
 
-        CMessage* msg = nullptr;
+        Message* msg = nullptr;
         if (!_msg_waiting.empty())
         {
             msg = _msg_waiting.front();
@@ -118,7 +118,7 @@ namespace Net
     }
 
 
-    void CMessageQueue::_clean_up()
+    void MessageQueue::_clean_up()
     {
         while (!_msg_waiting.empty())
         {

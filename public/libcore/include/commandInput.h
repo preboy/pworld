@@ -10,11 +10,11 @@ enum
     DESC_LEN = 64,          // length of desc info
 };
 
-class CCommandInput;
-using CMD_FUNC = int (CCommandInput::*)(int argc, char argv[PARAM_CNT][PARAM_LEN]);
+class CommandInput;
+using CMD_FUNC = int (CommandInput::*)(int argc, char argv[PARAM_CNT][PARAM_LEN]);
 
 
-class CCommandInput
+class CommandInput
 {
 private:
     struct cmd_input
@@ -33,8 +33,8 @@ private:
     };
 
 public:
-    CCommandInput(void);
-    virtual ~CCommandInput(void);
+    CommandInput(void);
+    virtual ~CommandInput(void);
 
 public:
     void Run();

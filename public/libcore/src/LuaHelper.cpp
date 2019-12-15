@@ -6,7 +6,7 @@
 
 const char* g_print_stack()
 {
-    lua_State* L = INSTANCE(CLuaEngine)->GetLuaState();
+    lua_State* L = INSTANCE(LuaEngine)->GetLuaState();
     lua_getglobal(L, "debug");
     lua_getfield(L, -1, "traceback");
 

@@ -3,7 +3,7 @@
 
 // later optimize: new thread do writing, outputing
 
-class CLogger
+class Logger
 {
 public:
     enum LOG_TYPE
@@ -16,8 +16,8 @@ public:
     };
 
 public:
-    CLogger(void);
-    ~CLogger(void);
+    Logger(void);
+    ~Logger(void);
 
     void    Debug(const char* format, ...);
     void    Info(const char* format, ...);

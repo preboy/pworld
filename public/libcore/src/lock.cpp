@@ -2,61 +2,61 @@
 #include "lock.h"
 
 #ifdef PLAT_WIN32
-CCriticalSection::CCriticalSection()
+CriticalSection::CriticalSection()
 {
     ::InitializeCriticalSectionAndSpinCount(&m_cs, 4000);
 }
 
 
-CCriticalSection::~CCriticalSection()
+CriticalSection::~CriticalSection()
 {
     ::DeleteCriticalSection(&m_cs);
 }
 
 
-void CCriticalSection::Enter()
+void CriticalSection::Enter()
 {
     ::EnterCriticalSection(&m_cs);
 }
 
 
-void CCriticalSection::Leave()
+void CriticalSection::Leave()
 {
     ::LeaveCriticalSection(&m_cs);
 }
 
 
-bool CCriticalSection::TryEnter()
+bool CriticalSection::TryEnter()
 {
     return ::TryEnterCriticalSection(&m_cs) ? true : false;
 }
 
 
-CLock::CLock(CCriticalSection& lck) : m_lock(lck)
+Lock::Lock(CriticalSection& lck) : m_lock(lck)
 {
     m_lock.Enter();
 };
 
 
-CLock::~CLock()
+Lock::~Lock()
 {
     m_lock.Leave();
 }
 
 
-CTryLock::CTryLock(CCriticalSection& lck) : m_lock(lck)
+TryLock::TryLock(CriticalSection& lck) : m_lock(lck)
 {
 }
 
 
-CTryLock::~CTryLock()
+TryLock::~TryLock()
 {
     if (_is_get)
         m_lock.Leave();
 }
 
 
-bool CTryLock::TryEnter()
+bool TryLock::TryEnter()
 {
     _is_get = m_lock.TryEnter();
     return _is_get;

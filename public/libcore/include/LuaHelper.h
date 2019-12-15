@@ -47,18 +47,18 @@ struct ObjectParent {};
 #include "LuaEngine.h"
 
 
-class CLuaHelper
+class LuaHelper
 {
 public:
-    CLuaHelper() {}
-   ~CLuaHelper() {}
+    LuaHelper() {}
+   ~LuaHelper() {}
 
 public:
 
     template<typename T>
     static void RegisterObjectApi()
     {
-        lua_State* L = INSTANCE(CLuaEngine)->GetLuaState();
+        lua_State* L = INSTANCE(LuaEngine)->GetLuaState();
 
         luaL_newmetatable(L, ObjectAPI<T>::name);
         lua_pushstring(L, "__index");
@@ -73,7 +73,7 @@ public:
         {
             lua_pushstring(L, mapping->api_name);
             lua_pushlightuserdata(L, mapping);
-            lua_pushcclosure(L, CLuaHelper::api_dispatcher<T>, 1);
+            lua_pushcclosure(L, LuaHelper::api_dispatcher<T>, 1);
             lua_rawset(L, -3);
         }
 
@@ -92,7 +92,7 @@ public:
     template<typename T>
     static void PushObject(T* obj)
     {
-        lua_State* L = INSTANCE(CLuaEngine)->GetLuaState();
+        lua_State* L = INSTANCE(LuaEngine)->GetLuaState();
         T** p = (T**)lua_newuserdata(L, sizeof(obj));
         *p = obj;
         luaL_setmetatable(L, ObjectAPI<T>::name);
@@ -143,13 +143,13 @@ public:
     template<typename T>
     static int api_dispatcher(lua_State* L)
     {
-        T* obj = CLuaHelper::GetObject<T>(L, 1);
+        T* obj = LuaHelper::GetObject<T>(L, 1);
         if (!obj) 
             return 0;
 
 #ifdef BUILD_DEBUG
         luaL_traceback(L, L, "GET_LUA_STACK:", 1);
-        INSTANCE(CLuaEngine)->Traceback(lua_tostring(L, -1));
+        INSTANCE(LuaEngine)->Traceback(lua_tostring(L, -1));
         lua_pop(L, 1);
 #endif
 

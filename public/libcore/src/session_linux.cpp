@@ -11,29 +11,29 @@ namespace Net
 
 #ifdef PLAT_LINUX
 
-    void CSession::__session_cb__(void* obj, uint32 events)
+    void Session::__session_cb__(void* obj, uint32 events)
     {
-        CSession* pThis = (CSession*)obj;
+        Session* pThis = (Session*)obj;
         std::lock_guard<std::mutex> lock(pThis->_mutex);
         pThis->_events = events;
         pThis->_in_epoll = false;
     }
 
 
-    CSession::CSession() :
+    Session::Session() :
         _msg_header(sizeof(uint32)),
         _last_active_t(get_current_time())
     {
     }
 
 
-    CSession::~CSession()
+    Session::~Session()
     {
         SAFE_DELETE(_msg_recv);
 
         if (_msg_send)
         {
-            INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+            INSTANCE_2(MessageQueue)->FreeMessage(_msg_send);
             _msg_send = nullptr;
         }
 
@@ -42,7 +42,7 @@ namespace Net
     }
 
 
-    void CSession::Attach(SOCKET_HANDER socket, void* key)
+    void Session::Attach(SOCKET_HANDER socket, void* key)
     {
         _socket = socket;
         _msg_header.Reset(sizeof(uint32));
@@ -50,12 +50,12 @@ namespace Net
         linger ln = { 1, 0 };
         setsockopt(_socket, SOL_SOCKET, SO_LINGER, (char*)&ln, sizeof(linger));
 
-        int keepalive       = 1;       
-        int keepidle        = 30;    
-        int keepinterval    = 10;       
-        int keepcount       = 3;       
+        int keepalive       = 1;
+        int keepidle        = 30;
+        int keepinterval    = 10;
+        int keepcount       = 3;
         setsockopt(_socket, SOL_SOCKET,  SO_KEEPALIVE,   (void*)&keepalive,     sizeof(int));
-        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPIDLE,   (void*)&keepidle,       sizeof(int));
+        setsockopt(_socket, IPPROTO_TCP, TCP_KEEPIDLE,   (void*)&keepidle,      sizeof(int));
         setsockopt(_socket, IPPROTO_TCP, TCP_KEEPINTVL,  (void*)&keepinterval,  sizeof(int));
         setsockopt(_socket, IPPROTO_TCP, TCP_KEEPCNT,    (void*)&keepcount,     sizeof(int));
 
@@ -63,11 +63,11 @@ namespace Net
         {
             _key = (Poll::CompletionKey*)key;
             _key->obj = this;
-            _key->func = &CSession::__session_cb__;
+            _key->func = &Session::__session_cb__;
         }
         else
         {
-            _key = new Poll::CompletionKey{ this, &CSession::__session_cb__, IO_STATUS::IO_STATUS_COMPLETED };
+            _key = new Poll::CompletionKey{ this, &Session::__session_cb__, IO_STATUS::IO_STATUS_COMPLETED };
         }
 
         _set_socket_status(SOCK_STATUS::SS_RUNNING);
@@ -75,7 +75,7 @@ namespace Net
     }
 
 
-    void CSession::Update()
+    void Session::Update()
     {
         if (!_mutex.try_lock())
             return;
@@ -164,7 +164,7 @@ namespace Net
     }
 
 
-    void CSession::_post_send()
+    void Session::_post_send()
     {
         if (!_msg_send && _que_send.empty())
         {
@@ -226,7 +226,7 @@ namespace Net
                 _on_send(data, ret);
                 if ((size_t)ret == len)
                 {
-                    INSTANCE_2(CMessageQueue)->FreeMessage(_msg_send);
+                    INSTANCE_2(MessageQueue)->FreeMessage(_msg_send);
                     _msg_send = nullptr;
                     _send_len = 0;
                 }
@@ -240,7 +240,7 @@ namespace Net
     }
 
 
-    void CSession::_post_recv()
+    void Session::_post_recv()
     {
         if (_recv_over || _status != SOCK_STATUS::SS_RUNNING || !_rd_ready)
             return;

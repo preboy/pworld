@@ -2,13 +2,13 @@
 #include "random.h"
 
 
-CRandom::CRandom()
+Random::Random()
 {
 
 }
 
 
-CRandom::~CRandom()
+Random::~Random()
 {
 
 }

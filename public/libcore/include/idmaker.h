@@ -1,11 +1,11 @@
 #pragma once
 
-class CIdMaker
+class IDMaker
 {
 public:
-    CIdMaker(uint32 val);
-    CIdMaker();
-    ~CIdMaker();
+    IDMaker(uint32 val);
+    IDMaker();
+   ~IDMaker();
 
 public:
     static uint32 new_global_id();

@@ -33,19 +33,19 @@ const char* sColor[] =
 #endif
 
 
-CLogger::CLogger()
+Logger::Logger()
 {
     _screen_mask = _file_mask = LT_DEBUG | LT_INFO | LT_WARNING | LT_ERROR | LT_FATAL;
 }
 
 
-CLogger::~CLogger()
+Logger::~Logger()
 {
     Release();
 }
 
 
-bool CLogger::Init(const char* szfilename)
+bool Logger::Init(const char* szfilename)
 {
     std::remove(szfilename);
 #ifdef PLAT_WIN32
@@ -58,7 +58,7 @@ bool CLogger::Init(const char* szfilename)
 }
 
 
-void CLogger::Release()
+void Logger::Release()
 {
     if (_file)
     {
@@ -72,7 +72,7 @@ void CLogger::Release()
 }
 
 
-void CLogger::_output(LOG_TYPE type, uint32 idx, const char* format, va_list args)
+void Logger::_output(LOG_TYPE type, uint32 idx, const char* format, va_list args)
 {
     std::lock_guard<std::mutex> lock(_mutex);
 
@@ -116,7 +116,7 @@ void CLogger::_output(LOG_TYPE type, uint32 idx, const char* format, va_list arg
 }
 
 
-void CLogger::Debug(const char* format, ...)
+void Logger::Debug(const char* format, ...)
 {
     if ((_screen_mask & LT_DEBUG) || (_file_mask & LT_DEBUG))
     {
@@ -128,7 +128,7 @@ void CLogger::Debug(const char* format, ...)
 }
 
 
-void CLogger::Info(const char* format, ...)
+void Logger::Info(const char* format, ...)
 {
     if ((_screen_mask & LT_INFO) || (_file_mask & LT_INFO))
     {
@@ -140,7 +140,7 @@ void CLogger::Info(const char* format, ...)
 }
 
 
-void CLogger::Warning(const char* format, ...)
+void Logger::Warning(const char* format, ...)
 {
     if ((_screen_mask & LT_WARNING) || (_file_mask & LT_WARNING))
     {
@@ -152,7 +152,7 @@ void CLogger::Warning(const char* format, ...)
 }
 
 
-void CLogger::Error(const char* format, ...)
+void Logger::Error(const char* format, ...)
 {
     if ((_screen_mask & LT_ERROR) || (_file_mask & LT_ERROR))
     {
@@ -164,7 +164,7 @@ void CLogger::Error(const char* format, ...)
 }
 
 
-void CLogger::Fatal(const char* format, ...)
+void Logger::Fatal(const char* format, ...)
 {
     if ((_screen_mask & LT_FATAL) || (_file_mask & LT_FATAL))
     {
@@ -176,7 +176,7 @@ void CLogger::Fatal(const char* format, ...)
 }
 
 
-void CLogger::SetColor(uint32 idx)
+void Logger::SetColor(uint32 idx)
 {
 #ifdef PLAT_WIN32
     ::SetConsoleTextAttribute(::GetStdHandle(STD_OUTPUT_HANDLE), wColor[idx]);
@@ -186,7 +186,7 @@ void CLogger::SetColor(uint32 idx)
 }
 
 
-void CLogger::ResetColor()
+void Logger::ResetColor()
 {
 #ifdef PLAT_WIN32
     ::SetConsoleTextAttribute(::GetStdHandle(STD_OUTPUT_HANDLE),

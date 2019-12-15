@@ -5,7 +5,7 @@
 
 void __async_task_thread_proc(void* p)
 {
-    CAsyncTask* tp = (CAsyncTask*)p;
+    AsyncTask* tp = (AsyncTask*)p;
     while (tp->_running)
     {
         Task* ptask = nullptr;
@@ -38,7 +38,7 @@ void __async_task_thread_proc(void* p)
 }
 
 
-CAsyncTask::~CAsyncTask()
+AsyncTask::~AsyncTask()
 {
     for (auto cb : _lst_task)
     {
@@ -53,7 +53,7 @@ CAsyncTask::~CAsyncTask()
 }
 
 
-void CAsyncTask::Init(uint16 thread_cnt)
+void AsyncTask::Init(uint16 thread_cnt)
 {
     _running = true;
     for (uint8 i = 0; i < thread_cnt; i++)
@@ -63,7 +63,7 @@ void CAsyncTask::Init(uint16 thread_cnt)
 }
 
 
-void CAsyncTask::Release()
+void AsyncTask::Release()
 {
     _running = false;
     for (auto& t : _threads)
@@ -76,7 +76,7 @@ void CAsyncTask::Release()
 }
 
 
-void CAsyncTask::PushTask(CCallback *cb_task, CCallback *cb_over)
+void AsyncTask::PushTask(Callback *cb_task, Callback *cb_over)
 {
     std::lock_guard<std::mutex> lock(_mutex_task);
     _lst_task.push_back(new Task(cb_task, cb_over));
@@ -84,7 +84,7 @@ void CAsyncTask::PushTask(CCallback *cb_task, CCallback *cb_over)
 
 
 // task completed
-void CAsyncTask::Update()
+void AsyncTask::Update()
 {
     std::lock_guard<std::mutex> lock(_mutex_over);
     if (!_lst_over.empty())

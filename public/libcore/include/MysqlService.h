@@ -2,8 +2,8 @@
 #include "mysql.h"
 
 
-class CMysqlHandler;
-class CMysqlHanderStmt;
+class MysqlHandler;
+class MySQLHanderStmt;
 
 
 struct MysqlBindParam
@@ -21,14 +21,14 @@ struct MysqlBindParam
 };
 
 
-class CMysqlQueryResultStmt
+class MysqlQueryResultStmt
 {
 public:
-    CMysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, CMysqlHanderStmt* handler);
-   ~CMysqlQueryResultStmt();
+    MysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, MySQLHanderStmt* handler);
+   ~MysqlQueryResultStmt();
 
 private:
-    friend class CMysqlHanderStmt;
+    friend class MySQLHanderStmt;
     void            _stored();
 
 public:
@@ -51,7 +51,7 @@ private:
     MYSQL_STMT*     _mysql_stmt;
     MYSQL_RES*      _result;
 
-    CMysqlHanderStmt*   _handler;
+    MySQLHanderStmt*   _handler;
 
 private:
     struct result_bind_data
@@ -66,19 +66,19 @@ private:
 };
 
 
-class CMysqlHanderStmt
+class MySQLHanderStmt
 {
 public:
-    CMysqlHanderStmt(MYSQL* mysql, CMysqlHandler* handler);
-   ~CMysqlHanderStmt();
+    MySQLHanderStmt(MYSQL* mysql, MysqlHandler* handler);
+   ~MySQLHanderStmt();
 
 private:
-	friend class CMysqlHandler;
+	friend class MysqlHandler;
     bool _init(const char* sql);
     void _release();
 
 public:
-    CMysqlQueryResultStmt* Execute(MysqlBindParam* params = nullptr);
+    MysqlQueryResultStmt* Execute(MysqlBindParam* params = nullptr);
 
 public:
     void OnError(unsigned int err_no, const char* err_msg, const char* err_stage);
@@ -91,16 +91,16 @@ private:
 	unsigned int    _field_count;
     unsigned long   _param_count;
 
-    CMysqlHandler*          _handler;
-    CMysqlQueryResultStmt*  _query_result;
+    MysqlHandler*          _handler;
+    MysqlQueryResultStmt*  _query_result;
 };
 
 
-class CMysqlQueryResult
+class MysqlQueryResult
 {
 public:
-	CMysqlQueryResult(MYSQL_RES* result, CMysqlHandler* handler);
-   ~CMysqlQueryResult();
+	MysqlQueryResult(MYSQL_RES* result, MysqlHandler* handler);
+   ~MysqlQueryResult();
 
 public:
 	bool            NextRow();
@@ -122,15 +122,15 @@ private:
 	MYSQL_ROW       _row;
 	unsigned long*  _lengths;
 	MYSQL_FIELD*    _fields;
-    CMysqlHandler*  _handler;
+    MysqlHandler*  _handler;
 };
 
 
-class CMysqlHandler
+class MySQLHandler
 {
 public:
-    CMysqlHandler();
-    ~CMysqlHandler();
+    MySQLHandler();
+    ~MySQLHandler();
 
 public:
     void Init();
@@ -140,9 +140,9 @@ public:
 
     bool Connect(const char* host, const char* user, const char* passwd, const char*db, uint16 port, const char* char_set);
 
-    CMysqlQueryResult* ExecuteSql(const char* sql);
+    MysqlQueryResult* ExecuteSql(const char* sql);
 
-    CMysqlHanderStmt* CreateStmtHander(const char* sql);
+    MySQLHanderStmt* CreateStmtHander(const char* sql);
 
     void OnError(unsigned int err_no, const char* err_msg, const char* err_stage);
 
@@ -152,7 +152,7 @@ private:
 };
 
 
-class CMysqlService
+class MysqlService
 {
 public:
     static void Init();

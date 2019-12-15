@@ -2,29 +2,28 @@
 #include "idmaker.h"
 
 
-uint32 CIdMaker::gid = 0;
+uint32 IDMaker::gid = 0;
 
 
-CIdMaker::CIdMaker(uint32 val) :
-    id(val)
+IDMaker::IDMaker(uint32 val) : id(val)
 {}
 
 
-CIdMaker::CIdMaker() 
+IDMaker::IDMaker() 
 {}
 
 
-CIdMaker::~CIdMaker()
+IDMaker::~IDMaker()
 {}
 
 
-uint32 CIdMaker::new_global_id()
+uint32 IDMaker::new_global_id()
 {
     return ++gid;
 }
 
 
-uint32 CIdMaker::new_id()
+uint32 IDMaker::new_id()
 {
     return ++id;
 }

@@ -19,19 +19,19 @@
  *          boolean
  *          sub-table (at most 16 layers)
  */
-class CScriptParam
+class ScriptParam
 {
 public:
-    CScriptParam(uint32 sz = 0)
+    ScriptParam(uint32 sz = 0)
         : _params(sz)
     {}
 
-    CScriptParam(CScriptParam &&rhs)
+    ScriptParam(ScriptParam &&rhs)
     {
         *this = std::move(rhs);
     }
 
-    CScriptParam& operator = (CScriptParam &&rhs)
+    ScriptParam& operator = (ScriptParam &&rhs)
     {
         if (this != &rhs)
             this->_params = std::move(rhs._params);
@@ -46,9 +46,9 @@ public:
     void Push(lua_State *L);
 
     /// serialization
-    void Serialize(CByteBuffer &bb);
-    void Deserialize(CByteBuffer &bb);
+    void Serialize(ByteBuffer &bb);
+    void Deserialize(ByteBuffer &bb);
 
 private:
-    CByteBuffer _params;
+    ByteBuffer _params;
 };

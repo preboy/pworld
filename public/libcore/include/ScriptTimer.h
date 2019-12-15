@@ -2,21 +2,21 @@
 #include "ScriptParam.h"
 
 
-class CScriptTimer
+class ScriptTimer
 {
 public:
-    CScriptTimer();
-   ~CScriptTimer();
+    ScriptTimer();
+   ~ScriptTimer();
 
 public:
     /// timer funcs
-    uint64 Create(uint32 itv, const char *cb, CScriptParam &sp, uint32 loop = 0);
+    uint64 Create(uint32 itv, const char *cb, ScriptParam &sp, uint32 loop = 0);
     void   Cancel(uint32 tid);
     void   CancelAll();
 
 private:
     // script timer callback
-    void cb_script_timer(std::string &cb, CScriptParam &sp, uint32 loop);
+    void cb_script_timer(std::string &cb, ScriptParam &sp, uint32 loop);
 
 protected:
     virtual int push_ctx() { return 0; }

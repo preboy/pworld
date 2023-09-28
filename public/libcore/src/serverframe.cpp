@@ -31,7 +31,7 @@ void ServerFrame::_run()
 
         while (true)
         {
-            Net::Message* msg = INSTANCE(Net::CMessageQueue)->PopMessage();
+            Net::Message* msg = INSTANCE(Net::MessageQueue)->PopMessage();
             if (msg)
             {
                 on_msg(msg);

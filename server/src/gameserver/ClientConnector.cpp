@@ -15,14 +15,14 @@ CClientConnector::~CClientConnector()
 }
 
 
-void CClientConnector::on_connect(Net::CConnector* sock)
+void CClientConnector::on_connect(Net::Connector* sock)
 {
-    Net::CConnector::on_connect(sock);
+    Net::Connector::on_connect(sock);
     INSTANCE(CNetMgr)->OnConnected((CClientConnector*)sock);
 }
 
 
 void CClientConnector::on_connect_error(uint32 err)
 {
-    Net::CConnector::on_connect_error(err);
+    Net::Connector::on_connect_error(err);
 }

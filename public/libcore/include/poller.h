@@ -79,6 +79,6 @@ namespace Poll
 #endif
 
 
-#define  sPoller INSTANCE(Poll::CPoller)
+#define  sPoller INSTANCE(Poll::Poller)
 
 }

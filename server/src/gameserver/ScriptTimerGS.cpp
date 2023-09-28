@@ -30,14 +30,14 @@ int CScriptTimerGS::push_ctx()
 
     case CT_Object:
     {
-        INSTANCE(CLuaHelper)->PushObject<CObject>(_ctx.obj);
+        INSTANCE(LuaHelper)->PushObject<CObject>(_ctx.obj);
         return 1;
     }
     break;
 
     case CT_Map:
     {
-        // INSTANCE(CLuaHelper)->PushObject<CMap>(_ctx.map);
+        // INSTANCE(LuaHelper)->PushObject<CMap>(_ctx.map);
         return 1;
     }
     break;

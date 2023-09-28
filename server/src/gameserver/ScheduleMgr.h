@@ -2,11 +2,11 @@
 #include "ScheduleBase.h"
 
 
-class CScheduleMgr : public ScheduleBase
+class ScheduleMgr : public ScheduleBase
 {
 public:
-    CScheduleMgr();
-   ~CScheduleMgr();
+    ScheduleMgr();
+   ~ScheduleMgr();
 
 public:
     virtual void on_new_hour() override;

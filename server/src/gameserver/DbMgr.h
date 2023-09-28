@@ -14,8 +14,8 @@ public:
 
     void Update();
 
-    CDatabase* GetFreeConnection();
+    Database* GetFreeConnection();
 
 private:
-    std::list<CDatabase*> _dbs;
+    std::list<Database*> _dbs;
 };

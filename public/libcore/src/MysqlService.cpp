@@ -14,7 +14,7 @@ static void MysqlErrorReport(MYSQL* mysql, MysqlHandler* handler)
 }
 
 
-static void MysqlErrorReportStmt(MYSQL_STMT* stmt, MySQLHanderStmt* handler)
+static void MysqlErrorReportStmt(MYSQL_STMT* stmt, MysqlHanderStmt* handler)
 {
     const char* err_stage = mysql_stmt_sqlstate(stmt);
     unsigned int err_no = mysql_stmt_errno(stmt);
@@ -24,7 +24,7 @@ static void MysqlErrorReportStmt(MYSQL_STMT* stmt, MySQLHanderStmt* handler)
 
 
 //////////////////////////////////////////////////////////////////////////
-MysqlQueryResultStmt::MysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, MySQLHanderStmt* handler) :
+MysqlQueryResultStmt::MysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, MysqlHanderStmt* handler) :
     _mysql_stmt(mysql_stmt),
     _result(meta_result),
     _handler(handler)
@@ -198,7 +198,7 @@ const char* MysqlQueryResultStmt::GetBinary(uint32 idx, char* data, unsigned lon
 
 
 //////////////////////////////////////////////////////////////////////////
-MySQLHanderStmt::MySQLHanderStmt(MYSQL* mysql, MysqlHandler* handler) :
+MysqlHanderStmt::MysqlHanderStmt(MYSQL* mysql, MysqlHandler* handler) :
     _mysql(mysql),
     _mysql_stmt(nullptr),
     _meta_result(nullptr),
@@ -209,13 +209,13 @@ MySQLHanderStmt::MySQLHanderStmt(MYSQL* mysql, MysqlHandler* handler) :
 }
 
 
-MySQLHanderStmt::~MySQLHanderStmt()
+MysqlHanderStmt::~MysqlHanderStmt()
 {
     _release();
 }
 
 
-void MySQLHanderStmt::_release()
+void MysqlHanderStmt::_release()
 {
     SAFE_DELETE(_query_result);
 
@@ -232,7 +232,7 @@ void MySQLHanderStmt::_release()
 }
 
 
-bool MySQLHanderStmt::_init(const char* sql)
+bool MysqlHanderStmt::_init(const char* sql)
 {
     bool ret = false;
     do
@@ -247,7 +247,7 @@ bool MySQLHanderStmt::_init(const char* sql)
         _field_count = mysql_stmt_field_count(_mysql_stmt);
         _param_count = mysql_stmt_param_count(_mysql_stmt);
 
-        my_bool flag = 1;
+        bool flag = 1;
         mysql_stmt_attr_set(_mysql_stmt, STMT_ATTR_UPDATE_MAX_LENGTH, &flag);
         _meta_result = mysql_stmt_result_metadata(_mysql_stmt);
         if (_meta_result)
@@ -266,7 +266,7 @@ bool MySQLHanderStmt::_init(const char* sql)
 }
 
 
-MysqlQueryResultStmt* MySQLHanderStmt::Execute(MysqlBindParam* params)
+MysqlQueryResultStmt* MysqlHanderStmt::Execute(MysqlBindParam* params)
 {
     MYSQL_BIND* bind = nullptr;
     if (_param_count)
@@ -333,14 +333,14 @@ MysqlQueryResultStmt* MySQLHanderStmt::Execute(MysqlBindParam* params)
 }
 
 
-void MySQLHanderStmt::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
+void MysqlHanderStmt::OnError(unsigned int err_no, const char* err_msg, const char* err_stage)
 {
     _handler->OnError(err_no, err_msg, err_stage);
 }
 
 
 //////////////////////////////////////////////////////////////////////////
-MysqlQueryResult::MysqlQueryResult(MYSQL_RES* result, CMysqlHandler* handler) :
+MysqlQueryResult::MysqlQueryResult(MYSQL_RES* result, MysqlHandler* handler) :
     _result(result),
     _row(nullptr),
     _handler(handler)
@@ -493,7 +493,7 @@ bool MysqlHandler::Connect(
     const char* char_set)
 {
     // if absense the follow two lines, the NextRow of stamt will get MYSQL_DATA_TRUNCATED arrival row 30
-    my_bool b(0);
+    bool b(0);
     mysql_options(_mysql, MYSQL_REPORT_DATA_TRUNCATION, &b);
 
     if (char_set)
@@ -551,10 +551,10 @@ MysqlQueryResult* MysqlHandler::ExecuteSql(const char* sql)
 }
 
 
-MySQLHanderStmt* MysqlHandler::CreateStmtHander(const char* sql)
+MysqlHanderStmt* MysqlHandler::CreateStmtHander(const char* sql)
 {
     if (!_mysql) return nullptr;
-	CMysqlHanderStmt* handle_stmt = new CMysqlHanderStmt(_mysql, this);
+	MysqlHanderStmt* handle_stmt = new MysqlHanderStmt(_mysql, this);
 	if (handle_stmt)
 	{
 		handle_stmt->_init(sql);

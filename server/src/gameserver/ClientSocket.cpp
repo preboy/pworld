@@ -3,13 +3,13 @@
 
 void CClientSocket::on_closed()
 {
-    Net::CSession::on_closed();
+    Net::Session::on_closed();
 
 }
 
 void CServerSocket::on_closed()
 {
-    Net::CSession::on_closed();
+    Net::Session::on_closed();
 
 }
 

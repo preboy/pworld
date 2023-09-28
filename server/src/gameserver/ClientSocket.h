@@ -1,9 +1,9 @@
 #pragma once
 
-class CClientSocket : public Net::CSession
+class CClientSocket : public Net::Session
 {
 public:
-    CClientSocket() : CSession()
+    CClientSocket() : Session()
     {}
 
     ~CClientSocket() 
@@ -16,10 +16,10 @@ protected:
 };
 
 
-class CServerSocket : public Net::CSession
+class CServerSocket : public Net::Session
 {
 public:
-    CServerSocket() : CSession()
+    CServerSocket() : Session()
     {}
 
     ~CServerSocket()

@@ -5,9 +5,9 @@
 void LoadSystemConfig()
 {
     SystemConfig* sc = INSTANCE(SystemConfig);
-    CLuaReader r;
+    LuaReader r;
     // r.Create();
-    r.Attach(INSTANCE(CLuaEngine)->GetLuaState());
+    r.Attach(INSTANCE(LuaEngine)->GetLuaState());
     if (!r.DoFile("./world/system_config.lua"))
     {
         sLogger->Fatal("error occured in load config file.");

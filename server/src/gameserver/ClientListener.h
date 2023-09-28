@@ -1,7 +1,7 @@
 #pragma once
 #include "listener.h"
 
-class CClientListener : public Net::CListener
+class CClientListener : public Net::Listener
 {
 public:
     CClientListener() {}

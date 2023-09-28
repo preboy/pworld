@@ -25,29 +25,29 @@ int main()
     ENABLE_ABORT_DETECTION;
 
 #ifdef PLAT_LINUX
-    CSignalHander sig_handler;
+    SignalHander sig_handler;
     sig_handler.Init();
 #endif
 
-    CREATE_INSTANCE(CLogger);
+    CREATE_INSTANCE(Logger);
     CREATE_INSTANCE(CGameServerInput);
     CREATE_INSTANCE(CGameServerFrame);
-    CREATE_INSTANCE(Poll::CPoller);
+    CREATE_INSTANCE(Poll::Poller);
     CREATE_INSTANCE(CNetMgr);
-    CREATE_INSTANCE(CTimerMgr);
-    CREATE_INSTANCE(CMessageQueue);
-    CREATE_INSTANCE_2(CMessageQueue);
-    CREATE_INSTANCE(CFrameEvent);
+    CREATE_INSTANCE(TimerMgr);
+    CREATE_INSTANCE(MessageQueue);
+    CREATE_INSTANCE_2(MessageQueue);
+    CREATE_INSTANCE(FrameEvent);
     CREATE_INSTANCE(SystemConfig);
     CREATE_INSTANCE(CMapMgr);
     CREATE_INSTANCE(CScriptResource);
-    CREATE_INSTANCE(CLuaEngine);
-    CREATE_INSTANCE(CAsyncTask);
+    CREATE_INSTANCE(LuaEngine);
+    CREATE_INSTANCE(AsyncTask);
     CREATE_INSTANCE(CDBMgr);
-    CREATE_INSTANCE(CScheduleMgr);
+    CREATE_INSTANCE(ScheduleMgr);
 
 
-    INSTANCE(CAsyncTask)->Init(4);
+    INSTANCE(AsyncTask)->Init(4);
     sLogger->Init("aaa.txt");
 
 
@@ -81,25 +81,25 @@ int main()
     sPoller->Release();
     Net::g_net_release();
     sLogger->Release();
-    INSTANCE(CAsyncTask)->Release();
+    INSTANCE(AsyncTask)->Release();
 
 
-    DESTROY_INSTANCE(CScheduleMgr);
+    DESTROY_INSTANCE(ScheduleMgr);
     DESTROY_INSTANCE(CDBMgr);
-    DESTROY_INSTANCE(CAsyncTask);
-    DESTROY_INSTANCE(CLuaEngine);
+    DESTROY_INSTANCE(AsyncTask);
+    DESTROY_INSTANCE(LuaEngine);
     DESTROY_INSTANCE(CScriptResource);
     DESTROY_INSTANCE(CMapMgr);
     DESTROY_INSTANCE(SystemConfig);
-    DESTROY_INSTANCE(CFrameEvent);
-    DESTROY_INSTANCE(CMessageQueue);
-    DESTROY_INSTANCE_2(CMessageQueue);
-    DESTROY_INSTANCE(CTimerMgr);
-    DESTROY_INSTANCE(Poll::CPoller);
+    DESTROY_INSTANCE(FrameEvent);
+    DESTROY_INSTANCE(MessageQueue);
+    DESTROY_INSTANCE_2(MessageQueue);
+    DESTROY_INSTANCE(TimerMgr);
+    DESTROY_INSTANCE(Poll::Poller);
     DESTROY_INSTANCE(CNetMgr);
     DESTROY_INSTANCE(CGameServerFrame);
     DESTROY_INSTANCE(CGameServerInput);
-    DESTROY_INSTANCE(CLogger);
+    DESTROY_INSTANCE(Logger);
 
 #ifdef PLAT_LINUX
     sig_handler.Release();

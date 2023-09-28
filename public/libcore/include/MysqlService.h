@@ -3,7 +3,7 @@
 
 
 class MysqlHandler;
-class MySQLHanderStmt;
+class MysqlHanderStmt;
 
 
 struct MysqlBindParam
@@ -14,7 +14,7 @@ struct MysqlBindParam
         MBT_Binary,
     };
 
-    my_bool         is_null;
+    bool            is_null;
     int             type;
     void*           buffer;
     unsigned long   length;
@@ -24,11 +24,11 @@ struct MysqlBindParam
 class MysqlQueryResultStmt
 {
 public:
-    MysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, MySQLHanderStmt* handler);
+    MysqlQueryResultStmt(MYSQL_STMT* mysql_stmt, MYSQL_RES* meta_result, MysqlHanderStmt* handler);
    ~MysqlQueryResultStmt();
 
 private:
-    friend class MySQLHanderStmt;
+    friend class MysqlHanderStmt;
     void            _stored();
 
 public:
@@ -51,14 +51,14 @@ private:
     MYSQL_STMT*     _mysql_stmt;
     MYSQL_RES*      _result;
 
-    MySQLHanderStmt*   _handler;
+    MysqlHanderStmt*   _handler;
 
 private:
     struct result_bind_data
     {
         unsigned long   length;
-        my_bool         is_null;
-        my_bool         error;
+        bool            is_null;
+        bool            error;
     };
 
     MYSQL_BIND*         _result_bind;
@@ -66,11 +66,11 @@ private:
 };
 
 
-class MySQLHanderStmt
+class MysqlHanderStmt
 {
 public:
-    MySQLHanderStmt(MYSQL* mysql, MysqlHandler* handler);
-   ~MySQLHanderStmt();
+    MysqlHanderStmt(MYSQL* mysql, MysqlHandler* handler);
+   ~MysqlHanderStmt();
 
 private:
 	friend class MysqlHandler;
@@ -126,11 +126,11 @@ private:
 };
 
 
-class MySQLHandler
+class MysqlHandler
 {
 public:
-    MySQLHandler();
-    ~MySQLHandler();
+    MysqlHandler();
+    ~MysqlHandler();
 
 public:
     void Init();
@@ -142,7 +142,7 @@ public:
 
     MysqlQueryResult* ExecuteSql(const char* sql);
 
-    MySQLHanderStmt* CreateStmtHander(const char* sql);
+    MysqlHanderStmt* CreateStmtHander(const char* sql);
 
     void OnError(unsigned int err_no, const char* err_msg, const char* err_stage);
 

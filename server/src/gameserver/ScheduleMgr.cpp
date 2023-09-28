@@ -2,43 +2,43 @@
 #include "ScheduleMgr.h"
 
 
-CScheduleMgr::CScheduleMgr()
+ScheduleMgr::ScheduleMgr()
 {
 
 }
 
 
-CScheduleMgr::~CScheduleMgr()
+ScheduleMgr::~ScheduleMgr()
 {
 
 }
 
 
-void CScheduleMgr::on_new_hour()
+void ScheduleMgr::on_new_hour()
 {
 
 }
 
 
-void CScheduleMgr::on_new_day()
+void ScheduleMgr::on_new_day()
 {
 
 }
 
 
-void CScheduleMgr::on_new_week()
+void ScheduleMgr::on_new_week()
 {
 
 }
 
 
-void CScheduleMgr::on_new_month()
+void ScheduleMgr::on_new_month()
 {
 
 }
 
 
-void CScheduleMgr::on_new_year()
+void ScheduleMgr::on_new_year()
 {
 
 }

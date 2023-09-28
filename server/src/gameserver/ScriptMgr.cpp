@@ -13,13 +13,13 @@ extern GlobalAPIMapping global_apis[];
 
 void CScriptMgr::Init()
 {
-    INSTANCE(CLuaHelper)->RegisterObjectApi<CObject>();
-    INSTANCE(CLuaHelper)->RegisterObjectApi<CSceneObject>();
-    INSTANCE(CLuaHelper)->RegisterObjectApi<CUnit>();
-    INSTANCE(CLuaHelper)->RegisterObjectApi<CPlayer>();
-    INSTANCE(CLuaHelper)->RegisterObjectApi<CCreature>();
+    INSTANCE(LuaHelper)->RegisterObjectApi<CObject>();
+    INSTANCE(LuaHelper)->RegisterObjectApi<CSceneObject>();
+    INSTANCE(LuaHelper)->RegisterObjectApi<CUnit>();
+    INSTANCE(LuaHelper)->RegisterObjectApi<CPlayer>();
+    INSTANCE(LuaHelper)->RegisterObjectApi<CCreature>();
 
-    INSTANCE(CLuaEngine)->RegisterGlobalApi(global_apis);
+    INSTANCE(LuaEngine)->RegisterGlobalApi(global_apis);
 }
 
 

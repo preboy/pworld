@@ -52,4 +52,4 @@ private:
 };
 
 
-#define  sLogger INSTANCE(CLogger)
+#define  sLogger INSTANCE(Logger)

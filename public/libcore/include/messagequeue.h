@@ -11,7 +11,7 @@ namespace Net
     private:
         enum { MEMORY_UNIT_SIZE = MAX_BUFFER_SIZE, };
 
-    protected
+    protected:
         uint32  _size;
         char*   _data;
         uint32  _curr_len;

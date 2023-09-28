@@ -15,7 +15,7 @@ class CNetMgr
 {
 public:
     CNetMgr() {}
-    ~CNetMgr() {}
+   ~CNetMgr() {}
 
 public:
     void Begin();

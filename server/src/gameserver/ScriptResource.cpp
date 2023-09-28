@@ -30,7 +30,7 @@ void CScriptResource::LoadScripts()
     {
         if (_is_load_file(file.c_str()))
         {
-            INSTANCE(CLuaEngine)->ExecFile(file.c_str());
+            INSTANCE(LuaEngine)->ExecFile(file.c_str());
         }
     }
 
@@ -47,7 +47,7 @@ void CScriptResource::ReloadScripts()
     {
         if (_is_reload_script(file.c_str()))
         {
-            INSTANCE(CLuaEngine)->ExecFile(file.c_str());
+            INSTANCE(LuaEngine)->ExecFile(file.c_str());
         }
     }
 }

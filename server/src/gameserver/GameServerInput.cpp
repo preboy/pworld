@@ -44,7 +44,7 @@ int CGameServerInput::OnZcg(int argc, char argv[PARAM_CNT][PARAM_LEN])
     sLogger->Error("eeeeeee");
     sLogger->Fatal("bbbbb");
 
-    CByteBuffer b(22);
+    ByteBuffer b(22);
    
 
     uint8 v1{34};
@@ -73,7 +73,7 @@ int CGameServerInput::OnZcg(int argc, char argv[PARAM_CNT][PARAM_LEN])
     }
 
     // test end
-    sLogger->SetColor(CLogger::LOG_TYPE::LT_DEBUG);
+    sLogger->SetColor(Logger::LOG_TYPE::LT_DEBUG);
     std::cout << "this is preboy speaking!" << std::endl;
     sLogger->ResetColor();
 
@@ -105,8 +105,8 @@ int CGameServerInput::OnReload(int argc, char argv[PARAM_CNT][PARAM_LEN])
 
 int CGameServerInput::OnTestDB(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
-    //      INSTANCE(CAsyncTask)->PushTask(CCallback::bind_member(this, &CGameServerInput::on_thread_proc));
-    INSTANCE(CAsyncTask)->PushTask(CCallback::Bind(this, &CGameServerInput::on_thread_proc_stmt));
+    //      INSTANCE(AsyncTask)->PushTask(Callback::bind_member(this, &CGameServerInput::on_thread_proc));
+    INSTANCE(AsyncTask)->PushTask(Callback::Bind(this, &CGameServerInput::on_thread_proc_stmt));
 
     return 0;
 }
@@ -114,12 +114,12 @@ int CGameServerInput::OnTestDB(int argc, char argv[PARAM_CNT][PARAM_LEN])
 
 void CGameServerInput::on_thread_proc()
 {
-    CDatabase* db = INSTANCE(CDBMgr)->GetFreeConnection();
+    Database* db = INSTANCE(CDBMgr)->GetFreeConnection();
     if (db)
     {
-        CMysqlHandler* h = db->Handler();
-        // CMysqlQueryResult* rs = h->ExecuteSql("select id, acct, name, unix_timestamp(create_t) from player");
-        CMysqlQueryResult* rs = h->ExecuteSql("select id, bin1, bin2 from player_data where id = '710485708'");
+        MysqlHandler* h = db->Handler();
+        // MysqlQueryResult* rs = h->ExecuteSql("select id, acct, name, unix_timestamp(create_t) from player");
+        MysqlQueryResult* rs = h->ExecuteSql("select id, bin1, bin2 from player_data where id = '710485708'");
 
         if (rs)
         {
@@ -171,13 +171,13 @@ void CGameServerInput::on_thread_proc()
 
 void CGameServerInput ::on_thread_proc_stmt()
 {
-    CDatabase* db = INSTANCE(CDBMgr)->GetFreeConnection();
+    Database* db = INSTANCE(CDBMgr)->GetFreeConnection();
     if (db)
     {
-        CMysqlHandler* h = db->Handler();
-        // CMysqlHanderStmt* hh = h->CreateStmtHander("select id, acct, name, x, y, unix_timestamp(create_t) from player");         // general
-        // CMysqlHanderStmt* hh = h->CreateStmtHander("select id, bin1, bin2 from player_data where id = '710485708'");         // select bin
-        CMysqlHanderStmt* hh = h->CreateStmtHander("update player_data set bin1=?, bin2=? where id = '710485708'");         // update bin
+        MysqlHandler* h = db->Handler();
+        // MysqlHanderStmt* hh = h->CreateStmtHander("select id, acct, name, x, y, unix_timestamp(create_t) from player");         // general
+        // MysqlHanderStmt* hh = h->CreateStmtHander("select id, bin1, bin2 from player_data where id = '710485708'");         // select bin
+        MysqlHanderStmt* hh = h->CreateStmtHander("update player_data set bin1=?, bin2=? where id = '710485708'");         // update bin
 
         if (hh)
         {
@@ -198,7 +198,7 @@ void CGameServerInput ::on_thread_proc_stmt()
             params[1].buffer = buff2;
             params[1].length = len2;
 
-            CMysqlQueryResultStmt* rs = hh->Execute(params);
+            MysqlQueryResultStmt* rs = hh->Execute(params);
             if (rs)
             {
                 int n = 0;
@@ -258,10 +258,10 @@ void CGameServerInput ::on_thread_proc_stmt()
 int CGameServerInput::OnTestLua(int argc, char argv[PARAM_CNT][PARAM_LEN])
 {
     
-    CLuaEngine* lua = INSTANCE(CLuaEngine);
+    LuaEngine* lua = INSTANCE(LuaEngine);
     lua_State* L = lua->GetLuaState();
 
-    //CByteBuffer bb(16*1024);
+    //ByteBuffer bb(16*1024);
     //
     //lua_getglobal(L, "e1");
     //lua_getglobal(L, "ga");
@@ -283,7 +283,7 @@ int CGameServerInput::OnTestLua(int argc, char argv[PARAM_CNT][PARAM_LEN])
     lua->PushFunction("on_s");
     
     
-    INSTANCE(CLuaHelper)->PushObject(plr);
+    INSTANCE(LuaHelper)->PushObject(plr);
     
     int x = lua_getmetatable(lua->GetLuaState(), -1);
     if (x)

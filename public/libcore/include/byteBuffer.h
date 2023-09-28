@@ -18,14 +18,14 @@ public:
 
 
 #define BYTEBUFFER_READ_OPERATOR(type)          \
-    inline CByteBuffer& operator << (type val)  \
+    inline ByteBuffer& operator << (type val)  \
     {                                           \
         this->In(&val, sizeof(type));           \
         return *this;                           \
     }
 
 #define BYTEBUFFER_WRITE_OPERATOR(type)         \
-    inline CByteBuffer& operator >> (type& val) \
+    inline ByteBuffer& operator >> (type& val) \
     {                                           \
         this->Out(&val, sizeof(type));          \
         return *this;                           \

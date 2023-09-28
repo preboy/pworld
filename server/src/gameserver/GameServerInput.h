@@ -3,7 +3,7 @@
 
 #include "Player.h"
 
-class CGameServerInput : public CCommandInput
+class CGameServerInput : public CommandInput
 {
 public:
     CGameServerInput();

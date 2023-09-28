@@ -23,7 +23,7 @@ CGameServerFrame::~CGameServerFrame()
 
 void CGameServerFrame::on_start()
 {
-    INSTANCE(CLuaEngine)->Init();
+    INSTANCE(LuaEngine)->Init();
 
 
     // 加载参数
@@ -34,9 +34,9 @@ void CGameServerFrame::on_start()
     // exec all lua script.
     INSTANCE(CScriptResource)->LoadScripts();
 
-    INSTANCE(CLuaEngine)->PushFunction("glof");
+    INSTANCE(LuaEngine)->PushFunction("glof");
 
-    INSTANCE(CLuaEngine)->ExecFunction(0);
+    INSTANCE(LuaEngine)->ExecFunction(0);
 
     INSTANCE(CScriptMgr)->Init();
 
@@ -61,7 +61,7 @@ void CGameServerFrame::on_update(uint64 dt)
     INSTANCE(CGameServerInput)->Update();
 
     // timer update
-    INSTANCE(CTimerMgr)->Update();
+    INSTANCE(TimerMgr)->Update();
 
     // mapmgr update
     INSTANCE(CMapMgr)->Update();
@@ -70,19 +70,19 @@ void CGameServerFrame::on_update(uint64 dt)
 
     INSTANCE(CNetMgr)->Update();
 
-    INSTANCE(CScheduleMgr)->Update();
+    INSTANCE(ScheduleMgr)->Update();
 }
 
 
-void CGameServerFrame::on_msg(Net::CMessage* msg)
+void CGameServerFrame::on_msg(Net::Message* msg)
 {
-    Net::CPacket* packet = (Net::CPacket*)msg;
+    Net::Packet* packet = (Net::Packet*)msg;
 
     uint16 opcode = packet->Opcode();
 
     if (opcode)
     {
-        Net::CSession* s = (Net::CSession*)(msg->_ptr);
+        Net::Session* s = (Net::Session*)(msg->_ptr);
         s->Send((const char*)msg->Data(), msg->DataLength());
     }
 

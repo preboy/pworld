@@ -81,9 +81,9 @@ public:
     static uint16 AsWorldObject(const CObject* obj);
 
 public:
-    CScriptTable&   GetScriptTable() { return _script_tab; }
+    ScriptTable&   GetScriptTable() { return _script_tab; }
 private:
-    CScriptTable    _script_tab;
+    ScriptTable    _script_tab;
 
 public:
     uint64  entry() { return _entry; }

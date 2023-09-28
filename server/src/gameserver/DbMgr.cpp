@@ -5,12 +5,12 @@
 
 void CDBMgr::Start()
 {
-    CMysqlService::Init();
+    MysqlService::Init();
     
     SystemConfig* sc = INSTANCE(SystemConfig);
     for (uint8 i = 0; i < 1; i++)
     {
-        CDatabase* db = new CDatabase(sc->db_host, sc->db_user, sc->db_pwd, sc->db_name, sc->db_chat_set, sc->db_port);
+        Database* db = new Database(sc->db_host, sc->db_user, sc->db_pwd, sc->db_name, sc->db_chat_set, sc->db_port);
         db->Connect();
         _dbs.push_back(db);
     }
@@ -18,28 +18,28 @@ void CDBMgr::Start()
 
 void CDBMgr::Close()
 {
-    for(CDatabase* db : _dbs)
+    for(Database* db : _dbs)
     {
         delete db;
     }
     _dbs.clear();
 
-    CMysqlService::Release();
+    MysqlService::Release();
 }
 
 
 void CDBMgr::Update() 
 {
-    for (CDatabase* db : _dbs)
+    for (Database* db : _dbs)
     {
         db->Update();
     }
 }
 
 
-CDatabase* CDBMgr::GetFreeConnection()
+Database* CDBMgr::GetFreeConnection()
 {
-    for (CDatabase* db : _dbs)
+    for (Database* db : _dbs)
     {
         if (db->Occupy())
         {

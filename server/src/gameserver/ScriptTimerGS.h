@@ -6,7 +6,7 @@ class CObject;
 class CMap;
 
 
-class CScriptTimerGS : public CScriptTimer
+class CScriptTimerGS : public ScriptTimer
 {
 public:
     CScriptTimerGS() {}

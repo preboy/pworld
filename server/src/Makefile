@@ -1,5 +1,5 @@
-CC		= g++
-CFLAGS		= -Wall -std=c++20
+CC				= g++
+CFLAGS			= -Wall -std=c++20
 INCLUDES        = -I../../public/common -I../../public/libcore/include -I../../public/depends/lua/include/ -I/usr/include/mysql
 LIB_INCLUDES    = -L../../public/libcore/lib/   -L../../public/depends/lua/lib -L/usr/lib64/mysql
 LIBS            = -lcore -pthread -llua -lmysqlclient -ldl
@@ -7,9 +7,9 @@ LIBS            = -lcore -pthread -llua -lmysqlclient -ldl
 
 DEBUG ?= y
 ifeq ($(DEBUG), y)
-    CFLAGS += -g3 -O0 -D_DEBUG
+    CFLAGS += -g -ggdb -O0 -D_DEBUG
 else
-    CFLAGS += -s  -O3
+    CFLAGS += -s  -O2
 endif
 
 
